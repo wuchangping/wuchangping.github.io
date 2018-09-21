@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#1D2D2D">
+    <meta name="msapplication-TileColor" content="#1D2D2D">
+    
+    
+    
+    <meta name="keywords" content="flink, pravega, kubernetes, docker, streaming, storage">
+    
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicons/android-chrome-192x192.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+    
+    
+    <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#1D2D2D">
+    
+    
+    <link rel="manifest" href="/favicons/site.webmanifest">
+    
+    
+    <meta name="msapplication-config" content="/favicons/browserconfig.xml">
+    
+    
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/favicons/favicon.ico">
+    
+    
+    <link rel="stylesheet" type="text/css" href="/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="/css/index.css">
+    
+    <link rel="stylesheet" type="text/css" href="/css/sidebar.css">
+    
+    
+<link rel="stylesheet" type="text/css" href="/css/page.css">
+<link rel="stylesheet" type="text/css" href="/css/post.css">
+
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link rel="stylesheet" type="text/css" href="/css/atom-one-dark.css">
+    <link rel="stylesheet" type="text/css" href="/css/lightgallery.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script defer type="text/javascript" src="/js/util.js"></script>
+    <script defer type="text/javascript" src="/js/scrollspy.js"></script>
+    <script defer type="text/javascript" src="/js/fontawesome-all.min.js"></script>
+    <script defer type="text/javascript" src="/js/lightgallery.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-fullscreen.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-hash.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-pager.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-thumbnail.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-zoom.min.js"></script>
+    
+    <script defer src="/js/busuanzi.pure.mini.js"></script>
+    
+    
+    
+    <script defer type="text/javascript" src="/js/index.js"></script>
+    
+    <script defer type="text/javascript" src="/js/custom.js"></script>
+    <title>常平的技术网站 - 流处理,分布式系统,微服务</title>
+  </head>
+  <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
+    
+<header id="header" class="header" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="header-container">
+      <div class="header-title">
+        <h1 class="title"><a href="/">常平的技术网站</a></h1>
+        <h2 class="subtitle">www.changping.me</h2>
+      </div>
+      
+      <div class="logo">
+        <img src="/images/logo.png" alt="logo">
+      </div>
+      
+    </div>
+    <nav id="nav" class="nav">
+      <a id="nav-toggle" class="nav-toggle" aria-hidden="true"><i class="fas fa-bars" aria-label="切换导航栏"></i></a>
+      <ul id="menu" role="menubar" aria-hidden="false">
+        
+        <li role="menuitem"><a href="/">首页</a></li>
+        
+        <li role="menuitem"><a href="/archives">全部</a></li>
+        
+        <li role="menuitem"><a href="/categories">分类</a></li>
+        
+        <li role="menuitem"><a href="/tags">标签</a></li>
+        
+        <li role="menuitem"><a href="/about">关于</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+    <main id="main" class="main">
+      <div class="container">
+        <div class="main-container">
+          <div class="content">
+            
+
+<div id="index" class="index page">
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-concepts-3/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravega-concepts-3/" itemprop="url">Pravega基本概念三 - ReaderGroup，Transactions，State Synchronizers</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T13:21:24+08:00">2018-09-16 13:21:24</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="ReaderGroup以及Checkpoint"><a href="#ReaderGroup以及Checkpoint" class="headerlink" title="ReaderGroup以及Checkpoint"></a>ReaderGroup以及Checkpoint</h2><p>Pravega为应用提供了在ReaderGroup上初始化Checkpoint的功能。使用Checkpoint的意图是通过使用一种特殊事件（检查点事件）来确保每个Reader能保存原来的使用状态，ReaderGroup中的每个Reader都可以创建一个“时间点”，借助这个“时间点“可以为reader提供状态的持久化以及保证这个状态一致性的功能。检查点完成后，应用可以通过恢复checkpoint(检查点)将ReaderGroup中的所有Reader恢复成这个检查点所代表的一致状态。</p>
+<h2 id="Transactions（事务）"><a href="#Transactions（事务）" class="headerlink" title="Transactions（事务）"></a>Transactions（事务）</h2><p>Pravega支持事务。事务的想法是，Writer可以“批处理”一堆event并将它们作为一个处理单元提交到Stream中。这在某些场景是很有用的，例如，使用Pravega作为Flink作业的接收器。Flink作业可以不断产生一些数据的处理结果，并使用事务功能来持久化累积的处理结果。当在某个时间窗口（例如）的末尾时，Flink作业可以提交事务，因此使的处理结果可用于数据的下游处理，或者在出现错误的场景下，退出事务并且放弃整个处理结果。</p>
+<p>Pravega的事务和类似方法（例如Kafka的生产者方式批处理）之间的关键区别在于能否持久化。当事件回到Writer时，添加到事务的事件是持久的。但是，在Writer提交Transaction之前，Reader不会看到事务中的事件。事务很像流; 事务与多个流段相关联。将事件发布到事务中时，事件本身将附加到事务的流段。假设Stream有5个段，当在该流上创建事务时，那么表示该事务也有5个段。当事件发布到事务中时，它被路由到相同编号的段，就像它被发布到Stream本身一样（如果事件将被放置在“真实”流中的段3中，那么它将出现在事务的段3中）。提交事务时，每个事务的段将自动附加到实际流中的相应段。如果流被中止，则事务其所有段以及发布到事务中的所有事件都将被从Pravega中删除。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Ftrx.commit.new.png" alt="trx.commit.new"></p>
+<p>在提交事务之前，发布到事务中的事件永远不会被Reader看到。有关使用事务的更多详细信息，请参阅  使用Pravega：事务。</p>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-concepts-2/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravega-concepts-2/" itemprop="url">Pravega基本概念二 - Events, Segments, AutoScaling, Ordering</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T12:25:04+08:00">2018-09-16 12:25:04</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="Stream-segments"><a href="#Stream-segments" class="headerlink" title="Stream segments"></a>Stream segments</h2><p>如下图，Stream由Stream Segments组成，而流段是流的分片或分区。</p>
+<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fstream.segment.png" alt="stream.segment"></p>
+<h2 id="Event-event组成了stream-segment"><a href="#Event-event组成了stream-segment" class="headerlink" title="Event: event组成了stream segment"></a>Event: event组成了stream segment</h2><p>Stream Segment是事件（Event）的容器，event组成了流段，event存储在stream segment里，当事件被写入流时，会进行hash计算生成一个路由码，根据这个路由码，事件会被路由到一个流段中。Pravega使用一致性哈希算法将事件分配给流段。事件路由码被哈希后会生成一个“密钥空间”。然后密钥空间会被划分为多个分区，这些分区又对应于多个流段，采用一致性哈希算法可以确定将事件分配给哪个流段。</p>
+<h2 id="AutoScaling：流段数量可变"><a href="#AutoScaling：流段数量可变" class="headerlink" title="AutoScaling：流段数量可变"></a>AutoScaling：流段数量可变</h2><p>当了流中的I/O负载上升或下降时，Stream中stream segments的数量会随着I/O负载增长或收缩 ，我们将此特性称之为AutoScaling。</p>
+<p>参考下图，图中体现了路由码和时间之间的关系。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fsegment.split.merge.overtime.new.png" alt="segment.split.merge.overtime.new"></p>
+<p>流在时间t0开始，具有可配置数量的段。如果写入流的数据速率不变，则段的数量不会改变。然而，在时间t1，系统注意到摄取率的增加并且选择将段1分成两部分。我们称之为Scale-up事件。在t1之前，具有哈希到密钥空间上部的路由密钥（值0.5-0.99）的事件将被放置在段1中，而散列到密钥空间下部的值（值0-0.49）将是放置在段0中。在t1之后，段1被分成段2和段3.段1被密封，它不再接受写入。此时，具有路由密钥0.7及以上的事件被写入段3，而在0.5和0.69之间的事件将被写入段2。  </p>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-concepts-1/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravega-concepts-1/" itemprop="url">Pravega 基本概念一 - Streams, Events, Writers, Readers, ReaderGroups</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T11:30:35+08:00">2018-09-16 11:30:35</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>Pravega是一个开源的流式存储系统，为连续和无界数据实现流式存储。本章节将分为一个系列讲述Pravega的一些基本概念。</p>
+<h2 id="Streams"><a href="#Streams" class="headerlink" title="Streams"></a>Streams</h2><p>Pravega将数据组织到Streams中。Stream是一种持久，有弹性，append-only，无限制的字节序列，具有良好的性能和强大的一致性。Pravega Stream这个语义与当前很流行的面向消息的中间件（如RabbitMQ或Apache Kafka）中的“topic”类似但更灵活。</p>
+<p>Pravega Streams是基于append-only的日志数据结构。通过使用append-only日志，Pravega可以快速将数据提取到可持久化的存储中，也可以支持流处理，工作流引擎，面向事件的应用程序，比如Flink，发布/订阅消息，NoSQL数据库（如时间序列数据库）（TSDB）等。</p>
+<p>当开发人员在Pravega中创建Stream时，他/她会先给Stream定义一个名称，例如“IoTSensorData”或“WebApplicationLog20170330”。Stream的名称可以帮助其他开发人员了解存储在Stream中的数据类别。值得注意的是，Pravega Stream名称是在一个Scope内组织的。Scope是一个字符串，用于数据分类，它会向开发人员传达某种含义，比如“FactoryMachines”或“HRWebsitelogs”。Scope用作Stream名称的命名空间 - 所有Stream名称在Scope中都是唯一的。因此，Stream通过其Stream名称和Scope的组合唯一标识。Scope可用于按租户（在多租户环境中），按组织中的部门，按地理位置或开发人员选择的任何其他分类来命名。</p>
+<p>Pravega的Stream大小无限制 – Pravega本身不会对Stream中可以有多少event或Stream中存储的总字节数施加以任何的限制。Pravega的设计原则是支持从几台机器的小规模到整个数据中心的大规模。</p>
+<p>为了处理Stream中潜在的大量数据，Pravega Streams分为Stream Segments。Segment是stream中的Shard或Partition。我们稍后将在本文档中详细介绍Stream Segments。Stream Segments是一个重要的概念，但在我们深入了解Stream Segments之前，我们还需要介绍一些其他概念。</p>
+<p>应用程序（例如从IoT传感器读取的Java程序）将数据写入Stream的尾部（前端）。应用程序（如Flink）也可以从Stream中的任何位置读取数据。多个应用程序还可以并行读写相同的Stream。弹性且可扩展地支持大量的Streams，支持大规模的数据和应用程序是Pravega的核心设计思想。在详细介绍reader和writer时，我们将会介绍应用程序如何读取和写入Streams。</p>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravegage-usage/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravegage-usage/" itemprop="url">pravega入门</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T10:49:28+08:00">2018-09-16 10:49:28</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="Pravega入门"><a href="#Pravega入门" class="headerlink" title="Pravega入门"></a>Pravega入门</h2><p>了解Pravega最好方法就是自己动手部署一个，然后跑一把Pravega示例。</p>
+<p>部署Pravega其实很简单，以下是步骤：</p>
+<p>Java版本：Java 8</p>
+<h3 id="下载Pravega"><a href="#下载Pravega" class="headerlink" title="下载Pravega"></a>下载Pravega</h3><p>可以从 <a href="https://github.com/pravega/pravega/releases" target="_blank" rel="noopener">https://github.com/pravega/pravega/releases</a> 下载Pravega编译好的发行版。如果您想自己构建Pravega，也可以自己下载代码并运行:</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$./gradlew distribution<br></code></pre></td></tr></table></figure>
+<p>多细节可以查看Pravega <a href="https://github.com/pravega/pravega/blob/master/README.md" target="_blank" rel="noopener">README.md</a>。</p>
+<p>解压:</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$ tar xfvz pravega-0.1.0.tgz<br></code></pre></td></tr></table></figure>
+<p>然后以standalone模式运行Pravega，这种模式会在本地机器上启动Pravega的所有组件。注意：这仅用于测试/演示目的，请勿在生产环境中使用！更多内容请 <a href="http://pravega.io/docs/latest/deployment/deployment/" target="_blank" rel="noopener">查看</a></p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$ cd pravega-0.1.0<br>$ bin / pravega-standalone<br></code></pre></td></tr></table></figure>
+<p>执行这个命令即可拉起一个本地化的pravega 集群， 这样就可以跑pravega。</p>
+<h3 id="Pravega“Hello-World”示例"><a href="#Pravega“Hello-World”示例" class="headerlink" title="Pravega“Hello World”示例"></a>Pravega“Hello World”示例</h3><p>Pravega为示例维护一个单独的github库：https：//github.com/pravega/pravega-samples</p>
+<p>Pravega依赖关系会自动从maven中心拉下来。注意：示例还可以使用本地编译的Pravega。有关这方面的更多信息，请参阅<a href="https://github.com/pravega/pravega/blob/master/README.md" target="_blank" rel="noopener">README.md</a>中maven发布的注释。</p>
+<p>下载Pravega-Samples git库</p>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/15/pravega-overview/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/15/pravega-overview/" itemprop="url">pravega overview</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-15T22:15:59+08:00">2018-09-15 22:15:59</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>当前的大数据处理系统无论是Lamda架构还是Kappa架构都面临一个问题，即：“计算是原生的流计算，而存储却不是原生的流存储” 。</p>
+<p>作为存储业界首屈一指的领导者，DELL EMC的存储专家们重新思考了这一基本的数据处理和存储规则，为这一场景重新设计了一种新的存储类型，即原生的流存储，命名为”Pravega”，在梵语里是“Good Speed”的意思。</p>
+<p>Pravega是一种流数据存储系统，其具有可持久化，弹性，数据只追加，字节序列无限制，性能良好和强一致性的特点。并且根据Apache 2.0许可证开源，DELLEMC的存储专家们相信这一颠覆性的技术应该开源出来与开源社区一起拥有与推动，Pravega相应的介绍以及代码可以从pravega.io获得。</p>
+<h2 id="主要特性"><a href="#主要特性" class="headerlink" title="主要特性"></a>主要特性</h2><ul>
+<li><p>正好一次 – 不管是客户端、服务端还是网络出现了故障，Pravega都能确保每个事件都只被传递和处理正好一次（exactly-once）。</p>
+</li>
+<li><p>自动伸缩 – 不同于静态分区系统只有固定大小的存储空间，当数据采集速率发生变化时Pravega可以根据场景自动调整空间大小以自动适应数据规模的变化。</p>
+</li>
+<li><p>分布式计算原语 – Pravega具有和zookeeper一样的选主功能，支持进程间传递消息，支持数据存储，非常适用于分布式计算场景。</p>
+</li>
+<li><p>写入效率好 – 目前Pravega 的写入时延在毫秒级，还能无缝的扩展以支持数千个客户端的同时并发读写，是IOT和其他时延敏感型应用的理想选择。</p>
+</li>
+<li><p>无限保存 – 数据永远都在流中采集、处理和保存，对于实时数据和历史数据使用一样的处理范式。</p>
+</li>
+<li><p>高效存储 – Pravega构建了一种数据处理通道，支持将批处理，实时处理以及其他应用比如数据检索，都构建在一个数据处理通道内，无需为每个处理模式都保留一份数据副本。</p>
+</li>
+<li><p>持久化 – Pravega保证无需在高性能，可持久化和一致性之间做权衡，在客户端确认写入操作已完成之前，Pravega将一直存留并保护数据。</p>
+</li>
+<li><p>支持事务 - 开发人员使用Pravega事务来确保一组事件原子性的写入流中。</p>
+</li>
+</ul>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/13/hello-world/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/13/hello-world/" itemprop="url">Hello World</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-13T11:30:35+08:00">2018-09-13 11:30:35</time></span>
+        </span>
+        
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="Hello-World"><a href="#Hello-World" class="headerlink" title="Hello World"></a>Hello World</h2><p><strong>启动新的技术网站:[<a href="http://www.changping.me]">www.changping.me]</a>, [<a href="http://www.yuncunchu.org]以及微信公众号上的文章将迁移到本站。" target="_blank" rel="noopener">www.yuncunchu.org]以及微信公众号上的文章将迁移到本站。</a></strong></p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+    </footer>
+  </article>
+  
+  
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span>
+  </nav>
+  
+  
+</div>
+
+          </div>
+          
+          
+          
+<aside class="sidebar" id="sidebar" >
+  
+  
+<div class="info sidebar-item" id="info">
+  
+  <img class="author-avatar" src="/images/avatar.jpg" alt="常平">
+  
+  <h1 class="author-name">常平</h1>
+  <h2 class="author-description">“技术是有生命的,因为它可以进化”</h2>
+  <div class="site-count">
+    
+    <div class="archives-count">
+      <div class="site-count-title">全部</div>
+      <div><a href="/archives">26</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="categories-count">
+      <div class="site-count-title">分类</div>
+      <div><a href="/categories">4</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="tags-count">
+      <div class="site-count-title">标签</div>
+      <div><a href="/tags">4</a></div>
+    </div>
+    
+  </div>
+  
+</div>
+
+
+  <div class="sidebar-sticky">
+    
+    
+    <hr>
+    <div class="social-link sidebar-item">
+      <div><i class="far fa-address-card"></i>链接</p></div>
+      <ul>
+        
+        <li><i class="fab fa-github"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a></li>
+        
+      </ul>
+    </div>
+    
+    
+  </div>
+</aside>
+
+
+          
+        </div>
+      </div>
+    </main>
+    
+<footer id="footer" class="footer" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="back-to-top">
+      <button id="back-to-top"><i class="fas fa-angle-double-up" aria-label="回到顶部"></i></button>
+    </div>
+    <div class="footer-container">
+      <div class="footer-left">
+        <div class="copyright">
+          <span class="author">常平</span><span class="year"><i class="far fa-copyright"></i>2017 - 2018</span>
+        </div>
+        
+        <div class="busuanzi">
+          <span id="busuanzi_container_site_pv"><i class="fas fa-eye" aria-label="站点点击量" aria-hidden="false"></i><span id="busuanzi_value_site_pv"></span></span><span id="busuanzi_container_site_uv"><i class="fas fa-user" aria-label="站点用户数" aria-hidden="false"></i><span id="busuanzi_value_site_uv"></span></span><span id="busuanzi_container_page_pv"><i class="far fa-file-alt"></i><span id="busuanzi_value_page_pv" aria-label="页面点击量" aria-hidden="false"></span></span>
+        </div>
+        
+      </div>
+      <div class="footer-right">
+        <div class="custom-info">
+          
+          PoweredBy<i class="fab fa-github-alt"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a>
+          
+        </div>
+        <div class="powered-by">
+          由 <a href="https://hexo.io/" target="_blank">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/AlynxZhou/hexo-theme-aria/" target="_blank">ARIA</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>

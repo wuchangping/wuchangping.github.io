@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#1D2D2D">
+    <meta name="msapplication-TileColor" content="#1D2D2D">
+    
+    
+    
+    <meta name="keywords" content="flink, pravega, kubernetes, docker, streaming, storage">
+    
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicons/android-chrome-192x192.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+    
+    
+    <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#1D2D2D">
+    
+    
+    <link rel="manifest" href="/favicons/site.webmanifest">
+    
+    
+    <meta name="msapplication-config" content="/favicons/browserconfig.xml">
+    
+    
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/favicons/favicon.ico">
+    
+    
+    <link rel="stylesheet" type="text/css" href="/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="/css/index.css">
+    
+    <link rel="stylesheet" type="text/css" href="/css/sidebar.css">
+    
+    
+<link rel="stylesheet" type="text/css" href="/css/page.css">
+<link rel="stylesheet" type="text/css" href="/css/post.css">
+
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link rel="stylesheet" type="text/css" href="/css/atom-one-dark.css">
+    <link rel="stylesheet" type="text/css" href="/css/lightgallery.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script defer type="text/javascript" src="/js/util.js"></script>
+    <script defer type="text/javascript" src="/js/scrollspy.js"></script>
+    <script defer type="text/javascript" src="/js/fontawesome-all.min.js"></script>
+    <script defer type="text/javascript" src="/js/lightgallery.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-fullscreen.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-hash.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-pager.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-thumbnail.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-zoom.min.js"></script>
+    
+    <script defer src="/js/busuanzi.pure.mini.js"></script>
+    
+    
+    
+    <script defer type="text/javascript" src="/js/index.js"></script>
+    
+    <script defer type="text/javascript" src="/js/custom.js"></script>
+    <title>flink 集群与部署之kubernetes篇 | 常平的技术网站 - 流处理,分布式系统,微服务</title>
+  </head>
+  <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
+    
+<header id="header" class="header" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="header-container">
+      <div class="header-title">
+        <h1 class="title"><a href="/">常平的技术网站</a></h1>
+        <h2 class="subtitle">www.changping.me</h2>
+      </div>
+      
+      <div class="logo">
+        <img src="/images/logo.png" alt="logo">
+      </div>
+      
+    </div>
+    <nav id="nav" class="nav">
+      <a id="nav-toggle" class="nav-toggle" aria-hidden="true"><i class="fas fa-bars" aria-label="切换导航栏"></i></a>
+      <ul id="menu" role="menubar" aria-hidden="false">
+        
+        <li role="menuitem"><a href="/">首页</a></li>
+        
+        <li role="menuitem"><a href="/archives">全部</a></li>
+        
+        <li role="menuitem"><a href="/categories">分类</a></li>
+        
+        <li role="menuitem"><a href="/tags">标签</a></li>
+        
+        <li role="menuitem"><a href="/about">关于</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+    <main id="main" class="main">
+      <div class="container">
+        <div class="main-container">
+          <div class="content">
+            
+<div id="post" class="page">
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/flink-deployment-kubernetes/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+       <meta itemprop="name" content="常平">
+       <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+       <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+       <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">flink 集群与部署之kubernetes篇</h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T06:46:49+08:00">2018-09-20 06:46:49</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      <p>本页介绍如何在Kubernetes上部署Flink作业和会话群集。</p>
+<h2 id="设置Kubernetes"><a href="#设置Kubernetes" class="headerlink" title="设置Kubernetes"></a>设置Kubernetes</h2><p>请参照<a href="https://kubernetes.io/docs/setup/" target="_blank" rel="noopener">Kubernetes的设置指南</a>来部署Kubernetes集群。如果您想在本地运行Kubernetes，我们建议使用<a href="https://kubernetes.io/docs/setup/minikube/" target="_blank" rel="noopener">MiniKube</a>来部署集群。</p>
+<blockquote>
+<p>注意：如果使用MiniKube，请确保<code>minikube ssh &#39;sudo ip link set docker0 promisc on&#39;</code>在部署Flink群集之前执行。否则，Flink组件无法通过Kubernetes服务自行引用。</p>
+</blockquote>
+<h2 id="Kubernetes上的Flink会话群集"><a href="#Kubernetes上的Flink会话群集" class="headerlink" title="Kubernetes上的Flink会话群集"></a>Kubernetes上的Flink会话群集</h2><p>Flink会话群集作为长期运行的Kubernetes部署来执行，请注意，可以在会话群集上运行多个Flink作业。在部署了集群之后，每个作业都需要提交到群集。</p>
+<p>一个基本的部署在Kubernetes上的Flink会话群集一般会有三个组件：</p>
+<ul>
+<li>一个运行JobManager的deployment或job</li>
+<li>一个TaskManagers池 deployment</li>
+<li>一个公开JobManager的REST和UI端口的service</li>
+</ul>
+<h2 id="在Kubernetes上部署Flink会话群集"><a href="#在Kubernetes上部署Flink会话群集" class="headerlink" title="在Kubernetes上部署Flink会话群集"></a>在Kubernetes上部署Flink会话群集</h2><p>使用会话群集的资源定义，采用kubectl命令启动群集：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">kubectl create -f jobmanager-service.yaml<br>kubectl create -f jobmanager-deployment.yaml<br>kubectl create -f taskmanager-deployment.yaml<br></code></pre></td></tr></table></figure>
+<a id="more"></a>
+<p>然后，您可以通过kubectl proxy按以下方式访问Flink UI ：</p>
+<p>第一步，保证kubectl proxy在终端中运行</p>
+<p>第二步，在浏览器里输入 <code>http://localhost:8001/api/v1/namespaces/default/services/flink-jobmanager:ui/proxy</code></p>
+<p>如果要终止Flink会话群集，可以使用如下命令：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">kubectl delete -f jobmanager-deployment.yaml<br>kubectl delete -f taskmanager-deployment.yaml<br>kubectl delete -f jobmanager-service.yaml<br></code></pre></td></tr></table></figure>
+<h2 id="Kubernetes上的Flink作业集群"><a href="#Kubernetes上的Flink作业集群" class="headerlink" title="Kubernetes上的Flink作业集群"></a>Kubernetes上的Flink作业集群</h2><p>Flink作业集群是运行单个作业的专用集群，这项作业是打包在flink镜像里的，因此，不需要提交额外的作业对象，步骤如下：</p>
+<h3 id="创建特定于作业的镜像"><a href="#创建特定于作业的镜像" class="headerlink" title="创建特定于作业的镜像"></a>创建特定于作业的镜像</h3><p>Flink作业集群镜像需要包含启动集群的作业的用户代码jar。因此，需要为每个作业构建专用的容器镜像。请按照这些<a href="https://github.com/apache/flink/blob/master/flink-container/docker/README.md" target="_blank" rel="noopener">说明</a>构建Docker镜像。</p>
+<h3 id="在Kubernetes上部署Flink作业集群"><a href="#在Kubernetes上部署Flink作业集群" class="headerlink" title="在Kubernetes上部署Flink作业集群"></a>在Kubernetes上部署Flink作业集群</h3><p>要在Kubernetes上部署作业集群，请按照这些<a href="https://github.com/apache/flink/blob/master/flink-container/kubernetes/README.md#deploy-flink-job-cluster" target="_blank" rel="noopener">说明</a>进行操作。</p>
+<h2 id="高级群集部署"><a href="#高级群集部署" class="headerlink" title="高级群集部署"></a>高级群集部署</h2><p>GitHub上提供了早期版本的<a href="https://github.com/docker-flink/examples" target="_blank" rel="noopener">Flink Helm chart</a>。</p>
+<h1 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h1><h2 id="会话群集资源定义"><a href="#会话群集资源定义" class="headerlink" title="会话群集资源定义"></a>会话群集资源定义</h2><p>部署使用的最新镜像 <code>flink:latest</code> 可在<a href="https://hub.docker.com/r/_/flink/" target="_blank" rel="noopener">Docker Hub</a>上找到。该镜像是用这个工具 <code>https://github.com/docker-flink/docker-flink</code> 构建的</p>
+<p>jobmanager-deployment.yaml</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&quot;<br>apiVersion: extensions/v1beta1<br>kind: Deployment<br>metadata:<br>  name: flink-jobmanager<br>spec:<br>  replicas: 1<br>  template:<br>    metadata:<br>      labels:<br>        app: flink<br>        component: jobmanager<br>    spec:<br>      containers:<br>      - name: jobmanager<br>        image: flink:latest<br>        args:<br>        - jobmanager<br>        ports:<br>        - containerPort: 6123<br>          name: rpc<br>        - containerPort: 6124<br>          name: blob<br>        - containerPort: 6125<br>          name: query<br>        - containerPort: 8081<br>          name: ui<br>        env:<br>        - name: JOB_MANAGER_RPC_ADDRESS<br>          value: flink-jobmanager<br>&quot;<br></code></pre></td></tr></table></figure>
+<p>taskmanager-deployment.yaml</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&quot;<br>apiVersion: extensions/v1beta1<br>kind: Deployment<br>metadata:<br>  name: flink-taskmanager<br>spec:<br>  replicas: 2<br>  template:<br>    metadata:<br>      labels:<br>        app: flink<br>        component: taskmanager<br>    spec:<br>      containers:<br>      - name: taskmanager<br>        image: flink:latest<br>        args:<br>        - taskmanager<br>        ports:<br>        - containerPort: 6121<br>          name: data<br>        - containerPort: 6122<br>          name: rpc<br>        - containerPort: 6125<br>          name: query<br>        env:<br>        - name: JOB_MANAGER_RPC_ADDRESS<br>          value: flink-jobmanager<br>&quot;<br></code></pre></td></tr></table></figure>
+<p>jobmanager-service.yaml</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&quot;<br>apiVersion: v1<br>kind: Service<br>metadata:<br>  name: flink-jobmanager<br>spec:<br>  ports:<br>  - name: rpc<br>    port: 6123<br>  - name: blob<br>    port: 6124<br>  - name: query<br>    port: 6125<br>  - name: ui<br>    port: 8081<br>  selector:<br>    app: flink<br>    component: jobmanager<br>&quot;<br></code></pre></td></tr></table></figure>
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  
+  <nav class="page-nav">
+    <div class="page-nav-next page-nav-item">
+      
+      <a href="/2018/09/20/flink-deployment-docker/" rel="next" title="flink 集群与部署之docker篇"><i class="fas fa-angle-left"></i><span class="nav-title">flink 集群与部署之docker篇</span></a>
+      
+    </div>
+    <div class="page-nav-prev page-nav-item">
+      
+      <a href="/2018/09/20/pravega-controller-service-1/" rel="prev" title="Pravega控制器服务之一"><span class="nav-title">Pravega控制器服务之一</span><i class="fas fa-angle-right"></i></a>
+      
+    </div>
+  </nav>
+  
+  
+</div>
+
+          </div>
+          
+          
+          
+<aside class="sidebar" id="sidebar" >
+  
+  
+<div class="info sidebar-item" id="info">
+  
+  <img class="author-avatar" src="/images/avatar.jpg" alt="常平">
+  
+  <h1 class="author-name">常平</h1>
+  <h2 class="author-description">“技术是有生命的,因为它可以进化”</h2>
+  <div class="site-count">
+    
+    <div class="archives-count">
+      <div class="site-count-title">全部</div>
+      <div><a href="/archives">26</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="categories-count">
+      <div class="site-count-title">分类</div>
+      <div><a href="/categories">4</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="tags-count">
+      <div class="site-count-title">标签</div>
+      <div><a href="/tags">4</a></div>
+    </div>
+    
+  </div>
+  
+</div>
+
+
+  <div class="sidebar-sticky">
+    
+    
+    
+    
+    
+    <hr>
+    <div class="post-toc sidebar-item" id="toc-div">
+      <div><i class="fas fa-list-ol"></i>文章目录</div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#设置Kubernetes"><span class="toc-text">设置Kubernetes</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#Kubernetes上的Flink会话群集"><span class="toc-text">Kubernetes上的Flink会话群集</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#在Kubernetes上部署Flink会话群集"><span class="toc-text">在Kubernetes上部署Flink会话群集</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#Kubernetes上的Flink作业集群"><span class="toc-text">Kubernetes上的Flink作业集群</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#创建特定于作业的镜像"><span class="toc-text">创建特定于作业的镜像</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#在Kubernetes上部署Flink作业集群"><span class="toc-text">在Kubernetes上部署Flink作业集群</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#高级群集部署"><span class="toc-text">高级群集部署</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="list-group-item toc-link" href="#附录"><span class="toc-text">附录</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#会话群集资源定义"><span class="toc-text">会话群集资源定义</span></a></li></ol></div>
+    </div>
+    
+    
+    
+    <hr>
+    <div class="social-link sidebar-item">
+      <div><i class="far fa-address-card"></i>链接</p></div>
+      <ul>
+        
+        <li><i class="fab fa-github"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a></li>
+        
+      </ul>
+    </div>
+    
+    
+  </div>
+</aside>
+
+
+          
+        </div>
+      </div>
+    </main>
+    
+<footer id="footer" class="footer" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="back-to-top">
+      <button id="back-to-top"><i class="fas fa-angle-double-up" aria-label="回到顶部"></i></button>
+    </div>
+    <div class="footer-container">
+      <div class="footer-left">
+        <div class="copyright">
+          <span class="author">常平</span><span class="year"><i class="far fa-copyright"></i>2017 - 2018</span>
+        </div>
+        
+        <div class="busuanzi">
+          <span id="busuanzi_container_site_pv"><i class="fas fa-eye" aria-label="站点点击量" aria-hidden="false"></i><span id="busuanzi_value_site_pv"></span></span><span id="busuanzi_container_site_uv"><i class="fas fa-user" aria-label="站点用户数" aria-hidden="false"></i><span id="busuanzi_value_site_uv"></span></span><span id="busuanzi_container_page_pv"><i class="far fa-file-alt"></i><span id="busuanzi_value_page_pv" aria-label="页面点击量" aria-hidden="false"></span></span>
+        </div>
+        
+      </div>
+      <div class="footer-right">
+        <div class="custom-info">
+          
+          PoweredBy<i class="fab fa-github-alt"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a>
+          
+        </div>
+        <div class="powered-by">
+          由 <a href="https://hexo.io/" target="_blank">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/AlynxZhou/hexo-theme-aria/" target="_blank">ARIA</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>

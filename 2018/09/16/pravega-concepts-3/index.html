@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#1D2D2D">
+    <meta name="msapplication-TileColor" content="#1D2D2D">
+    
+    
+    
+    <meta name="keywords" content="flink, pravega, kubernetes, docker, streaming, storage">
+    
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicons/android-chrome-192x192.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+    
+    
+    <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#1D2D2D">
+    
+    
+    <link rel="manifest" href="/favicons/site.webmanifest">
+    
+    
+    <meta name="msapplication-config" content="/favicons/browserconfig.xml">
+    
+    
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/favicons/favicon.ico">
+    
+    
+    <link rel="stylesheet" type="text/css" href="/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="/css/index.css">
+    
+    <link rel="stylesheet" type="text/css" href="/css/sidebar.css">
+    
+    
+<link rel="stylesheet" type="text/css" href="/css/page.css">
+<link rel="stylesheet" type="text/css" href="/css/post.css">
+
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link rel="stylesheet" type="text/css" href="/css/atom-one-dark.css">
+    <link rel="stylesheet" type="text/css" href="/css/lightgallery.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script defer type="text/javascript" src="/js/util.js"></script>
+    <script defer type="text/javascript" src="/js/scrollspy.js"></script>
+    <script defer type="text/javascript" src="/js/fontawesome-all.min.js"></script>
+    <script defer type="text/javascript" src="/js/lightgallery.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-fullscreen.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-hash.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-pager.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-thumbnail.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-zoom.min.js"></script>
+    
+    <script defer src="/js/busuanzi.pure.mini.js"></script>
+    
+    
+    
+    <script defer type="text/javascript" src="/js/index.js"></script>
+    
+    <script defer type="text/javascript" src="/js/custom.js"></script>
+    <title>Pravega基本概念三 - ReaderGroup，Transactions，State Synchronizers | 常平的技术网站 - 流处理,分布式系统,微服务</title>
+  </head>
+  <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
+    
+<header id="header" class="header" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="header-container">
+      <div class="header-title">
+        <h1 class="title"><a href="/">常平的技术网站</a></h1>
+        <h2 class="subtitle">www.changping.me</h2>
+      </div>
+      
+      <div class="logo">
+        <img src="/images/logo.png" alt="logo">
+      </div>
+      
+    </div>
+    <nav id="nav" class="nav">
+      <a id="nav-toggle" class="nav-toggle" aria-hidden="true"><i class="fas fa-bars" aria-label="切换导航栏"></i></a>
+      <ul id="menu" role="menubar" aria-hidden="false">
+        
+        <li role="menuitem"><a href="/">首页</a></li>
+        
+        <li role="menuitem"><a href="/archives">全部</a></li>
+        
+        <li role="menuitem"><a href="/categories">分类</a></li>
+        
+        <li role="menuitem"><a href="/tags">标签</a></li>
+        
+        <li role="menuitem"><a href="/about">关于</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+    <main id="main" class="main">
+      <div class="container">
+        <div class="main-container">
+          <div class="content">
+            
+<div id="post" class="page">
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-concepts-3/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+       <meta itemprop="name" content="常平">
+       <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+       <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+       <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">Pravega基本概念三 - ReaderGroup，Transactions，State Synchronizers</h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T13:21:24+08:00">2018-09-16 13:21:24</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      <h2 id="ReaderGroup以及Checkpoint"><a href="#ReaderGroup以及Checkpoint" class="headerlink" title="ReaderGroup以及Checkpoint"></a>ReaderGroup以及Checkpoint</h2><p>Pravega为应用提供了在ReaderGroup上初始化Checkpoint的功能。使用Checkpoint的意图是通过使用一种特殊事件（检查点事件）来确保每个Reader能保存原来的使用状态，ReaderGroup中的每个Reader都可以创建一个“时间点”，借助这个“时间点“可以为reader提供状态的持久化以及保证这个状态一致性的功能。检查点完成后，应用可以通过恢复checkpoint(检查点)将ReaderGroup中的所有Reader恢复成这个检查点所代表的一致状态。</p>
+<h2 id="Transactions（事务）"><a href="#Transactions（事务）" class="headerlink" title="Transactions（事务）"></a>Transactions（事务）</h2><p>Pravega支持事务。事务的想法是，Writer可以“批处理”一堆event并将它们作为一个处理单元提交到Stream中。这在某些场景是很有用的，例如，使用Pravega作为Flink作业的接收器。Flink作业可以不断产生一些数据的处理结果，并使用事务功能来持久化累积的处理结果。当在某个时间窗口（例如）的末尾时，Flink作业可以提交事务，因此使的处理结果可用于数据的下游处理，或者在出现错误的场景下，退出事务并且放弃整个处理结果。</p>
+<p>Pravega的事务和类似方法（例如Kafka的生产者方式批处理）之间的关键区别在于能否持久化。当事件回到Writer时，添加到事务的事件是持久的。但是，在Writer提交Transaction之前，Reader不会看到事务中的事件。事务很像流; 事务与多个流段相关联。将事件发布到事务中时，事件本身将附加到事务的流段。假设Stream有5个段，当在该流上创建事务时，那么表示该事务也有5个段。当事件发布到事务中时，它被路由到相同编号的段，就像它被发布到Stream本身一样（如果事件将被放置在“真实”流中的段3中，那么它将出现在事务的段3中）。提交事务时，每个事务的段将自动附加到实际流中的相应段。如果流被中止，则事务其所有段以及发布到事务中的所有事件都将被从Pravega中删除。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Ftrx.commit.new.png" alt="trx.commit.new"></p>
+<p>在提交事务之前，发布到事务中的事件永远不会被Reader看到。有关使用事务的更多详细信息，请参阅  使用Pravega：事务。</p>
+<a id="more"></a>  
+<h2 id="State-Synchronizers（状态同步器）"><a href="#State-Synchronizers（状态同步器）" class="headerlink" title="State Synchronizers（状态同步器）"></a>State Synchronizers（状态同步器）</h2><p>Pravega是一个流存储; 但是Pravega也提供了在分布式计算环境中作为协调器的功能（类似zookeeper,etcd）。Pravega的State Synchronizer功能属于后一种。</p>
+<p>状态同步器使用Pravega Stream为在集群中运行的多个进程之间共享的状态提供同步机制，从而使得更加的容易构建分布式应用。使用State Synchronizer，开发人员可以使用Pravega来读取状态，并且借助一致性和乐观锁功能对这些共享状态进行更改。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fstate.synchronizer.png" alt="state.synchronizer"></p>
+<p>状态同步器可用于维护和保存应用的配置副本，状态同步器还可用于存储一个数据或具有数千个不同键值对的映射数据。实际上，Pravega本身就在内部使用State Synchronizer来管理分布在整个网络中的ReaderGroups和Readers的状态。</p>
+<p>应用开发人员以类似于创建Writer的方式在Stream上创建State Synchronizer。状态同步器保留共享状态的本地副本，以便为应用提供快速访问数据的功能。对共享状态的任何修改都将通过StateSynchronizer写入Stream，以便跟踪对共享状态的所有更改。每个应用实例都使用状态同步器通过将更新提取到共享状态并修改数据的本地副本来保持最新的更改。通过状态同步器对共享状态的追加样式进行维护，保持一致性，确保仅对共享状态的最新版本进行更新。</p>
+<p>状态同步器还支持可以“压缩”，压缩和删除旧的状态更新，以便只有最新版本的状态保留在后备流中。此功能可帮助应用开发人员确保共享状态不会未经检查。</p>
+<p>在存储的总数据大小比较小时，状态同步器对共享状态的更新可以工作得最好，允许将这些数据写为小的增量。与任何乐观并发系统一样，当许多进程都试图同时更新同一条数据时，状态同步器并不是最佳状态。</p>
+<p>更多有关使用状态同步器的详细信息，请参阅  使用Pravega：状态同步器。</p>
+
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  
+  <nav class="page-nav">
+    <div class="page-nav-next page-nav-item">
+      
+      <a href="/2018/09/16/pravega-concepts-2/" rel="next" title="Pravega基本概念二 - Events, Segments, AutoScaling, Ordering"><i class="fas fa-angle-left"></i><span class="nav-title">Pravega基本概念二 - Events, Segments, AutoScaling, Ordering</span></a>
+      
+    </div>
+    <div class="page-nav-prev page-nav-item">
+      
+      <a href="/2018/09/16/pravega-concepts-4/" rel="prev" title="Pravega基本概念四 - 架构，小结"><span class="nav-title">Pravega基本概念四 - 架构，小结</span><i class="fas fa-angle-right"></i></a>
+      
+    </div>
+  </nav>
+  
+  
+</div>
+
+          </div>
+          
+          
+          
+<aside class="sidebar" id="sidebar" >
+  
+  
+<div class="info sidebar-item" id="info">
+  
+  <img class="author-avatar" src="/images/avatar.jpg" alt="常平">
+  
+  <h1 class="author-name">常平</h1>
+  <h2 class="author-description">“技术是有生命的,因为它可以进化”</h2>
+  <div class="site-count">
+    
+    <div class="archives-count">
+      <div class="site-count-title">全部</div>
+      <div><a href="/archives">26</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="categories-count">
+      <div class="site-count-title">分类</div>
+      <div><a href="/categories">4</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="tags-count">
+      <div class="site-count-title">标签</div>
+      <div><a href="/tags">4</a></div>
+    </div>
+    
+  </div>
+  
+</div>
+
+
+  <div class="sidebar-sticky">
+    
+    
+    
+    
+    
+    <hr>
+    <div class="post-toc sidebar-item" id="toc-div">
+      <div><i class="fas fa-list-ol"></i>文章目录</div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#ReaderGroup以及Checkpoint"><span class="toc-text">ReaderGroup以及Checkpoint</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#Transactions（事务）"><span class="toc-text">Transactions（事务）</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#State-Synchronizers（状态同步器）"><span class="toc-text">State Synchronizers（状态同步器）</span></a></li></ol></div>
+    </div>
+    
+    
+    
+    <hr>
+    <div class="social-link sidebar-item">
+      <div><i class="far fa-address-card"></i>链接</p></div>
+      <ul>
+        
+        <li><i class="fab fa-github"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a></li>
+        
+      </ul>
+    </div>
+    
+    
+  </div>
+</aside>
+
+
+          
+        </div>
+      </div>
+    </main>
+    
+<footer id="footer" class="footer" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="back-to-top">
+      <button id="back-to-top"><i class="fas fa-angle-double-up" aria-label="回到顶部"></i></button>
+    </div>
+    <div class="footer-container">
+      <div class="footer-left">
+        <div class="copyright">
+          <span class="author">常平</span><span class="year"><i class="far fa-copyright"></i>2017 - 2018</span>
+        </div>
+        
+        <div class="busuanzi">
+          <span id="busuanzi_container_site_pv"><i class="fas fa-eye" aria-label="站点点击量" aria-hidden="false"></i><span id="busuanzi_value_site_pv"></span></span><span id="busuanzi_container_site_uv"><i class="fas fa-user" aria-label="站点用户数" aria-hidden="false"></i><span id="busuanzi_value_site_uv"></span></span><span id="busuanzi_container_page_pv"><i class="far fa-file-alt"></i><span id="busuanzi_value_page_pv" aria-label="页面点击量" aria-hidden="false"></span></span>
+        </div>
+        
+      </div>
+      <div class="footer-right">
+        <div class="custom-info">
+          
+          PoweredBy<i class="fab fa-github-alt"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a>
+          
+        </div>
+        <div class="powered-by">
+          由 <a href="https://hexo.io/" target="_blank">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/AlynxZhou/hexo-theme-aria/" target="_blank">ARIA</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>

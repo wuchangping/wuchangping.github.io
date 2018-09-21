@@ -1,0 +1,18 @@
+.nav {
+  background: #1d2d2d;
+}
+.sidebar {
+  background: #ddd;
+}
+.post .post-footer .post-tags .post-tag {
+  background: #f54e4e;
+  border: 0.1em solid #f54e4e;
+}
+.nav ul li a.current {
+  color: #fff;
+  background: #262a30;
+}
+.main .main-container {
+  width: auto;
+  background: #eceff1;
+}

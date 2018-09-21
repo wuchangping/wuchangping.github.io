@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#1D2D2D">
+    <meta name="msapplication-TileColor" content="#1D2D2D">
+    
+    
+    
+    <meta name="keywords" content="flink, pravega, kubernetes, docker, streaming, storage">
+    
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicons/android-chrome-192x192.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+    
+    
+    <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#1D2D2D">
+    
+    
+    <link rel="manifest" href="/favicons/site.webmanifest">
+    
+    
+    <meta name="msapplication-config" content="/favicons/browserconfig.xml">
+    
+    
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/favicons/favicon.ico">
+    
+    
+    <link rel="stylesheet" type="text/css" href="/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="/css/index.css">
+    
+    <link rel="stylesheet" type="text/css" href="/css/sidebar.css">
+    
+    
+<link rel="stylesheet" type="text/css" href="/css/page.css">
+<link rel="stylesheet" type="text/css" href="/css/post.css">
+
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link rel="stylesheet" type="text/css" href="/css/atom-one-dark.css">
+    <link rel="stylesheet" type="text/css" href="/css/lightgallery.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script defer type="text/javascript" src="/js/util.js"></script>
+    <script defer type="text/javascript" src="/js/scrollspy.js"></script>
+    <script defer type="text/javascript" src="/js/fontawesome-all.min.js"></script>
+    <script defer type="text/javascript" src="/js/lightgallery.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-fullscreen.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-hash.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-pager.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-thumbnail.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-zoom.min.js"></script>
+    
+    <script defer src="/js/busuanzi.pure.mini.js"></script>
+    
+    
+    
+    <script defer type="text/javascript" src="/js/index.js"></script>
+    
+    <script defer type="text/javascript" src="/js/custom.js"></script>
+    <title>常平的技术网站 - 流处理,分布式系统,微服务</title>
+  </head>
+  <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
+    
+<header id="header" class="header" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="header-container">
+      <div class="header-title">
+        <h1 class="title"><a href="/">常平的技术网站</a></h1>
+        <h2 class="subtitle">www.changping.me</h2>
+      </div>
+      
+      <div class="logo">
+        <img src="/images/logo.png" alt="logo">
+      </div>
+      
+    </div>
+    <nav id="nav" class="nav">
+      <a id="nav-toggle" class="nav-toggle" aria-hidden="true"><i class="fas fa-bars" aria-label="切换导航栏"></i></a>
+      <ul id="menu" role="menubar" aria-hidden="false">
+        
+        <li role="menuitem"><a href="/" class="current">首页</a></li>
+        
+        <li role="menuitem"><a href="/archives">全部</a></li>
+        
+        <li role="menuitem"><a href="/categories">分类</a></li>
+        
+        <li role="menuitem"><a href="/tags">标签</a></li>
+        
+        <li role="menuitem"><a href="/about">关于</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+    <main id="main" class="main">
+      <div class="container">
+        <div class="main-container">
+          <div class="content">
+            
+
+<div id="index" class="index page">
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/21/streaming-put-several-event-types-kafka-topic/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/21/streaming-put-several-event-types-kafka-topic/" itemprop="url">应该在同一个Kafka主题中放入几种事件类型吗？</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-21T06:46:43+08:00">2018-09-21 06:46:43</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/streaming/" itemprop="url" rel="index"><span itemprop="name">streaming</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>如果您采用Apache Kafka等流平台，有个很重要的问题是：将使用哪些主题？特别是，如果要将一堆不同的事件作为消息发布到Kafka，是将它们放在同一主题中，还是将它们拆分为不同的主题？</p>
+<p>主题最重要的功能是允许使用者指定它想要使用的消息子集。在一个极端情况下，所有数据都放在一个主题中可不是一个好主意，因为这意味着消费者无法选择感兴趣的事件 - 给他们的只会是所有的内容。在另一个极端，拥有数百万个不同的主题也不是一个好事，因为Kafka中的每个主题都会消耗资源消耗，因此拥有大量的主题就会对性能不利。</p>
+<p>实际上，从性能的角度来看，重要的是分区数量。但由于Kafka中的每个主题至少有一个分区，如果你有n个主题，那么就不可避免地至少有n个分区。不久之前，<a href="Jun Rao wrote a blog post">Jun Rao撰写了一篇博文</a>，解释了拥有多个分区的成本（端到端延迟，文件描述符，内存开销，故障后的恢复时间）。根据经验，如果您关注延迟问题，您应该关注每个代理节点上的（数量级）数百个主题分区。如果每个节点有数万个甚至数千个分区，则延迟会受到影响。</p>
+<p>该性能参数给设计主题的结构提供了一些指导：如果您发现自己有数千个主题，那么将一些细粒度，低吞吐量的主题合并到粗粒度主题中是明智之举，从而减少分区的扩散。</p>
+<p>然而，性能问题并不是结束。在我看来，更重要的是您的主题结构的数据完整性和数据建模方面。我们将在本文的其余部分讨论这些内容。</p>
+<h2 id="主题-相同类型的事件的集合？"><a href="#主题-相同类型的事件的集合？" class="headerlink" title="主题=相同类型的事件的集合？"></a>主题=相同类型的事件的集合？</h2><p>常见的想法（根据我所拥有的几个对话，并根据邮件列表）似乎是：将同类型的所有事件放在同一主题中，并针对不同的事件类型使用不同的主题。这种思路让人联想到关系数据库，其中表是具有相同类型（即同一组列）的记录的集合，因此我们在关系表和Kafka主题之间进行类比。</p>
+<p>该<a href="https://www.confluent.io/confluent-schema-registry/" target="_blank" rel="noopener">融合模式的注册表</a>本质上强化了这种模式，因为它鼓励你在主题中的所有消息使用相同的Avro模式。该模式可以在保持兼容性的同时进化（例如，通过添加可选字段），但最终所有消息都必须符合某种记录类型。在我们介绍了更多背景之后，我们将在后面的帖子中再次讨论这个问题。</p>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/streaming/" rel="tag"><i class="fas fa-tags"></i>streaming</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/pravega-controller-service-3/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/20/pravega-controller-service-3/" itemprop="url">Pravega控制器服务之三</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T21:59:55+08:00">2018-09-20 21:59:55</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="角色和责任"><a href="#角色和责任" class="headerlink" title="角色和责任"></a>角色和责任</h2><h3 id="流操作"><a href="#流操作" class="headerlink" title="流操作"></a>流操作</h3><p>控制器是所有流相关元数据的真实存储。Pravega客户端（EventStreamReaders和EventStreamWriters）与控制器一起确保流不变量在流上工作时得到满足和尊重。控制器维护流的元数据，包括段的整个历史。访问流的客户端需要联系控制器以获取有关段的信息。<br>客户端查询控制器以了解如何导航流。为此，控制器公开适当的API以获取活动段，后继者，前驱者和段信息以及Uris。这些查询使用存储和通过流存储接口访问元数据来提供这些查询服务。<br>Controller还提供了修改流的状态和行为的工作流程。这些工作流程包括创建，缩放，截断，更新，密封和删除。这些工作流程既可以通过直接API调用，也可以通过后台策略管理器（自动调整和保留）调用。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2FRequestProcessing.png" alt="RequestProcessing"><br>请求处理流程</p>
+<h2 id="创建流"><a href="#创建流" class="headerlink" title="创建流"></a>创建流</h2><p>创建流是作为任务框架上的任务来实现的。创建流工作流首先创建流状态设置为CREATING * 的初始流元数据。在此之后，它标识应该拥有的段容器并为此流创建段并同时调用create-segment。完成所有创建段后，创建流任务完成，从而将流移动到ACTIVE状态。所有故障都会以指数退避重试几次。但是，如果它无法完成任何步骤，则流将保持在CREATING状态。</p>
+<h2 id="更新流"><a href="#更新流" class="headerlink" title="更新流"></a>更新流</h2><p>更新流被实现为序列化请求处理程序/并发事件处理器框架上的任务。更新流由显式API调用来调用到控制器中。它首先将更新请求事件发布到请求流中。之后，它尝试创建临时更新属性。如果它无法创建临时更新属性，则请求失败，并且会通知调用方由于与另一个正在进行的更新冲突而无法更新流。</p>
+<p>事件由请求事件处理器选择。处理开始时，更新流任务期望找到要存在的临时更新流属性。如果找不到该属性，则通过将事件推回到内存中队列中来延迟更新处理，直到它认为事件已过期为止。如果在此期间找到要更新的属性，则在到期之前，处理该事件并执行更新流操作。现在处理开始，它首先将状态设置为UPDATING。在此之后，在元数据存储中更新流配置，然后通知段存储关于流的所有活动段关于策略的改变。现在状态重置为ACTIVE。</p>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/pravega-controller-service-2/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/20/pravega-controller-service-2/" itemprop="url">Pravega控制器服务之二</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T21:39:45+08:00">2018-09-20 21:39:45</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="流元数据"><a href="#流元数据" class="headerlink" title="流元数据"></a>流元数据</h2><p>客户端需要有关哪些段构成流的信息以开始其处理，并且他们从控制器存储在流存储中的时期信息中获取它。读取器客户端通常从流的头部开始，但它也可以选择从任意有趣的位置开始访问流。另一方面，writer总是附加到流的尾部。<br>客户端需要能够有效地查询和查找在以下三种场景中的任何一个段。为了启用这些查询，流存储提供API调用来获取这些段的初始集合、在特定时间获取段以及获取段的当前集合。</p>
+<p>如前所述，流可以从一组段（epoch）转换到构成流的另一组段。如果至少一个段被密封，并且被一个或多个精确覆盖密封段的密钥空间的段替换，则流从一个时期移动到另一个时期。当客户在流上工作时，他们可能会遇到密封段的末端，因此需要找到新的段才能继续前进。为了使客户端能够查询下一个段，流存储库通过控制器服务公开有效查询，以查找任意段的直接后继和前驱。</p>
+<p>为了启用上述服务查询，我们需要有效地存储这些段转换的时间序列，并将它们与时间进行索引。我们在一组表中存储有关流段的当前和历史状态的信息，这些表被设计为旨在针对上述查询进行优化。除了特定于段的元数据记录之外，流的当前状态包括此后描述的其他元数据类型。</p>
+<h2 id="表"><a href="#表" class="headerlink" title="表"></a>表</h2><p>为了有效地存储和查询段信息，我们将段数据拆分为三个仅附加表，即段表，历史表和索引表。</p>
+<ul>
+<li><p>段表<br>segment-info：segmentid，time，keySpace-start，keySpace-end<br>控制器将段表存储在仅附加表中，第 i 行对应于段id i的元数据。值得注意的是，段表中的每一行都是固定大小的。当添加新的段时，它们将按严格增加的顺序分配新的段ID。因此，该表非常有效地创建新段并使用O（1）处理来查询段信息响应方面非常有效。</p>
+</li>
+<li><p>历史表<br>epoch：时间，历史中的片段列表<br>历史表在从一个时期过渡到另一个时期时存储一系列活动段。历史表中的每一行都存储一个epoch，该epoch捕获一组逻辑上一致的（如前面定义的）段，这些段组成流，并且在该epoch的生命周期内是有效的。此表旨在优化查询以查找在任意时间形成流的段集。有三种最常用的场景，我们希望有效地知道形成流的段集 - 初始的段集，当前的段和段的任意时间段。前两个查询在O（1）时间内非常有效地回答，因为它们对应于表中的第一行和最后一行。由于表中的行是按时间的增加顺序排序的，并且捕获了流段集变化的时间序列，因此我们可以很容易地执行二进制搜索来查找在任何任意时间对应于段集的行。</p>
+</li>
+</ul>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/pravega-controller-service-1/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/20/pravega-controller-service-1/" itemprop="url">Pravega控制器服务之一</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T21:29:36+08:00">2018-09-20 21:29:36</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>控制器服务是Pravega的核心组件，用于实现控制平面。它充当集群中执行的各种操作的中央协调器和管理器，主要分为两类：</p>
+<ol>
+<li>流管理</li>
+<li>集群管理</li>
+</ol>
+<p>控制器服务，此后简称为控制器，负责提供<a href="http://pravega.io/docs/latest/pravega-concepts/#streams" target="_blank" rel="noopener">流</a>的抽象，这是Pravega向应用程序公开的主要抽象。流包括一个或多个<a href="http://pravega.io/docs/latest/pravega-concepts/#stream-segments" target="_blank" rel="noopener">段</a>。每个段都是仅附加数据结构，用于存储字节序列。一个段本身与其他段的存在无关，并且不知道它与其对等段的逻辑关系。拥有和管理这些段的段存储没有任何流的概念。流是由Controller概念化的逻辑视图通过组合动态变化的一组段来满足一组预定义的逻辑不变量。控制器提供流抽象并协调流上的所有生命周期操作，同时确保抽象保持一致。</p>
+<p>控制器在流的生命周期中起着核心作用：创建，修改，<a href="http://pravega.io/docs/latest/pravega-concepts/#autoscalingthenumber-of-stream-segments-can-vary-over-time" target="_blank" rel="noopener">缩放</a>和删除。它通过维护每个流的元数据并在必要时对段执行必要的操作来完成这些操作。例如，作为流生命周期的一部分，可以创建新的段并密封现有的段。控制器决定何时执行这些操作，使得流继续可用并且对访问它们的客户端是一致的。</p>
+<h2 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h2><p>控制器服务由一个或多个无状态工作节点实例组成。每个新的控制器实例都可以独立启动，并成为pravega集群的一部分，它只需要指向相同的Apache Zookeeper。对于高可用性，建议是每个群集具有不止一个控制器服务实例。</p>
+<p>每个控制器实例都能够独立工作，并使用一个共享的持久存储作为控制器服务所拥有和管理的所属状态的真实来源。目前使用Apache ZooKeeper作为持久存储来保存所有的元数据。每个实例包括各种子系统，其负责对不同类别的元数据执行特定操作。这些子系统包括不同的API端点，元数据存储句柄，策略管理器和后台工作程序。</p>
+<p>控制器暴露两个端点，这些端点可用于与控制器服务交互。第一个端口用于为pravega客户端提供编程访问，并使用gRPC实现为RPC。另一个端点用于管理操作，并作为REST端点实现。</p>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/flink-deployment-kubernetes/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/20/flink-deployment-kubernetes/" itemprop="url">flink 集群与部署之kubernetes篇</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T06:46:49+08:00">2018-09-20 06:46:49</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>本页介绍如何在Kubernetes上部署Flink作业和会话群集。</p>
+<h2 id="设置Kubernetes"><a href="#设置Kubernetes" class="headerlink" title="设置Kubernetes"></a>设置Kubernetes</h2><p>请参照<a href="https://kubernetes.io/docs/setup/" target="_blank" rel="noopener">Kubernetes的设置指南</a>来部署Kubernetes集群。如果您想在本地运行Kubernetes，我们建议使用<a href="https://kubernetes.io/docs/setup/minikube/" target="_blank" rel="noopener">MiniKube</a>来部署集群。</p>
+<blockquote>
+<p>注意：如果使用MiniKube，请确保<code>minikube ssh &#39;sudo ip link set docker0 promisc on&#39;</code>在部署Flink群集之前执行。否则，Flink组件无法通过Kubernetes服务自行引用。</p>
+</blockquote>
+<h2 id="Kubernetes上的Flink会话群集"><a href="#Kubernetes上的Flink会话群集" class="headerlink" title="Kubernetes上的Flink会话群集"></a>Kubernetes上的Flink会话群集</h2><p>Flink会话群集作为长期运行的Kubernetes部署来执行，请注意，可以在会话群集上运行多个Flink作业。在部署了集群之后，每个作业都需要提交到群集。</p>
+<p>一个基本的部署在Kubernetes上的Flink会话群集一般会有三个组件：</p>
+<ul>
+<li>一个运行JobManager的deployment或job</li>
+<li>一个TaskManagers池 deployment</li>
+<li>一个公开JobManager的REST和UI端口的service</li>
+</ul>
+<h2 id="在Kubernetes上部署Flink会话群集"><a href="#在Kubernetes上部署Flink会话群集" class="headerlink" title="在Kubernetes上部署Flink会话群集"></a>在Kubernetes上部署Flink会话群集</h2><p>使用会话群集的资源定义，采用kubectl命令启动群集：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">kubectl create -f jobmanager-service.yaml<br>kubectl create -f jobmanager-deployment.yaml<br>kubectl create -f taskmanager-deployment.yaml<br></code></pre></td></tr></table></figure>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/flink-deployment-docker/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/20/flink-deployment-docker/" itemprop="url">flink 集群与部署之docker篇</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T06:46:03+08:00">2018-09-20 06:46:03</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="作者标注"><a href="#作者标注" class="headerlink" title="作者标注"></a>作者标注</h2><p>经过验证， 到当前版本为止 flink-1.7 snapshot，构建 flink docker镜像需要采用这个flink docker 构建工具 <code>https://github.com/docker-flink/docker-flink</code>，按照<a href="https://github.com/apache/flink/tree/master/flink-container" target="_blank" rel="noopener">flink官方代码库</a>里的构建出来的flink镜像有些功能不能用，比如 flink-standalone模式，report metrics等。</p>
+<h2 id="Docker设置"><a href="#Docker设置" class="headerlink" title="Docker设置"></a>Docker设置</h2><p>Docker Hub上有关于Apache Flink的Docker镜像，可用于部署flink群集。Flink镜像库还包含用于创建容器映像以部署flink工作集群的一些工具以及说明。</p>
+<h2 id="Flink-session群集"><a href="#Flink-session群集" class="headerlink" title="Flink session群集"></a>Flink session群集</h2><p>Flink会话群集可用于运行多个业务。在部署后，每个业务都需要提交到集群才能跑起来。</p>
+<h2 id="Docker镜像"><a href="#Docker镜像" class="headerlink" title="Docker镜像"></a>Docker镜像</h2><p>该<a href="https://hub.docker.com/_/flink/" target="_blank" rel="noopener">Flink镜像库</a>托管在docker hub，提供了flink1.2.1以及之后的版本镜像。</p>
+<p>注意： Docker镜像是由个人提供的社区项目，它们并不是Apache Flink PMC的官方版本（作者标注：所以需要用这个个人的<a href="https://github.com/docker-flink/docker-flink" target="_blank" rel="noopener">构建工具</a>，而不是官方代码库里的构建工具）。</p>
+<h2 id="Flink作业集群"><a href="#Flink作业集群" class="headerlink" title="Flink作业集群"></a>Flink作业集群</h2><p>Flink作业集群是运行单个作业的专用集群，这是镜像内容的一部分，因此，不需要额外的工作。</p>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/19/pravega-segment-containers/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/19/pravega-segment-containers/" itemprop="url">pravega段容器</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-19T20:59:45+08:00">2018-09-19 20:59:45</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="Pravega集群中的段容器"><a href="#Pravega集群中的段容器" class="headerlink" title="Pravega集群中的段容器"></a>Pravega集群中的段容器</h2><p>本文档描述了我们如何管理Pravega集群中Segment Containers生命周期的高级设计。</p>
+<h2 id="平衡段容器"><a href="#平衡段容器" class="headerlink" title="平衡段容器"></a>平衡段容器</h2><h2 id="段容器"><a href="#段容器" class="headerlink" title="段容器"></a>段容器</h2><p>在本文档中，我们将段容器称为容器。对于给定的部署，容器的总数是固定的。每个容器只能由一个Pravega主机拥有，并且群集中的所有容器都应该在任何时刻都是运行着的。</p>
+<h2 id="Pravega主机"><a href="#Pravega主机" class="headerlink" title="Pravega主机"></a>Pravega主机</h2><p>pravega主机是pravega服务的一个实例，它拥有并执行一组容器。</p>
+<h2 id="检测活动的Pravega主机"><a href="#检测活动的Pravega主机" class="headerlink" title="检测活动的Pravega主机"></a>检测活动的Pravega主机</h2><p>启动时每个pravega主机都会使用临时节点向Zookeeper注册。只要zookeeper从Pravega主机接收到适当的心跳，临时的节点就会出现在zookeeper中。我们依靠这些临时的节点来检测哪些pravega主机当前在群集中是活动的。</p>
+<h2 id="监控Pravega集群"><a href="#监控Pravega集群" class="headerlink" title="监控Pravega集群"></a>监控Pravega集群</h2><p>每个Pravega Controller都运行一项服务，监控zookeeper上的临时节点并检测集群中所有活动的pravega主机。在检测到对集群成员资格的任何更改时，我们会验证所有容器并将其重新映射到可用的pravega主机集。此信息以原子方式保存在HostStore中。它存储为单个blob，并包含主机拥有的主机到容器集的映射。</p>
+<p>我们使用zookeeper来确保只有一个pravega控制器监视集群，以避免多个同时写入HostStore的写入器。这将避免竞争条件，并允许状态更快地收敛。</p>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/19/pravega-wire-protocol/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/19/pravega-wire-protocol/" itemprop="url">pravega wire protocol</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-19T20:30:30+08:00">2018-09-19 20:30:30</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="流服务线协议"><a href="#流服务线协议" class="headerlink" title="流服务线协议"></a>流服务线协议</h2><p>本页描述了为流服务提出的有线协议。有关服务的描述，请参阅父页面。</p>
+<h2 id="协议"><a href="#协议" class="headerlink" title="协议"></a>协议</h2><p>数据通过线路以独立的“消息”发送，这些消息是“请求”（从客户端到服务器的消息）或“回复”（响应请求并返回到客户端）。</p>
+<p>所有请求和回复都有一个带有两个字段的8字节头，（所有数据都以BigEndian格式写入）：1。消息类型 -​​ 一个整数（4个字节）标识消息类型，这决定了后面的字段。（注意，协议可以通过添加新类型来扩展）2。长度 - 无符号整数4个字节（消息应该&lt;2 ^ 24，但高位保持为零）。此点前面的数据字节数是此消息的一部分。（可能为零，表示没有数据）</p>
+<p>字段的其余部分是特定于消息类型。下面列出了一些重要信息。</p>
+<h1 id="一般信息"><a href="#一般信息" class="headerlink" title="一般信息"></a>一般信息</h1><h2 id="部分消息-请求-应答"><a href="#部分消息-请求-应答" class="headerlink" title="部分消息 - 请求/应答"></a>部分消息 - 请求/应答</h2><ol>
+<li>开始/中间/结尾 - 枚举（1个字节）</li>
+<li>数据部分消息是通过线路发送时被分解的消息。（出于任何原因）。通过按依次读取部分消息并将它们组合成一个整体来重建整个消息。在完成上一个部分消息之前尝试启动新的部分消息是无效的。</li>
+</ol>
+<h2 id="KeepAlive-请求-回复"><a href="#KeepAlive-请求-回复" class="headerlink" title="KeepAlive - 请求/回复"></a>KeepAlive - 请求/回复</h2><ol>
+<li>数据 - 消息长度的未解释数据。（通常为0字节）</li>
+</ol>
+<h1 id="读取"><a href="#读取" class="headerlink" title="读取"></a>读取</h1><h2 id="读段-请求"><a href="#读段-请求" class="headerlink" title="读段 - 请求"></a>读段 - 请求</h2><ol>
+<li>要读取的段 - 字符串（2字节长度，后跟Java的修改后的UTF-8的多个字节）</li>
+<li>读取偏移量 - 长（8个字节）</li>
+<li>建议的回复长度 - int（4字节）<ul>
+<li>这是客户端想要的数据量。他们不一定会获得那么多。</li>
+</ul>
+</li>
+</ol>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/18/pravega-segment-store-service-3/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/18/pravega-segment-store-service-3/" itemprop="url">pravega数据面段存储服务之三</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-18T21:42:38+08:00">2018-09-18 21:42:38</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="与Controller集成"><a href="#与Controller集成" class="headerlink" title="与Controller集成"></a>与Controller集成</h2><p>关于如何将段容器映射到主机以及使用什么规则从一个迁移到另一个的实际方法超出了本文的范围。这里，我们只描述段存储服务如何与控制器交互，以及它如何基于外部事件管理段容器的生命周期。</p>
+<h2 id="段容器管理"><a href="#段容器管理" class="headerlink" title="段容器管理"></a>段容器管理</h2><p>Segment Store Service的每个实例都需要Segment Container Manager。此组件的作用是管理分配给该节点（服务）的Segment Containers的生命周期。它履行以下职责：</p>
+<ul>
+<li>连接到Controller服务端客户端（即，仅处理Segment Container事件的客户端，而不是Streams的管理，并侦听与其自身实例相关的所有与Container相关的更改。</li>
+<li>当它收到需要为特定Container Id启动Segment Container的通知时，它会启动引导此类对象的过程。在操作完成且没有错误之前，它不会通知请求客户端成功。</li>
+<li>当它收到需要停止特定Container Id的Segment Container的通知时，它会启动关闭它的过程。在操作完成且没有错误之前，它不会通知请求客户端成功。</li>
+<li>如果Segment Container意外关闭（无论是在Start期间还是在正常操作期间），它将不会尝试在本地重新启动它; 相反，它会通知控制器这个事实。</li>
+</ul>
+<h2 id="存储抽象"><a href="#存储抽象" class="headerlink" title="存储抽象"></a>存储抽象</h2><p>段存储不是专门针对TIER-1或TiR-2的实现而设计的。相反，所有这些组件都已经抽象出来并定义得很好，可以针对任何标准文件系统（Tier-2）或仅追加日志系统（Tier-1）实现。</p>
+<p>第1层存储的可能候选者：</p>
+<ul>
+<li>Apache BookKeeper（首选，适配器完全实现为Pravega的一部分）</li>
+<li>非持久性，非复制性解决方案：</li>
+<li>内存中（只部署单个节点——Pravega成为二级存储的易失性缓冲区；在进程崩溃或系统重新启动的情况下，数据丢失是不可避免的和不可恢复的）。<ul>
+<li>这仅用于单元测试。</li>
+</ul>
+</li>
+<li>本地文件系统（仅单节点部署——Pravega成为二级存储的半持久缓冲区；在完全节点失败的情况下，数据丢失是不可避免的和不可恢复的）</li>
+</ul>
+<p>二级存储的可能候选者：</p>
+<ul>
+<li>HDFS（可实施）</li>
+<li>扩展S3（可实现）</li>
+<li>NFS（通用FileSystem）（可用实现）</li>
+<li>内存中（单节点部署——有限的用途；在进程崩溃或系统重新启动的情况下，数据丢失是不可避免的和不可恢复的）<ul>
+<li>这仅用于单元测试。</li>
+</ul>
+</li>
+</ul>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/18/pravega-segment-store-service-2/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/18/pravega-segment-store-service-2/" itemprop="url">pravega数据面段存储服务之二</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-18T21:42:28+08:00">2018-09-18 21:42:28</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="日志操作"><a href="#日志操作" class="headerlink" title="日志操作"></a>日志操作</h2><p>一个日志操作是在可持久化的日志里序列化的基本单元。它本身并不代表一个动作，而是几个可序列化操作的基础（我们可以序列化多种类型的操作，而不仅仅是Appends）。每个操作都是外部操作（表示更改段）或内部触发（如元数据维护操作）的结果。<br>每个日志操作都具有以下元素： <code>- SequenceNumber</code>：分配给此条目的唯一序列号（请参阅容器元数据下的更多信息）。</p>
+<p>这些是各种类型的日志操作：</p>
+<ul>
+<li>存储操作表示需要应用于底下第2层存储的操作：</li>
+<li>StreamSegmentAppendOperation：表示对特定段的附加。</li>
+<li>CachedStreamSegmentAppendOperation：与StreamSegmentAppendOperation相同，但这是供内部使用的（它不是具有实际的数据有效负载，而是指向缓存中可以从中检索数据的位置）。</li>
+<li>StreamSegmentSealOperation：处理后，它会在内存中的元数据中设置一个标记，以便不再接收附加内容。当Storage Writer处理它时，它会在第2层存储中将Segment标记为只读。</li>
+<li>StreamSegmentTruncateOperation：截断特定偏移处的段。这会导致segment的StartOffset发生变化。</li>
+<li>MergeTransactionOperation：表示要将事务合并到其父段中。</li>
+<li>元数据操作是指示容器元数据更改的辅助操作。它们可能是外部操作的结果（我们之前收到了一个我们从未知道的段的请求，因此我们必须为其分配一个唯一的ID）或者对整个元数据进行快照（这有助于恢复和清理第1层）存储）。元数据操作的目的是减少故障转移恢复所需的时间（如果需要）：</li>
+<li>StreamSegmentMapOperation：将Id映射到段名称。</li>
+<li>TransactionMapOperation：将Id映射到事务及其父段。</li>
+<li>UpdateAttributesOperation：更新segment上的任何属性。</li>
+<li>MetadataCheckpoint包括元数据的整个快照。这在恢复期间非常有用 - 它包含到目前为止的所有元数据，这是之后所有操作的基础。</li>
+</ul>
+<h2 id="可持久化日志"><a href="#可持久化日志" class="headerlink" title="可持久化日志"></a>可持久化日志</h2><p>该可持久化日志是处理所有操作日志的核心组成部分。所有操作（由Container创建）都会添加到持久日志中，该日志按照接收顺序处理它们。它由一些其他组件组成，在不影响数据完整性的情况下，所有这些组件的唯一目标都是致力于尽快处理所有输入操作。</p>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
+  </nav>
+  
+  
+</div>
+
+          </div>
+          
+          
+          
+<aside class="sidebar" id="sidebar" >
+  
+  
+<div class="info sidebar-item" id="info">
+  
+  <img class="author-avatar" src="/images/avatar.jpg" alt="常平">
+  
+  <h1 class="author-name">常平</h1>
+  <h2 class="author-description">“技术是有生命的,因为它可以进化”</h2>
+  <div class="site-count">
+    
+    <div class="archives-count">
+      <div class="site-count-title">全部</div>
+      <div><a href="/archives">26</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="categories-count">
+      <div class="site-count-title">分类</div>
+      <div><a href="/categories">4</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="tags-count">
+      <div class="site-count-title">标签</div>
+      <div><a href="/tags">4</a></div>
+    </div>
+    
+  </div>
+  
+</div>
+
+
+  <div class="sidebar-sticky">
+    
+    
+    <hr>
+    <div class="social-link sidebar-item">
+      <div><i class="far fa-address-card"></i>链接</p></div>
+      <ul>
+        
+        <li><i class="fab fa-github"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a></li>
+        
+      </ul>
+    </div>
+    
+    
+  </div>
+</aside>
+
+
+          
+        </div>
+      </div>
+    </main>
+    
+<footer id="footer" class="footer" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="back-to-top">
+      <button id="back-to-top"><i class="fas fa-angle-double-up" aria-label="回到顶部"></i></button>
+    </div>
+    <div class="footer-container">
+      <div class="footer-left">
+        <div class="copyright">
+          <span class="author">常平</span><span class="year"><i class="far fa-copyright"></i>2017 - 2018</span>
+        </div>
+        
+        <div class="busuanzi">
+          <span id="busuanzi_container_site_pv"><i class="fas fa-eye" aria-label="站点点击量" aria-hidden="false"></i><span id="busuanzi_value_site_pv"></span></span><span id="busuanzi_container_site_uv"><i class="fas fa-user" aria-label="站点用户数" aria-hidden="false"></i><span id="busuanzi_value_site_uv"></span></span><span id="busuanzi_container_page_pv"><i class="far fa-file-alt"></i><span id="busuanzi_value_page_pv" aria-label="页面点击量" aria-hidden="false"></span></span>
+        </div>
+        
+      </div>
+      <div class="footer-right">
+        <div class="custom-info">
+          
+          PoweredBy<i class="fab fa-github-alt"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a>
+          
+        </div>
+        <div class="powered-by">
+          由 <a href="https://hexo.io/" target="_blank">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/AlynxZhou/hexo-theme-aria/" target="_blank">ARIA</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>

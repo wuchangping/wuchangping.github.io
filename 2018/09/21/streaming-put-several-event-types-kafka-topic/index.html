@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#1D2D2D">
+    <meta name="msapplication-TileColor" content="#1D2D2D">
+    
+    
+    
+    <meta name="keywords" content="flink, pravega, kubernetes, docker, streaming, storage">
+    
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicons/android-chrome-192x192.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+    
+    
+    <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#1D2D2D">
+    
+    
+    <link rel="manifest" href="/favicons/site.webmanifest">
+    
+    
+    <meta name="msapplication-config" content="/favicons/browserconfig.xml">
+    
+    
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/favicons/favicon.ico">
+    
+    
+    <link rel="stylesheet" type="text/css" href="/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="/css/index.css">
+    
+    <link rel="stylesheet" type="text/css" href="/css/sidebar.css">
+    
+    
+<link rel="stylesheet" type="text/css" href="/css/page.css">
+<link rel="stylesheet" type="text/css" href="/css/post.css">
+
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link rel="stylesheet" type="text/css" href="/css/atom-one-dark.css">
+    <link rel="stylesheet" type="text/css" href="/css/lightgallery.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script defer type="text/javascript" src="/js/util.js"></script>
+    <script defer type="text/javascript" src="/js/scrollspy.js"></script>
+    <script defer type="text/javascript" src="/js/fontawesome-all.min.js"></script>
+    <script defer type="text/javascript" src="/js/lightgallery.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-fullscreen.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-hash.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-pager.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-thumbnail.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-zoom.min.js"></script>
+    
+    <script defer src="/js/busuanzi.pure.mini.js"></script>
+    
+    
+    
+    <script defer type="text/javascript" src="/js/index.js"></script>
+    
+    <script defer type="text/javascript" src="/js/custom.js"></script>
+    <title>应该在同一个Kafka主题中放入几种事件类型吗？ | 常平的技术网站 - 流处理,分布式系统,微服务</title>
+  </head>
+  <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
+    
+<header id="header" class="header" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="header-container">
+      <div class="header-title">
+        <h1 class="title"><a href="/">常平的技术网站</a></h1>
+        <h2 class="subtitle">www.changping.me</h2>
+      </div>
+      
+      <div class="logo">
+        <img src="/images/logo.png" alt="logo">
+      </div>
+      
+    </div>
+    <nav id="nav" class="nav">
+      <a id="nav-toggle" class="nav-toggle" aria-hidden="true"><i class="fas fa-bars" aria-label="切换导航栏"></i></a>
+      <ul id="menu" role="menubar" aria-hidden="false">
+        
+        <li role="menuitem"><a href="/">首页</a></li>
+        
+        <li role="menuitem"><a href="/archives">全部</a></li>
+        
+        <li role="menuitem"><a href="/categories">分类</a></li>
+        
+        <li role="menuitem"><a href="/tags">标签</a></li>
+        
+        <li role="menuitem"><a href="/about">关于</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+    <main id="main" class="main">
+      <div class="container">
+        <div class="main-container">
+          <div class="content">
+            
+<div id="post" class="page">
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/21/streaming-put-several-event-types-kafka-topic/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+       <meta itemprop="name" content="常平">
+       <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+       <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+       <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">应该在同一个Kafka主题中放入几种事件类型吗？</h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-21T06:46:43+08:00">2018-09-21 06:46:43</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/streaming/" itemprop="url" rel="index"><span itemprop="name">streaming</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      <p>如果您采用Apache Kafka等流平台，有个很重要的问题是：将使用哪些主题？特别是，如果要将一堆不同的事件作为消息发布到Kafka，是将它们放在同一主题中，还是将它们拆分为不同的主题？</p>
+<p>主题最重要的功能是允许使用者指定它想要使用的消息子集。在一个极端情况下，所有数据都放在一个主题中可不是一个好主意，因为这意味着消费者无法选择感兴趣的事件 - 给他们的只会是所有的内容。在另一个极端，拥有数百万个不同的主题也不是一个好事，因为Kafka中的每个主题都会消耗资源消耗，因此拥有大量的主题就会对性能不利。</p>
+<p>实际上，从性能的角度来看，重要的是分区数量。但由于Kafka中的每个主题至少有一个分区，如果你有n个主题，那么就不可避免地至少有n个分区。不久之前，<a href="Jun Rao wrote a blog post">Jun Rao撰写了一篇博文</a>，解释了拥有多个分区的成本（端到端延迟，文件描述符，内存开销，故障后的恢复时间）。根据经验，如果您关注延迟问题，您应该关注每个代理节点上的（数量级）数百个主题分区。如果每个节点有数万个甚至数千个分区，则延迟会受到影响。</p>
+<p>该性能参数给设计主题的结构提供了一些指导：如果您发现自己有数千个主题，那么将一些细粒度，低吞吐量的主题合并到粗粒度主题中是明智之举，从而减少分区的扩散。</p>
+<p>然而，性能问题并不是结束。在我看来，更重要的是您的主题结构的数据完整性和数据建模方面。我们将在本文的其余部分讨论这些内容。</p>
+<h2 id="主题-相同类型的事件的集合？"><a href="#主题-相同类型的事件的集合？" class="headerlink" title="主题=相同类型的事件的集合？"></a>主题=相同类型的事件的集合？</h2><p>常见的想法（根据我所拥有的几个对话，并根据邮件列表）似乎是：将同类型的所有事件放在同一主题中，并针对不同的事件类型使用不同的主题。这种思路让人联想到关系数据库，其中表是具有相同类型（即同一组列）的记录的集合，因此我们在关系表和Kafka主题之间进行类比。</p>
+<p>该<a href="https://www.confluent.io/confluent-schema-registry/" target="_blank" rel="noopener">融合模式的注册表</a>本质上强化了这种模式，因为它鼓励你在主题中的所有消息使用相同的Avro模式。该模式可以在保持兼容性的同时进化（例如，通过添加可选字段），但最终所有消息都必须符合某种记录类型。在我们介绍了更多背景之后，我们将在后面的帖子中再次讨论这个问题。</p>
+<a id="more"></a>
+<p>对于某些类型的流数据（例如记录的活动事件），要求同一主题中的所有消息都符合相同的模式是有意义的。但是，有些人正在使用Kafka来实现更多类似数据库的目的，例如事件溯源，或者在微服务之间交换数据。在这种情况下，我相信，它定义一个主题为一组具有相同模式的消息并不重要。更重要的是Kafka维护主题分区内的消息排序。</p>
+<p>想象一下，您有一些事物（比如客户），并且该事物可能发生许多不同的事情：创建客户，客户更改地址，客户向其帐户添加新信用卡，客户进行客户支持查询，客户支付发票，客户关闭其帐户。</p>
+<p>这些事件的顺序很重要。例如，我们期望在客户做任何动作之前创建客户，并且我们也期望在客户关闭其帐户之后不再发生任何其他事情。使用Kafka时，您可以通过将它们全部放在同一个分区中来保留这些事件的顺序。在此示例中，您将使用客户ID作为分区键，然后将所有这些不同的事件放在同一主题中。它们必须位于同一主题中，因为不同的主题意味着不同的分区，并且不会跨分区保留排序。</p>
+<h2 id="排序问题"><a href="#排序问题" class="headerlink" title="排序问题"></a>排序问题</h2><p>如果你没有使用（比方说）不同的主题<code>customerCreated</code>，<code>customerAddressChanged</code>和<code>customerInvoicePaid</code>事件，然后这些议题的消费者可能会看到荒谬的事件顺序。例如，消费者可能会看到不存在的客户的地址更改（因为尚未创建，因为相应的<code>customerCreate</code>事件已被延迟）。</p>
+<p>如果消费者暂停一段时间（可能是维护或部署新版本），则重新排序的风险尤其高。当消费者停止时，事件将继续发布，并且这些事件将存储在Kafka代理的选定主题分区中。当消费者再次启动时，它会消耗来自其所有输入分区的积压事件。如果消费者只有一个输入，那就没问题了：挂起的事件只是按照它们存储的顺序依次处理。但是，如果消费者有几个输入主题，它将选择输入主题以按任意顺序读取。它可以在读取另一个输入主题上的积压之前从一个输入主题读取所有挂起事件，或者它可以以某种方式交错输入。</p>
+<p>因此，如果你把<code>customerCreated</code>，<code>customerAddressChanged</code>以及<code>customerInvoicePaid</code>事件在三个独立的主题，消费者可能会看到所有的<code>customerAddressChanged</code>事件，它看到任何之前<code>customerCreated</code>的事件。因此，消费者可能会看到一个<code>customerAddressChanged</code>客户的事件，根据其对世界的看法，尚未创建。</p>
+<p>您可能想要为每条消息附加时间戳，并将其用于事件排序。如果要将事件导入数据仓库，您可以在事后对事件进行排序，这可能就可以了。但是在流进程中，时间戳是不够的：如果你得到一个具有特定时间戳的事件，你不知道你是否仍然需要等待一个时间戳较低的先前事件，或者所有之前的事件是否已到达而你是’准备好处理这个事件。依靠时钟同步通常会导致噩梦;</p>
+<h2 id="何时分割主题，何时结合？"><a href="#何时分割主题，何时结合？" class="headerlink" title="何时分割主题，何时结合？"></a>何时分割主题，何时结合？</h2><p>鉴于这种背景，我将提出一些经验法则来帮助您确定在同一主题中放入哪些内容，以及将哪些内容拆分为单独的主题：</p>
+<ol>
+<li><p>最重要的规则是，  任何需要保持固定顺序的事件必须放在同一主题中（并且它们也必须使用相同的分区键）。最常见的是，如果事件的顺序与同一事物有关，则事件的顺序很重要。因此，根据经验，我们可以说关于同一事物的所有事件都需要在同一主题中。如果您使用事件排序方法进行数据建模，事件的排序尤为重要。这里，聚合对象的状态是通过以特定顺序重放它们来从事件日志中导出的。因此，即使可能存在许多不同的事件类型，定义聚合的所有事件也必须在同一主题中。</p>
+</li>
+<li><p>当您有关于不同事物的事件时，它们应该是相同的主题还是不同的主题？我想说，如果一个事物依赖于另一个事物（例如，一个地址属于一个客户），或者如果它们经常需要在一起，那么它们也可能会出现在同一个主题中。另一方面，如果它们不相关并由不同的团队管理，则最好将它们放在单独的主题中。它还取决于事件的吞吐量：如果一个事物类型具有比另一个事物类型高得多的事件，它们是更好地分成单独的主题，以避免压倒性的消费者只想要具有低写入吞吐量的事物（参见第4点）。但是，几个都具有低事件率的事物可以很容易地合并。</p>
+</li>
+<li><p>如果一个事件涉及多个事物怎么办？例如，购买涉及产品和客户，并且从一个帐户到另一个帐户的转移涉及至少那两个帐户。我建议最初将事件记录为单个原子消息，而不是将其分成几个消息。主题，最好以完全按照您收到的方式记录事件，并尽可能采用原始形式。您可以随后使用流处理器拆分复合事件 - 但如果您过早地将其拆分，则重建原始事件要困难得多。更好的是，您可以为初始事件提供唯一ID（例如UUID）; 以后，当您将原始事件拆分为每个涉及的事物的一个事件时，您可以将该ID转发，从而使每个事件的起源都可追溯。</p>
+</li>
+<li><p>查看消费者需要订阅的主题数量。如果几个消费者都阅读了一组特定的主题，这表明可能应该将这些主题组合在一起。如果将细粒度的主题组合成粗粒度的主题，一些消费者可能会收到他们需要忽略的不需要的事件。这不是什么大问题：消费来自Kafka的消息非常便宜，所以即使消费者最终忽略了一半的事件，这种过度消费的成本可能也不大。只有当消费者需要忽略绝大多数消息（例如99.9％是不需要的）时，我才建议从高容量流中分割低容量事件流。</p>
+</li>
+<li><p>Kafka Streams状态存储（KTable）的更改日志主题应与所有其他主题分开。在这种情况下，主题由Kafka Streams流程管理，不应与其他任何内容共享。</p>
+</li>
+<li><p>最后，如果上述规则都没有告诉您是否将某些事件放在同一主题或不同主题中，该怎么办？然后，通过将相同类型的事件放在同一主题中，通过所有方法将它们按事件类型分组。但是，我认为这条规则是最不重要的。</p>
+</li>
+</ol>
+<h2 id="模式管理"><a href="#模式管理" class="headerlink" title="模式管理"></a>模式管理</h2><p>如果您使用的是数据编码（如JSON），而没有静态定义的模式，则可以轻松地将许多不同的事件类型放在同一主题中。但是，如果您使用的是基于模式的编码（如Avro），则需要更多地考虑在单个主题中处理多个事件类型。</p>
+<p>如上所述，基于Avro的<code>Kafka Confluent Schema Registry</code>目前依赖于每个主题都有一个模式的假设（或者更确切地说，一个模式用于密钥，一个模式用于消息的值）。您可以注册新版本的模式，注册表会检查模式更改是向前还是向后兼容。这个设计的一个好处是，您可以让不同的生产者和消费者同时使用不同的模式版本，并且它们仍然保持彼此兼容。</p>
+<p>更确切地说，当Confluent的Avro序列化程序在注册表中注册模式时，它会在主题名称下注册。默认情况下，该主题<code>&lt;topic&gt;-key</code>用于消息键和<code>&lt;topic&gt;-value</code>消息值。然后，模式注册表检查在特定主题下注册的所有模式的相互兼容性。</p>
+<p>我最近对<a href="https://github.com/confluentinc/schema-registry/pull/680" target="_blank" rel="noopener">Avro序列化程序进行了修补</a>，使兼容性检查更加灵活。该补丁添加了两个新的配置选项:(<code>key.subject.name.strategy</code>定义如何构造消息键的主题名称），以及<code>value.subject.name.strategy</code>（如何构造消息值的主题名称）。选项可以采用以下值之一：</p>
+<ul>
+<li><p><code>io.confluent.kafka.serializers.subject.TopicNameStrategy</code>（默认值）：消息键的主题名称是<code>&lt;topic&gt;-key</code>，<code>&lt;topic&gt;-value</code>对于消息值。这意味着主题中所有消息的模式必须相互兼容。</p>
+</li>
+<li><p><code>io.confluent.kafka.serializers.subject.RecordNameStrategy</code>：主题名称是邮件的Avro记录类型的完全限定名称。因此，模式注册表会检查特定记录类型的兼容性，而不考虑主题。此设置允许同一主题中的任意数量的不同事件类型。</p>
+</li>
+<li><p><code>io.confluent.kafka.serializers.subject.TopicRecordNameStrategy</code>：主题名称是<code>&lt;topic&gt;-&lt;type&gt;</code>，<code>&lt;topic&gt;Kafka</code>主题名称在哪里，并且<type>是邮件的Avro记录类型的完全限定名称。此设置还允许同一主题中的任意数量的事件类型，并进一步将兼容性检查限制为仅当前主题。</type></p>
+</li>
+</ul>
+<p>使用此新功能，可以轻松，干净地将特定事物的所有不同事件放在同一主题中。现在，可以根据上述条件自由选择主题的粒度，而不仅限于每个主题的单个事件类型。</p>
+<h2 id="原文："><a href="#原文：" class="headerlink" title="原文："></a>原文：</h2><p>[1] <a href="https://www.confluent.io/blog/put-several-event-types-kafka-topic/" target="_blank" rel="noopener">https://www.confluent.io/blog/put-several-event-types-kafka-topic/</a>, Martin KleppmannMartin Kleppmann</p>
+
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/streaming/" rel="tag"><i class="fas fa-tags"></i>streaming</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  
+  <nav class="page-nav">
+    <div class="page-nav-next page-nav-item">
+      
+      <a href="/2018/09/20/pravega-controller-service-3/" rel="next" title="Pravega控制器服务之三"><i class="fas fa-angle-left"></i><span class="nav-title">Pravega控制器服务之三</span></a>
+      
+    </div>
+    <div class="page-nav-prev page-nav-item">
+      
+    </div>
+  </nav>
+  
+  
+</div>
+
+          </div>
+          
+          
+          
+<aside class="sidebar" id="sidebar" >
+  
+  
+<div class="info sidebar-item" id="info">
+  
+  <img class="author-avatar" src="/images/avatar.jpg" alt="常平">
+  
+  <h1 class="author-name">常平</h1>
+  <h2 class="author-description">“技术是有生命的,因为它可以进化”</h2>
+  <div class="site-count">
+    
+    <div class="archives-count">
+      <div class="site-count-title">全部</div>
+      <div><a href="/archives">26</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="categories-count">
+      <div class="site-count-title">分类</div>
+      <div><a href="/categories">4</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="tags-count">
+      <div class="site-count-title">标签</div>
+      <div><a href="/tags">4</a></div>
+    </div>
+    
+  </div>
+  
+</div>
+
+
+  <div class="sidebar-sticky">
+    
+    
+    
+    
+    
+    <hr>
+    <div class="post-toc sidebar-item" id="toc-div">
+      <div><i class="fas fa-list-ol"></i>文章目录</div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#主题-相同类型的事件的集合？"><span class="toc-text">主题=相同类型的事件的集合？</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#排序问题"><span class="toc-text">排序问题</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#何时分割主题，何时结合？"><span class="toc-text">何时分割主题，何时结合？</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#模式管理"><span class="toc-text">模式管理</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#原文："><span class="toc-text">原文：</span></a></li></ol></div>
+    </div>
+    
+    
+    
+    <hr>
+    <div class="social-link sidebar-item">
+      <div><i class="far fa-address-card"></i>链接</p></div>
+      <ul>
+        
+        <li><i class="fab fa-github"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a></li>
+        
+      </ul>
+    </div>
+    
+    
+  </div>
+</aside>
+
+
+          
+        </div>
+      </div>
+    </main>
+    
+<footer id="footer" class="footer" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="back-to-top">
+      <button id="back-to-top"><i class="fas fa-angle-double-up" aria-label="回到顶部"></i></button>
+    </div>
+    <div class="footer-container">
+      <div class="footer-left">
+        <div class="copyright">
+          <span class="author">常平</span><span class="year"><i class="far fa-copyright"></i>2017 - 2018</span>
+        </div>
+        
+        <div class="busuanzi">
+          <span id="busuanzi_container_site_pv"><i class="fas fa-eye" aria-label="站点点击量" aria-hidden="false"></i><span id="busuanzi_value_site_pv"></span></span><span id="busuanzi_container_site_uv"><i class="fas fa-user" aria-label="站点用户数" aria-hidden="false"></i><span id="busuanzi_value_site_uv"></span></span><span id="busuanzi_container_page_pv"><i class="far fa-file-alt"></i><span id="busuanzi_value_page_pv" aria-label="页面点击量" aria-hidden="false"></span></span>
+        </div>
+        
+      </div>
+      <div class="footer-right">
+        <div class="custom-info">
+          
+          PoweredBy<i class="fab fa-github-alt"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a>
+          
+        </div>
+        <div class="powered-by">
+          由 <a href="https://hexo.io/" target="_blank">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/AlynxZhou/hexo-theme-aria/" target="_blank">ARIA</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>

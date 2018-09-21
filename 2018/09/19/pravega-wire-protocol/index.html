@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#1D2D2D">
+    <meta name="msapplication-TileColor" content="#1D2D2D">
+    
+    
+    
+    <meta name="keywords" content="flink, pravega, kubernetes, docker, streaming, storage">
+    
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicons/android-chrome-192x192.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+    
+    
+    <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#1D2D2D">
+    
+    
+    <link rel="manifest" href="/favicons/site.webmanifest">
+    
+    
+    <meta name="msapplication-config" content="/favicons/browserconfig.xml">
+    
+    
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/favicons/favicon.ico">
+    
+    
+    <link rel="stylesheet" type="text/css" href="/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="/css/index.css">
+    
+    <link rel="stylesheet" type="text/css" href="/css/sidebar.css">
+    
+    
+<link rel="stylesheet" type="text/css" href="/css/page.css">
+<link rel="stylesheet" type="text/css" href="/css/post.css">
+
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link rel="stylesheet" type="text/css" href="/css/atom-one-dark.css">
+    <link rel="stylesheet" type="text/css" href="/css/lightgallery.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script defer type="text/javascript" src="/js/util.js"></script>
+    <script defer type="text/javascript" src="/js/scrollspy.js"></script>
+    <script defer type="text/javascript" src="/js/fontawesome-all.min.js"></script>
+    <script defer type="text/javascript" src="/js/lightgallery.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-fullscreen.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-hash.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-pager.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-thumbnail.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-zoom.min.js"></script>
+    
+    <script defer src="/js/busuanzi.pure.mini.js"></script>
+    
+    
+    
+    <script defer type="text/javascript" src="/js/index.js"></script>
+    
+    <script defer type="text/javascript" src="/js/custom.js"></script>
+    <title>pravega wire protocol | 常平的技术网站 - 流处理,分布式系统,微服务</title>
+  </head>
+  <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
+    
+<header id="header" class="header" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="header-container">
+      <div class="header-title">
+        <h1 class="title"><a href="/">常平的技术网站</a></h1>
+        <h2 class="subtitle">www.changping.me</h2>
+      </div>
+      
+      <div class="logo">
+        <img src="/images/logo.png" alt="logo">
+      </div>
+      
+    </div>
+    <nav id="nav" class="nav">
+      <a id="nav-toggle" class="nav-toggle" aria-hidden="true"><i class="fas fa-bars" aria-label="切换导航栏"></i></a>
+      <ul id="menu" role="menubar" aria-hidden="false">
+        
+        <li role="menuitem"><a href="/">首页</a></li>
+        
+        <li role="menuitem"><a href="/archives">全部</a></li>
+        
+        <li role="menuitem"><a href="/categories">分类</a></li>
+        
+        <li role="menuitem"><a href="/tags">标签</a></li>
+        
+        <li role="menuitem"><a href="/about">关于</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+    <main id="main" class="main">
+      <div class="container">
+        <div class="main-container">
+          <div class="content">
+            
+<div id="post" class="page">
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/19/pravega-wire-protocol/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+       <meta itemprop="name" content="常平">
+       <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+       <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+       <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">pravega wire protocol</h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-19T20:30:30+08:00">2018-09-19 20:30:30</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      <h2 id="流服务线协议"><a href="#流服务线协议" class="headerlink" title="流服务线协议"></a>流服务线协议</h2><p>本页描述了为流服务提出的有线协议。有关服务的描述，请参阅父页面。</p>
+<h2 id="协议"><a href="#协议" class="headerlink" title="协议"></a>协议</h2><p>数据通过线路以独立的“消息”发送，这些消息是“请求”（从客户端到服务器的消息）或“回复”（响应请求并返回到客户端）。</p>
+<p>所有请求和回复都有一个带有两个字段的8字节头，（所有数据都以BigEndian格式写入）：1。消息类型 -​​ 一个整数（4个字节）标识消息类型，这决定了后面的字段。（注意，协议可以通过添加新类型来扩展）2。长度 - 无符号整数4个字节（消息应该&lt;2 ^ 24，但高位保持为零）。此点前面的数据字节数是此消息的一部分。（可能为零，表示没有数据）</p>
+<p>字段的其余部分是特定于消息类型。下面列出了一些重要信息。</p>
+<h1 id="一般信息"><a href="#一般信息" class="headerlink" title="一般信息"></a>一般信息</h1><h2 id="部分消息-请求-应答"><a href="#部分消息-请求-应答" class="headerlink" title="部分消息 - 请求/应答"></a>部分消息 - 请求/应答</h2><ol>
+<li>开始/中间/结尾 - 枚举（1个字节）</li>
+<li>数据部分消息是通过线路发送时被分解的消息。（出于任何原因）。通过按依次读取部分消息并将它们组合成一个整体来重建整个消息。在完成上一个部分消息之前尝试启动新的部分消息是无效的。</li>
+</ol>
+<h2 id="KeepAlive-请求-回复"><a href="#KeepAlive-请求-回复" class="headerlink" title="KeepAlive - 请求/回复"></a>KeepAlive - 请求/回复</h2><ol>
+<li>数据 - 消息长度的未解释数据。（通常为0字节）</li>
+</ol>
+<h1 id="读取"><a href="#读取" class="headerlink" title="读取"></a>读取</h1><h2 id="读段-请求"><a href="#读段-请求" class="headerlink" title="读段 - 请求"></a>读段 - 请求</h2><ol>
+<li>要读取的段 - 字符串（2字节长度，后跟Java的修改后的UTF-8的多个字节）</li>
+<li>读取偏移量 - 长（8个字节）</li>
+<li>建议的回复长度 - int（4字节）<ul>
+<li>这是客户端想要的数据量。他们不一定会获得那么多。</li>
+</ul>
+</li>
+</ol>
+<a id="more"></a>
+<h2 id="段读-回复"><a href="#段读-回复" class="headerlink" title="段读 - 回复"></a>段读 - 回复</h2><ol>
+<li>读取的段 - 字符串（长度为2个字节，后跟Java的修改后的UTF-8的多个字节）</li>
+<li>从中读取的偏移量 - 长（8个字节）</li>
+<li>在Tail - 布尔值（1位）</li>
+<li>在EndOfSegment - （1位）</li>
+<li>数据 - 二进制（消息中的剩余长度）</li>
+</ol>
+<p>客户端请求以特定偏移量从特定流中读取，然后以SegmentRead消息的形式接收一个或多个应答。这些包含他们请求的数据（假设它存在）。在合适的答复中，服务器可能决定给客户端提供比其要求更多或更少的数据。</p>
+<h2 id="追加"><a href="#追加" class="headerlink" title="追加"></a>追加</h2><h2 id="设置追加-请求"><a href="#设置追加-请求" class="headerlink" title="设置追加 - 请求"></a>设置追加 - 请求</h2><ol>
+<li>ConnectionId - UUID（16字节）标识此appender。</li>
+<li>要追加的段。 - 字符串（长度为2个字节，后跟Java的Modified UTF-8的多个字节）</li>
+</ol>
+<h2 id="追加设置-答复"><a href="#追加设置-答复" class="headerlink" title="追加设置 - 答复"></a>追加设置 - 答复</h2><ol>
+<li>可以附加到的段。 - 字符串（长度为2个字节，后跟Java的Modified UTF-8的多个字节）</li>
+<li>ConnectionId - UUID（16字节）标识请求的appender。</li>
+<li>ConnectionOffsetAckLevel - Long（8字节）此connectionId在此段上接收和存储的最后一个偏移量（如果是新的话，则为0）</li>
+</ol>
+<h2 id="BeginAppendBlock-请求"><a href="#BeginAppendBlock-请求" class="headerlink" title="BeginAppendBlock - 请求"></a>BeginAppendBlock - 请求</h2><p>仅在SetupAppend成功完成后才有效。</p>
+<ol>
+<li>ConnectionId - UUID（16字节）</li>
+<li>ConnectionOffset - Long（8字节）到目前为止通过此连接写入此段的数据</li>
+<li>EndAppendBlock消息之前的数据长度 - 整数（4个字节） </li>
+</ol>
+<h2 id="EndAppendBlock-请求"><a href="#EndAppendBlock-请求" class="headerlink" title="EndAppendBlock-请求"></a>EndAppendBlock-请求</h2><ol>
+<li>ConnectionId - UUID（16字节）</li>
+<li>ConnectionOffset - Long（8字节）到目前为止通过此连接写入的数据</li>
+<li>块长度 - （4个字节）写入的块的总大小。（注意，这可能多于或少于BeginAppendBlock和此消息之间的字节数）</li>
+</ol>
+<h2 id="事件-请求"><a href="#事件-请求" class="headerlink" title="事件 - 请求"></a>事件 - 请求</h2><p>仅在块内有效</p>
+<ol>
+<li>数据</li>
+</ol>
+<h2 id="数据附加-答复"><a href="#数据附加-答复" class="headerlink" title="数据附加 - 答复"></a>数据附加 - 答复</h2><ol>
+<li>ConnectionId - UUID（16字节）</li>
+<li>ConnectionOffsetAckLevel - 长（8字节）此连接之前所有数据成功存储在此段上的最高偏移量</li>
+</ol>
+<h3 id="追加客户段时"><a href="#追加客户段时" class="headerlink" title="追加客户段时"></a>追加客户段时</h3><ol>
+<li>建立与其认为正确的主机的连接。</li>
+<li>发送安装追加请求。</li>
+<li>等待追加设置回复。</li>
+</ol>
+<p>然后它可以1.发送BeginEventBlock请求2.发送尽可能多的消息以适应块3.发送EndEventBlock请求</p>
+<p>在发生这种情况时，服务器将定期向其发送DataAppended回复acking消息。请注意，给定的TCP连接可以有多个“追加”设置。这允许客户端在生成多个段时共享连接。</p>
+<p>客户端可以通过在其BeginAppendBlock消息中指定一个较大的值来优化其附加，因为块内的事件不需要单独处理。</p>
+<p>EndEventBlock消息指定追加块的大小而不是BeginAppendBlock消息。这意味着不需要事先知道块中数据的大小。如果客户端正在生成小消息流，这将非常有用。它可以开始一个块，写入许多消息，然后当它结束块时，它可以在EndAppendBlock消息之后写入部分消息，然后是剩余的部分消息。这样可以避免在块中的所有消息上都有标题，而不必在其进程中将它们缓冲在ram中。</p>
+
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  
+  <nav class="page-nav">
+    <div class="page-nav-next page-nav-item">
+      
+      <a href="/2018/09/18/pravega-segment-store-service-3/" rel="next" title="pravega数据面段存储服务之三"><i class="fas fa-angle-left"></i><span class="nav-title">pravega数据面段存储服务之三</span></a>
+      
+    </div>
+    <div class="page-nav-prev page-nav-item">
+      
+      <a href="/2018/09/19/pravega-segment-containers/" rel="prev" title="pravega段容器"><span class="nav-title">pravega段容器</span><i class="fas fa-angle-right"></i></a>
+      
+    </div>
+  </nav>
+  
+  
+</div>
+
+          </div>
+          
+          
+          
+<aside class="sidebar" id="sidebar" >
+  
+  
+<div class="info sidebar-item" id="info">
+  
+  <img class="author-avatar" src="/images/avatar.jpg" alt="常平">
+  
+  <h1 class="author-name">常平</h1>
+  <h2 class="author-description">“技术是有生命的,因为它可以进化”</h2>
+  <div class="site-count">
+    
+    <div class="archives-count">
+      <div class="site-count-title">全部</div>
+      <div><a href="/archives">26</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="categories-count">
+      <div class="site-count-title">分类</div>
+      <div><a href="/categories">4</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="tags-count">
+      <div class="site-count-title">标签</div>
+      <div><a href="/tags">4</a></div>
+    </div>
+    
+  </div>
+  
+</div>
+
+
+  <div class="sidebar-sticky">
+    
+    
+    
+    
+    
+    <hr>
+    <div class="post-toc sidebar-item" id="toc-div">
+      <div><i class="fas fa-list-ol"></i>文章目录</div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#流服务线协议"><span class="toc-text">流服务线协议</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#协议"><span class="toc-text">协议</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="list-group-item toc-link" href="#一般信息"><span class="toc-text">一般信息</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#部分消息-请求-应答"><span class="toc-text">部分消息 - 请求/应答</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#KeepAlive-请求-回复"><span class="toc-text">KeepAlive - 请求/回复</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="list-group-item toc-link" href="#读取"><span class="toc-text">读取</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#读段-请求"><span class="toc-text">读段 - 请求</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#段读-回复"><span class="toc-text">段读 - 回复</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#追加"><span class="toc-text">追加</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#设置追加-请求"><span class="toc-text">设置追加 - 请求</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#追加设置-答复"><span class="toc-text">追加设置 - 答复</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#BeginAppendBlock-请求"><span class="toc-text">BeginAppendBlock - 请求</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#EndAppendBlock-请求"><span class="toc-text">EndAppendBlock-请求</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#事件-请求"><span class="toc-text">事件 - 请求</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#数据附加-答复"><span class="toc-text">数据附加 - 答复</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#追加客户段时"><span class="toc-text">追加客户段时</span></a></li></ol></li></ol></div>
+    </div>
+    
+    
+    
+    <hr>
+    <div class="social-link sidebar-item">
+      <div><i class="far fa-address-card"></i>链接</p></div>
+      <ul>
+        
+        <li><i class="fab fa-github"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a></li>
+        
+      </ul>
+    </div>
+    
+    
+  </div>
+</aside>
+
+
+          
+        </div>
+      </div>
+    </main>
+    
+<footer id="footer" class="footer" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="back-to-top">
+      <button id="back-to-top"><i class="fas fa-angle-double-up" aria-label="回到顶部"></i></button>
+    </div>
+    <div class="footer-container">
+      <div class="footer-left">
+        <div class="copyright">
+          <span class="author">常平</span><span class="year"><i class="far fa-copyright"></i>2017 - 2018</span>
+        </div>
+        
+        <div class="busuanzi">
+          <span id="busuanzi_container_site_pv"><i class="fas fa-eye" aria-label="站点点击量" aria-hidden="false"></i><span id="busuanzi_value_site_pv"></span></span><span id="busuanzi_container_site_uv"><i class="fas fa-user" aria-label="站点用户数" aria-hidden="false"></i><span id="busuanzi_value_site_uv"></span></span><span id="busuanzi_container_page_pv"><i class="far fa-file-alt"></i><span id="busuanzi_value_page_pv" aria-label="页面点击量" aria-hidden="false"></span></span>
+        </div>
+        
+      </div>
+      <div class="footer-right">
+        <div class="custom-info">
+          
+          PoweredBy<i class="fab fa-github-alt"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a>
+          
+        </div>
+        <div class="powered-by">
+          由 <a href="https://hexo.io/" target="_blank">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/AlynxZhou/hexo-theme-aria/" target="_blank">ARIA</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>
