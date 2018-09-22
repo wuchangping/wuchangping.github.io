@@ -601,11 +601,11 @@
     </entry>
     
     <entry>
-      <title>about</title>
-      <link href="/about/index.html"/>
-      <url>/about/index.html</url>
+      <title>archives</title>
+      <link href="/archives/index.html"/>
+      <url>/archives/index.html</url>
       
-        <content type="html"><![CDATA[<h2 id="关于作者"><a href="#关于作者" class="headerlink" title="关于作者"></a>关于作者</h2><ul><li>毕业于中国科学技术大学，获得硕士研究生学历学位</li><li>曾就职于Marvell、AMD等，现于EMC负责大数据流处理系统平台的设计以及产品交付</li></ul><h2 id="联系方式"><a href="#联系方式" class="headerlink" title="联系方式"></a>联系方式</h2><ul><li>Email ： <a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a></li><li>Github : <a href="https://github.com/wuchangping" target="_blank" rel="noopener">https://github.com/wuchangping</a></li></ul>]]></content>
+        <content type="html"><![CDATA[]]></content>
       
     </entry>
     
@@ -619,11 +619,11 @@
     </entry>
     
     <entry>
-      <title>archives</title>
-      <link href="/archives/index.html"/>
-      <url>/archives/index.html</url>
+      <title>about</title>
+      <link href="/about/index.html"/>
+      <url>/about/index.html</url>
       
-        <content type="html"><![CDATA[]]></content>
+        <content type="html"><![CDATA[<h2 id="关于作者"><a href="#关于作者" class="headerlink" title="关于作者"></a>关于作者</h2><ul><li>毕业于中国科学技术大学，获得硕士研究生学历学位</li><li>曾就职于Marvell、AMD等，现于EMC负责大数据流处理平台的设计以及产品交付</li></ul><h2 id="联系方式"><a href="#联系方式" class="headerlink" title="联系方式"></a>联系方式</h2><ul><li>Email ： <a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a></li><li>Github : <a href="https://github.com/wuchangping" target="_blank" rel="noopener">https://github.com/wuchangping</a></li></ul><p>–</p>]]></content>
       
     </entry>
     

@@ -1,18 +1,36 @@
+.header {
+  border-top: solid 6px #f54e4e;
+}
 .nav {
   background: #1d2d2d;
-}
-.sidebar {
-  background: #ddd;
-}
-.post .post-footer .post-tags .post-tag {
-  background: #f54e4e;
-  border: 0.1em solid #f54e4e;
 }
 .nav ul li a.current {
   color: #fff;
   background: #262a30;
 }
+.sidebar {
+  background: #ddd;
+}
 .main .main-container {
   width: auto;
   background: #eceff1;
+}
+.post .post-footer .post-tags .post-tag {
+  background: #f54e4e;
+  border: 0.1em solid #f54e4e;
+}
+.post .post-header .post-title .post-title-link::after {
+  background: #f54e4e;
+  height: 0.12em;
+  bottom: -3px;
+}
+a {
+  border-bottom: 0.05em solid #333;
+}
+.info .author-avatar {
+  width: 61.8%;
+  display: block;
+  margin: 1em auto;
+  border: 0.2em solid #fff;
+  border-radius: 0%;
 }
