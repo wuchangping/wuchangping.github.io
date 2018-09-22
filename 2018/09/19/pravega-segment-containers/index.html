@@ -151,7 +151,6 @@
 <h2 id="检测活动的Pravega主机"><a href="#检测活动的Pravega主机" class="headerlink" title="检测活动的Pravega主机"></a>检测活动的Pravega主机</h2><p>启动时每个pravega主机都会使用临时节点向Zookeeper注册。只要zookeeper从Pravega主机接收到适当的心跳，临时的节点就会出现在zookeeper中。我们依靠这些临时的节点来检测哪些pravega主机当前在群集中是活动的。</p>
 <h2 id="监控Pravega集群"><a href="#监控Pravega集群" class="headerlink" title="监控Pravega集群"></a>监控Pravega集群</h2><p>每个Pravega Controller都运行一项服务，监控zookeeper上的临时节点并检测集群中所有活动的pravega主机。在检测到对集群成员资格的任何更改时，我们会验证所有容器并将其重新映射到可用的pravega主机集。此信息以原子方式保存在HostStore中。它存储为单个blob，并包含主机拥有的主机到容器集的映射。</p>
 <p>我们使用zookeeper来确保只有一个pravega控制器监视集群，以避免多个同时写入HostStore的写入器。这将避免竞争条件，并允许状态更快地收敛。</p>
-<a id="more"></a>
 <h2 id="再平衡频率"><a href="#再平衡频率" class="headerlink" title="再平衡频率"></a>再平衡频率</h2><p>当从群集中添加或删除pravega主机时，会发生容器所有权的重新平衡。由于这是一项代价高昂的操作，我们需要防止经常这样做。目前，我们确保在任何2次重新平衡操作之间保持配置的最小时间间隔。在最坏的情况下，这将按比例增加在集群中执行所有权更改所花费的时间。</p>
 <h2 id="所有权变更通知"><a href="#所有权变更通知" class="headerlink" title="所有权变更通知"></a>所有权变更通知</h2><p>每个pravega主机都有一个长期运行的Segment Manager服务。这会不断轮询/监视HostStore，以便对容器所有权进行任何更改。在检测到自身的所有权变更（由map中的主机密钥标识）时，段管理器会相应地触发添加和删除容器。</p>
 <h2 id="确保容器在另一台主机上启动之前在一台主机上停止"><a href="#确保容器在另一台主机上启动之前在一台主机上停止" class="headerlink" title="确保容器在另一台主机上启动之前在一台主机上停止"></a>确保容器在另一台主机上启动之前在一台主机上停止</h2><p>我们目前计划在Pravega主机上使用保守超时，以确保容器在另一个节点上停止之前不会启动。这需要进一步检阅/讨论。</p>
@@ -203,7 +202,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">26</a></div>
+      <div><a href="/archives">27</a></div>
     </div>
     
     

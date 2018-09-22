@@ -152,7 +152,6 @@
 <p>参考下图，图中体现了路由码和时间之间的关系。</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fsegment.split.merge.overtime.new.png" alt="segment.split.merge.overtime.new"></p>
 <p>流在时间t0开始，具有可配置数量的段。如果写入流的数据速率不变，则段的数量不会改变。然而，在时间t1，系统注意到摄取率的增加并且选择将段1分成两部分。我们称之为Scale-up事件。在t1之前，具有哈希到密钥空间上部的路由密钥（值0.5-0.99）的事件将被放置在段1中，而散列到密钥空间下部的值（值0-0.49）将是放置在段0中。在t1之后，段1被分成段2和段3.段1被密封，它不再接受写入。此时，具有路由密钥0.7及以上的事件被写入段3，而在0.5和0.69之间的事件将被写入段2。  </p>
-<a id="more"></a> 
 <p>我们还在时间t2看到另一个Scale-up事件，因为段0的路由键范围被分成段5和段4.此时，段0被封闭，因此它不接受进一步的写入。</p>
 <p>覆盖密钥空间的连续范围的段也可以合并。在时间t3，段2和段5被合并到段6中以适应流上的负载的减少。</p>
 <p>创建Stream时，会使用Scaling Policy配置Stream，该策略确定Stream如何响应其负载变化。目前有三种扩展策略：</p>
@@ -235,7 +234,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">26</a></div>
+      <div><a href="/archives">27</a></div>
     </div>
     
     

@@ -152,7 +152,6 @@
 <p>在Lambda架构里，开发人员使用复杂的中间件组合，其中包括批处理中间件以及Storm，Samza，Kafka等连续处理中间件。</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Flambda.png" alt="lambda"></p>
 <p>在lambda体系结构中，批处理用于提供准确但可能过时的数据分析，第二条路径在摄取数据时处理数据，原则上结果是无效的，这证明了第一条路径的合理性。使用此方法，应用程序逻辑上有两个副本，因为速度层的编程模型与批处理层中使用的编程模型不同。Lambda架构很难在生产中维护和管理。因此，这种大数据处理架构一直在对用户失去吸引力。最近，一种不同类型的大数据体系结构越来越受到关注，此架构不依赖于批处理数据路径。这种架构称为Kappa架构。</p>
-<a id="more"></a>
 <p>Kappa架构风格是针对Lambda架构太过于复杂的一种改进，依赖于专为流式传输而设计的组件，支持更强大的语义并提供快速准确的数据分析能力，Kappa架构是一种更简单的方法：</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fkappa.png" alt="kappa"></p>
 <p>在Kappa架构里只有一个数据路径要执行，而应用程序逻辑的实现只需要维护一个，而不是两个。借助适当的工具，为需要快速而准确地处理流数据的需求而构建，使得物联网，联网汽车，金融，风险管理，在线服务等领域设计和运行大数据应用变得更加简单。通过合适的工具，可以构建这样的流水线并为需要高容量和低延迟的大数据应用提供服务。</p>
@@ -214,7 +213,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">26</a></div>
+      <div><a href="/archives">27</a></div>
     </div>
     
     

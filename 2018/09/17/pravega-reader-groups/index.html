@@ -169,7 +169,6 @@
 <li><p>这允许读者直接采取行动，以确保所有事件都被读取，而无需一些外部跟踪器。</p>
 </li>
 </ul>
-<a id="more"></a>
 <h2 id="ReaderGroup的API"><a href="#ReaderGroup的API" class="headerlink" title="ReaderGroup的API"></a>ReaderGroup的API</h2><p>可以将用于管理ReaderGroup的外部API添加到StreamManager对象。它们包括：</p>
 <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">ReaderGroup createReaderGroup（String name，Stream stream，ReaderGroupConfig config）;<br>ReaderGroup getReaderGroup（String name，Stream stream）;<br>void deleteReaderGroup（ReaderGroup group）;<br></code></pre></td></tr></table></figure>
 <p>创建ReaderGroup时，它会创建一个由读者共享的[[StateSynchronizer | StateSynchronizer-design]]。要加入ReaderGroup，读者只需在其配置中指定它：</p>
@@ -247,7 +246,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">26</a></div>
+      <div><a href="/archives">27</a></div>
     </div>
     
     

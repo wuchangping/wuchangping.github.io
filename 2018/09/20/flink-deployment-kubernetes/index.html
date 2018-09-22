@@ -159,7 +159,6 @@
 </ul>
 <h2 id="在Kubernetes上部署Flink会话群集"><a href="#在Kubernetes上部署Flink会话群集" class="headerlink" title="在Kubernetes上部署Flink会话群集"></a>在Kubernetes上部署Flink会话群集</h2><p>使用会话群集的资源定义，采用kubectl命令启动群集：</p>
 <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">kubectl create -f jobmanager-service.yaml<br>kubectl create -f jobmanager-deployment.yaml<br>kubectl create -f taskmanager-deployment.yaml<br></code></pre></td></tr></table></figure>
-<a id="more"></a>
 <p>然后，您可以通过kubectl proxy按以下方式访问Flink UI ：</p>
 <p>第一步，保证kubectl proxy在终端中运行</p>
 <p>第二步，在浏览器里输入 <code>http://localhost:8001/api/v1/namespaces/default/services/flink-jobmanager:ui/proxy</code></p>
@@ -222,7 +221,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">26</a></div>
+      <div><a href="/archives">27</a></div>
     </div>
     
     

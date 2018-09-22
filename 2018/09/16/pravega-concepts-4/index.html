@@ -152,7 +152,6 @@
 <p>Segment store实现Pravega的数据面。PravegaServers提供了在Streams中读写数据的API。Pravega中的数据存储由两层组成：第1层存储，提供短期、低延迟的数据存储，保证写入Streams。第2层存储提供数据的持久性、流数据的长期存储。Pravega使用 Apache Bookkeeper  实施第1层存储，并且支持使用HDFS，戴尔EMC的Isilon或戴尔EMC的弹性云存储（ECS）来实施第2层存储。第1层存储通常在Pravega集群内运行。第2层存储通常部署在Pravega集群之外。</p>
 <p>分层存储对于提供快速访问Stream数据的组合非常重要，但也允许Streams存储大量数据。第1层存储会保留最近的Stream数据。随着第1层存储中的数据老化，它将进入第2层存储。</p>
 <p>Pravega使用Apache Zookeeper作为Pravega集群中组件的协调机制。 </p>
-<a id="more"></a> 
 <p>Pravega首先被构建为数据存储原语。Pravega经过精心设计，可充分利用软件定义存储，因此Pravega中存储的数据量仅受数据中心总存储容量的限制。就像您所期望的所有存储系统一样，一旦将数据写入Pravega，数据就会被持久存储。如果没有遇到连数据中心都被毁坏的灾难，Pravega中存储的数据永远不会丢失。</p>
 <p>Pravega提供了一个用Java编写的客户端库，用于构建客户端应用程序，例如使用Flink作为分析应用程序。Pravega Java客户端库通过自我定制的TCP协议管理应用程序与Pravega之间的交互。</p>
 <h2 id="概念小结"><a href="#概念小结" class="headerlink" title="概念小结"></a>概念小结</h2><p>Pravega中的概念总结如下：</p>
@@ -217,7 +216,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">26</a></div>
+      <div><a href="/archives">27</a></div>
     </div>
     
     

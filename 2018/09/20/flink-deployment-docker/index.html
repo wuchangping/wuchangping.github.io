@@ -151,7 +151,6 @@
 <h2 id="Docker镜像"><a href="#Docker镜像" class="headerlink" title="Docker镜像"></a>Docker镜像</h2><p>该<a href="https://hub.docker.com/_/flink/" target="_blank" rel="noopener">Flink镜像库</a>托管在docker hub，提供了flink1.2.1以及之后的版本镜像。</p>
 <p>注意： Docker镜像是由个人提供的社区项目，它们并不是Apache Flink PMC的官方版本（作者标注：所以需要用这个个人的<a href="https://github.com/docker-flink/docker-flink" target="_blank" rel="noopener">构建工具</a>，而不是官方代码库里的构建工具）。</p>
 <h2 id="Flink作业集群"><a href="#Flink作业集群" class="headerlink" title="Flink作业集群"></a>Flink作业集群</h2><p>Flink作业集群是运行单个作业的专用集群，这是镜像内容的一部分，因此，不需要额外的工作。</p>
-<a id="more"></a>
 <h2 id="Docker镜像-1"><a href="#Docker镜像-1" class="headerlink" title="Docker镜像"></a>Docker镜像</h2><p>Flink作业集群镜像需要包含启动集群的作业的用户代码jar。因此，需要为每个作业构建专用的容器镜像。该flink-container模块包含一个build.sh脚本，可用于创建此类镜像。有关详细信息，请参阅<a href="https://github.com/apache/flink/blob/master/flink-container/docker/README.md" target="_blank" rel="noopener">说明</a>。（作者注：这个是官方的构建方式，试过有问题，比如跑 flink-standalone再 report metrics）</p>
 <h2 id="Flink与Docker-Compose"><a href="#Flink与Docker-Compose" class="headerlink" title="Flink与Docker Compose"></a>Flink与Docker Compose</h2><p>Docker Compose是一种很方便的用于在本地启动一组Flink Docker容器的方式。</p>
 <p>GitHub上提供了<a href="https://github.com/docker-flink/examples/blob/master/docker-compose.yml" target="_blank" rel="noopener">集群部署实例</a>和<a href="https://github.com/apache/flink/blob/master/flink-container/docker/docker-compose.yml" target="_blank" rel="noopener">作业群集示例</a>的配置文件。</p>
@@ -213,7 +212,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">26</a></div>
+      <div><a href="/archives">27</a></div>
     </div>
     
     

@@ -152,7 +152,6 @@
 <p>Pravega的Stream大小无限制 – Pravega本身不会对Stream中可以有多少event或Stream中存储的总字节数施加以任何的限制。Pravega的设计原则是支持从几台机器的小规模到整个数据中心的大规模。</p>
 <p>为了处理Stream中潜在的大量数据，Pravega Streams分为Stream Segments。Segment是stream中的Shard或Partition。我们稍后将在本文档中详细介绍Stream Segments。Stream Segments是一个重要的概念，但在我们深入了解Stream Segments之前，我们还需要介绍一些其他概念。</p>
 <p>应用程序（例如从IoT传感器读取的Java程序）将数据写入Stream的尾部（前端）。应用程序（如Flink）也可以从Stream中的任何位置读取数据。多个应用程序还可以并行读写相同的Stream。弹性且可扩展地支持大量的Streams，支持大规模的数据和应用程序是Pravega的核心设计思想。在详细介绍reader和writer时，我们将会介绍应用程序如何读取和写入Streams。</p>
-<a id="more"></a> 
 <h2 id="Event"><a href="#Event" class="headerlink" title="Event"></a>Event</h2><p>Pravega的客户端API允许应用程序根据event在Pravega中读取和写入数据。event是Stream中的一组字节。event可以像来自IoT传感器的温度读数只包含少量的字节一样简单，该传感器由时间戳，度量标识符和值组成。event可以是与用户点击网站相关联的Web日志数据，也可以是表示为一组字节的任何事物。应用程序使用标准Java序列化器和反序列化器来理解event，允许它们使用类似的技术在Pravega中读取和写入对象，以便从文件中读取和写入对象。</p>
 <p>每个event都有一个路由码。路由码允许Pravega和应用程序开发人员推断哪些event是关联的。路由码只是开发人员用于将类似event组合在一起的字符串。路由码通常是从event中自然发生的数据派生出来的，例如“customer-id”或“machine-id”，但它也可能是一些人工字符串。路由码也可以类似于日期（按时间将event组合在一起），或者路由码可能是IoT传感器ID（按机器对event进行分组）。路由码对于定义Pravega 保证的精确读写语义非常重要，稍后我们将详细介绍。</p>
 <h2 id="Writer-Reader-and-ReaderGroups"><a href="#Writer-Reader-and-ReaderGroups" class="headerlink" title="Writer Reader and ReaderGroups"></a>Writer Reader and ReaderGroups</h2><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fproducer.consumer.client.new.png" alt="producer.consumer.client.new"></p>
@@ -210,7 +209,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">26</a></div>
+      <div><a href="/archives">27</a></div>
     </div>
     
     

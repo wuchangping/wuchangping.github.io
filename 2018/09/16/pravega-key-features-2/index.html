@@ -153,7 +153,6 @@
 <p>写入Stream的任何数据都将写入与数据路由密钥关联的Stream Segment。写入者使用应用程序有意义的路由密钥，如customer-id，timestamp，machine-id等，以确保将类似数据组合在一起。 </p>
 <p>流段是Pravega Streams中基本的并行度单位，具有多个流段的流可以支持更多的数据并行写入; 多个写入者将数据写入不同的流段，可能涉及群集中的所有Pravega服务器。在Reader端，Stream Segments的数量表示可能的最大读取并行度。如果Stream具有N个流段，则具有N个读取器的ReaderGroup可以并行地从流中消费数据。增加Stream Segments的数量，可以增加ReaderGroup中的Readers数量，以增加处理来自该Stream的数据的规模。当然，如果Stream Segments的数量减少，那么可以相应地减少读取器的数量。</p>
 <p>Stream可以配置为更多数据写入Stream，那么就增加StreamSegments的数量，在数据量下降时就缩小segments规模。我们将此配置称为Stream的服务级别目标或SLO。Pravega监控输入到Stream的数据速率，并使用SLO从流中添加或删除流段。通过拆分流段来增加流段的数量。通过合并两个流段来减少流段的数量。请参阅  AutoScaling：有关Pravega如何管理StreamSegments的更多详细信息，Stream Segments的数量可能会随时间变化。</p>
-<a id="more"></a> 
 <p>协调Pravega中Streams的自动缩放和应用程序缩小（在工作中）。这一点是可以实现的。使用Pravega提供的元数据，应用程序可以配置其应用程序组件的扩展; 例如，驱动Flink作业的实例数。或者，您可以使用Cloud Foundry，Mesos / Marathon，Kubernetes或Docker堆栈等软件来部署应用程序的新实例，以响应Pravega级别增加的并行性，或者减少Pravega规模以响应速率降低时终止实例数据的摄取。</p>
 <h2 id="分布式计算原语"><a href="#分布式计算原语" class="headerlink" title="分布式计算原语"></a>分布式计算原语</h2><p>Pravega非常适合分布式应用，例如微服务; 它可以用作数据存储机制，用于微服务之间的消息传递和其他分布式计算服务，例如领导者选举。</p>
 <p>State Synchronizer是Pravega API的一部分，它是在集群中以一致性和乐观并发性共享状态的基础。状态同步器基于Pravega中的基本条件写操作，因此只有当数据出现在Stream中的给定位置时才会写入数据。如果条件写入操作不满足条件，则失败。</p>
@@ -229,7 +228,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">26</a></div>
+      <div><a href="/archives">27</a></div>
     </div>
     
     
