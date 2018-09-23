@@ -115,6 +115,94 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/distributed-dht-update/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/16/distributed-dht-update/" itemprop="url">分布式系统中DHT算法改进</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T21:32:38+08:00">2018-09-16 21:32:38</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>通常，分布式存储系统以及分布式缓存系统习惯采用分布式哈希（DHT）算法来实现数据的分区分配（路由）以及负载均衡，普通的分布式hash算法通过增添虚拟节点，对物理的热点区间进行划分，将负载分配至其他节点，从而达到负载均衡的状态，但是这并不能保证集群的负载就一定很是的均衡。</p>
+<p>而一种改进过的一致性Hash算法，即带边界因子的一致性Hash算法，其严格控制每个节点的负载从而能获得更好的负载均衡效果[1][2]。</p>
+<h2 id="普通的DHT算法"><a href="#普通的DHT算法" class="headerlink" title="普通的DHT算法"></a>普通的DHT算法</h2><p>假设有8个Object，通过下图的DHT算法:</p>
+<ol>
+<li>object 0,1,2映射到了虚拟节点vNode0 ： object 0,1,2 –&gt; vNode0</li>
+<li>Object 3,4,5 映射到了vNode1：object 3,4,5 –&gt; vNode1</li>
+<li>Object 6映射到 vNode2：object 6 –&gt; vNode2</li>
+<li>Object 7映射到 vNodeN：object 7 –&gt; vNodeN</li>
+</ol>
+<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-1.png" alt="distributed-DHT-1"></p>
+<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-2.png" alt="distributed-DHT-2"></p>
+<p>很明显，Vnode0和vNode1 都落了三个 object，而 vNode2和vNodeN 都只落了 1个Object，这里的DHT算法负债均衡因子并不是很好。</p>
+<h2 id="带负载边界因子的DHT算法"><a href="#带负载边界因子的DHT算法" class="headerlink" title="带负载边界因子的DHT算法"></a>带负载边界因子的DHT算法</h2><p>假设有8个Object，通过如下图的DHT with bounded loads算法:</p>
+<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-3.png" alt="distributed-DHT-3"></p>
+<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-4.png" alt="distributed-DHT-4"></p>
+<p>第一轮映射：</p>
+<ol>
+<li>object 0,1,2 需要映射到了虚拟节点vNode0，但是vNode0的权重因子是 2，因此只完成了 object 0,1 –&gt; vNode0， object 2不能映射到节点 vNode0；</li>
+<li>Object 3,4,5 需要映射到了虚拟节点vNode1：但是vNode1的权重因子是 2，因此只完成了 object 3,4 –&gt; vNode1， object 5不能映射到节点 vNode1；</li>
+<li>Object 6映射到 vNode2：object 6 –&gt; vNode2</li>
+<li>Object 7映射到 vNodeN：object 7 –&gt; vNodeN</li>
+</ol>
+<p>第二轮映射：</p>
+<ol>
+<li>Object 2 映射到 vNode1，但是vNode1权重因子=0， 不能被接收，继续往下一个节点走，发现vNode2 权重因子是2,还剩权重因子1，可以被映射，因此 object 2–&gt;vNode2</li>
+<li>Object 5 映射到 vNode2，但是vNode2现在的权重因子=0， 不能被接收，继续往下一个节点走，发现vNodeN 权重因子是2,还剩权重因子1，可以被映射，因此 object 5–&gt;vNodeN</li>
+</ol>
+<p>最终的映射结果是:</p>
+<ol>
+<li>object 0,1映射到了虚拟节点vNode0 ： object 0,1 –&gt; vNode0</li>
+<li>Object 3,4 映射到了vNode1：object 3,4 –&gt; vNode1</li>
+<li>Object 2,6映射到 vNode2：object 2,6 –&gt; vNode2</li>
+<li>Object 5,7映射到 vNodeN：object 5,7 –&gt; vNodeN</li>
+</ol>
+<p>很明显，Vnode0，vNode1，vNode2, vNodeN 每个节点都分到2个 object，<br>显然带负载边界因子的DHT算法负债均衡比普通的DHT算法来的好。</p>
+<p>这些节点的负载因子可以从IO，CPU，MEM，Disk，Network等输入因子计算出来。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] <a href="https://research.googleblog.com/2017/04/consistent-hashing-with-bounded-loads.html" target="_blank" rel="noopener">https://research.googleblog.com/2017/04/consistent-hashing-with-bounded-loads.html</a></p>
+<p>[2] <a href="https://medium.com/vimeo-engineering-blog/improving-load-balancing-with-a-new-consistent-hashing-algorithm-9f1bd75709ed" target="_blank" rel="noopener">https://medium.com/vimeo-engineering-blog/improving-load-balancing-with-a-new-consistent-hashing-algorithm-9f1bd75709ed</a></p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/distributed-cap-pacelc/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -731,69 +819,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-concepts-3/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术网站">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravega-concepts-3/" itemprop="url">Pravega基本概念三 - ReaderGroup，Transactions，State Synchronizers</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T13:21:24+08:00">2018-09-16 13:21:24</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="ReaderGroup以及Checkpoint"><a href="#ReaderGroup以及Checkpoint" class="headerlink" title="ReaderGroup以及Checkpoint"></a>ReaderGroup以及Checkpoint</h2><p>Pravega为应用提供了在ReaderGroup上初始化Checkpoint的功能。使用Checkpoint的意图是通过使用一种特殊事件（检查点事件）来确保每个Reader能保存原来的使用状态，ReaderGroup中的每个Reader都可以创建一个“时间点”，借助这个“时间点“可以为reader提供状态的持久化以及保证这个状态一致性的功能。检查点完成后，应用可以通过恢复checkpoint(检查点)将ReaderGroup中的所有Reader恢复成这个检查点所代表的一致状态。</p>
-<h2 id="Transactions（事务）"><a href="#Transactions（事务）" class="headerlink" title="Transactions（事务）"></a>Transactions（事务）</h2><p>Pravega支持事务。事务的想法是，Writer可以“批处理”一堆event并将它们作为一个处理单元提交到Stream中。这在某些场景是很有用的，例如，使用Pravega作为Flink作业的接收器。Flink作业可以不断产生一些数据的处理结果，并使用事务功能来持久化累积的处理结果。当在某个时间窗口（例如）的末尾时，Flink作业可以提交事务，因此使的处理结果可用于数据的下游处理，或者在出现错误的场景下，退出事务并且放弃整个处理结果。</p>
-<p>Pravega的事务和类似方法（例如Kafka的生产者方式批处理）之间的关键区别在于能否持久化。当事件回到Writer时，添加到事务的事件是持久的。但是，在Writer提交Transaction之前，Reader不会看到事务中的事件。事务很像流; 事务与多个流段相关联。将事件发布到事务中时，事件本身将附加到事务的流段。假设Stream有5个段，当在该流上创建事务时，那么表示该事务也有5个段。当事件发布到事务中时，它被路由到相同编号的段，就像它被发布到Stream本身一样（如果事件将被放置在“真实”流中的段3中，那么它将出现在事务的段3中）。提交事务时，每个事务的段将自动附加到实际流中的相应段。如果流被中止，则事务其所有段以及发布到事务中的所有事件都将被从Pravega中删除。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Ftrx.commit.new.png" alt="trx.commit.new"></p>
-<p>在提交事务之前，发布到事务中的事件永远不会被Reader看到。有关使用事务的更多详细信息，请参阅  使用Pravega：事务。</p>
-<h2 id="State-Synchronizers（状态同步器）"><a href="#State-Synchronizers（状态同步器）" class="headerlink" title="State Synchronizers（状态同步器）"></a>State Synchronizers（状态同步器）</h2><p>Pravega是一个流存储; 但是Pravega也提供了在分布式计算环境中作为协调器的功能（类似zookeeper,etcd）。Pravega的State Synchronizer功能属于后一种。</p>
-<p>状态同步器使用Pravega Stream为在集群中运行的多个进程之间共享的状态提供同步机制，从而使得更加的容易构建分布式应用。使用State Synchronizer，开发人员可以使用Pravega来读取状态，并且借助一致性和乐观锁功能对这些共享状态进行更改。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fstate.synchronizer.png" alt="state.synchronizer"></p>
-<p>状态同步器可用于维护和保存应用的配置副本，状态同步器还可用于存储一个数据或具有数千个不同键值对的映射数据。实际上，Pravega本身就在内部使用State Synchronizer来管理分布在整个网络中的ReaderGroups和Readers的状态。</p>
-<p>应用开发人员以类似于创建Writer的方式在Stream上创建State Synchronizer。状态同步器保留共享状态的本地副本，以便为应用提供快速访问数据的功能。对共享状态的任何修改都将通过StateSynchronizer写入Stream，以便跟踪对共享状态的所有更改。每个应用实例都使用状态同步器通过将更新提取到共享状态并修改数据的本地副本来保持最新的更改。通过状态同步器对共享状态的追加样式进行维护，保持一致性，确保仅对共享状态的最新版本进行更新。</p>
-<p>状态同步器还支持可以“压缩”，压缩和删除旧的状态更新，以便只有最新版本的状态保留在后备流中。此功能可帮助应用开发人员确保共享状态不会未经检查。</p>
-<p>在存储的总数据大小比较小时，状态同步器对共享状态的更新可以工作得最好，允许将这些数据写为小的增量。与任何乐观并发系统一样，当许多进程都试图同时更新同一条数据时，状态同步器并不是最佳状态。</p>
-<p>更多有关使用状态同步器的详细信息，请参阅  使用Pravega：状态同步器。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/2/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -819,7 +844,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">29</a></div>
+      <div><a href="/archives">30</a></div>
     </div>
     
     
