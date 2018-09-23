@@ -169,6 +169,7 @@
 </ul>
 <h2 id="内存的性能优势"><a href="#内存的性能优势" class="headerlink" title="内存的性能优势"></a>内存的性能优势</h2><p>有状态Flink应用针对本地状态的访问进行了优化。任务状态始终保留在内存中，或者，如果状态大小超过可用内存，则保存在可高效访问的磁盘上的数据结构中。因此，任务通过访问本地（通常是内存中）状态来执行所有计算，从而产生非常低的处理延迟。Flink通过定期并且异步地把本地状态打检查点并持久化到存储设备来保证在出现故障时的恰好一次状态的一致性。</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Flocal-state.png" alt=""></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1].<a href="https://flink.apache.org/flink-architecture.html" target="_blank" rel="noopener">https://flink.apache.org/flink-architecture.html</a></p>
 
     </main>
     <footer class="post-footer">
@@ -190,6 +191,8 @@
       
     </div>
     <div class="page-nav-prev page-nav-item">
+      
+      <a href="/2018/09/23/flink-use-cases/" rel="prev" title="flink用例"><span class="nav-title">flink用例</span><i class="fas fa-angle-right"></i></a>
       
     </div>
   </nav>
@@ -214,7 +217,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">30</a></div>
+      <div><a href="/archives">31</a></div>
     </div>
     
     
@@ -249,7 +252,7 @@
     <hr>
     <div class="post-toc sidebar-item" id="toc-div">
       <div><i class="fas fa-list-ol"></i>文章目录</div>
-      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#无界和有界数据的处理"><span class="toc-text">无界和有界数据的处理</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#随处部署应用"><span class="toc-text">随处部署应用</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#以任何规模运行应用"><span class="toc-text">以任何规模运行应用</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#内存的性能优势"><span class="toc-text">内存的性能优势</span></a></li></ol></div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#无界和有界数据的处理"><span class="toc-text">无界和有界数据的处理</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#随处部署应用"><span class="toc-text">随处部署应用</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#以任何规模运行应用"><span class="toc-text">以任何规模运行应用</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#内存的性能优势"><span class="toc-text">内存的性能优势</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#参考资料"><span class="toc-text">参考资料</span></a></li></ol></div>
     </div>
     
     
