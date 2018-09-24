@@ -115,6 +115,79 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/24/flink-apache-flink-home/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/24/flink-apache-flink-home/" itemprop="url">Apache Flink的文档</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-24T22:01:25+08:00">2018-09-24 22:01:25</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="Apache-Flink文档"><a href="#Apache-Flink文档" class="headerlink" title="Apache Flink文档"></a>Apache Flink文档</h2><p>本文档适用于Apache Flink master版。</p>
+<p>Apache Flink是一个用于分布式流和批处理数据处理的开源平台。Flink的核心是流数据流引擎，为数据流上的分布式计算提供数据分发，通信和容错。Flink在流引擎之上构建批处理，涵盖原生的迭代支持，受管理的内存和程序优化。</p>
+<h2 id="第一步"><a href="#第一步" class="headerlink" title="第一步"></a>第一步</h2><p><strong>概念：</strong>从Flink的<a href="https://ci.apache.org/projects/flink/flink-docs-master/concepts/programming-model.html" target="_blank" rel="noopener">数据流编程模型</a>和<a href="https://ci.apache.org/projects/flink/flink-docs-master/concepts/runtime.html" target="_blank" rel="noopener">分布式运行时环境</a>的基本概念开始。这将有助于您了解文档的其他部分，包括配置和编程指南。我们建议您先阅读这部分内容。</p>
+<p><strong>教程：</strong></p>
+<ul>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/tutorials/datastream_api.html" target="_blank" rel="noopener">实现并运行DataStream应用</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/tutorials/local_setup.html" target="_blank" rel="noopener">配置本地Flink群集</a></li>
+</ul>
+<p><strong>编程指南：</strong>您可以阅读我们关于<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/api_concepts.html" target="_blank" rel="noopener">基本API概念</a>和<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/datastream_api.html" target="_blank" rel="noopener">DataStream API</a>或<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/index.html" target="_blank" rel="noopener">DataSet API</a>的指南，以了解如何编写您的第一个Flink程序。</p>
+<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>在将Flink作业投入生产之前，请阅读<a href="https://ci.apache.org/projects/flink/flink-docs-master/ops/production_ready.html" target="_blank" rel="noopener">生产准备清单</a>。</p>
+<h2 id="发行说明"><a href="#发行说明" class="headerlink" title="发行说明"></a>发行说明</h2><p>发行说明涵盖了Flink版本之间的重要更改。如果您计划将Flink升级到更高版本，请仔细阅读这些说明。</p>
+<ul>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/release-notes/flink-1.6.html" target="_blank" rel="noopener">Flink 1.6发行说明</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/release-notes/flink-1.5.html" target="_blank" rel="noopener">Flink 1.5的发行说明</a></li>
+</ul>
+<h2 id="外部资源"><a href="#外部资源" class="headerlink" title="外部资源"></a>外部资源</h2><ul>
+<li><p>Flink Forward：<a href="http://flink-forward.org/" target="_blank" rel="noopener">Flink Forward网站</a>和<a href="https://www.youtube.com/channel/UCY8_lgiZLZErZPF47a2hXMA" target="_blank" rel="noopener">YouTube</a>上提供了以往会议的讲座。<a href="http://2016.flink-forward.org/kb_sessions/robust-stream-processing-with-apache-flink/" target="_blank" rel="noopener">使用Apache Flink进行可靠的流处理</a>，那这些资料是一个很好的起点。</p>
+</li>
+<li><p>培训：data Artisans的<a href="http://training.data-artisans.com/" target="_blank" rel="noopener">培训材料</a>包括幻灯片，练习和示例。</p>
+</li>
+<li><p>博客：<a href="https://flink.apache.org/blog/" target="_blank" rel="noopener">Apache Flink</a>和<a href="https://data-artisans.com/blog/" target="_blank" rel="noopener">data Artisans</a>博客会比较频繁的发布flink相关的、深入的技术文章。</p>
+</li>
+</ul>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/24/flink-faq/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -427,7 +500,7 @@
 <li>易扩展、易维护</li>
 <li>可复用性</li>
 </ul>
-<h3 id="分布式系统组件及操作："><a href="#分布式系统组件及操作：" class="headerlink" title="分布式系统组件及操作："></a>分布式系统组件及操作：</h3><p>配置管理（Spring cloud config）、服务发现/调用(Feign)、断路器、智能路由（ZUUL）、微代理、控制总线、一次性Token、全局锁、决策竞选、分布式会话、集群状态。</p>
+<h3 id="分布式系统组件及操作"><a href="#分布式系统组件及操作" class="headerlink" title="分布式系统组件及操作"></a>分布式系统组件及操作</h3><p>配置管理（Spring cloud config）、服务发现/调用(Feign)、断路器、智能路由（ZUUL）、微代理、控制总线、一次性Token、全局锁、决策竞选、分布式会话、集群状态。</p>
 <p>注册中心(Eureka)、负载均衡(Ribbon)、断路器（Hystrix）、服务追踪（Sleuth，zipkin）、权限（string security）、接口可视化（Swagger）。</p>
 <p>以上内容为《微服务那些事儿》读书笔记。</p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1]. 微服务那些事儿，纪晓峰著</p>
@@ -731,87 +804,9 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/pravega-controller-service-3/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术网站">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/20/pravega-controller-service-3/" itemprop="url">Pravega控制器服务之三</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T21:59:55+08:00">2018-09-20 21:59:55</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="角色和责任"><a href="#角色和责任" class="headerlink" title="角色和责任"></a>角色和责任</h2><h3 id="流操作"><a href="#流操作" class="headerlink" title="流操作"></a>流操作</h3><p>控制器是所有流相关元数据的真实存储。Pravega客户端（EventStreamReaders和EventStreamWriters）与控制器一起确保流不变量在流上工作时得到满足和尊重。控制器维护流的元数据，包括段的整个历史。访问流的客户端需要联系控制器以获取有关段的信息。<br>客户端查询控制器以了解如何导航流。为此，控制器公开适当的API以获取活动段，后继者，前驱者和段信息以及Uris。这些查询使用存储和通过流存储接口访问元数据来提供这些查询服务。<br>Controller还提供了修改流的状态和行为的工作流程。这些工作流程包括创建，缩放，截断，更新，密封和删除。这些工作流程既可以通过直接API调用，也可以通过后台策略管理器（自动调整和保留）调用。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2FRequestProcessing.png" alt="RequestProcessing"><br>请求处理流程</p>
-<h2 id="创建流"><a href="#创建流" class="headerlink" title="创建流"></a>创建流</h2><p>创建流是作为任务框架上的任务来实现的。创建流工作流首先创建流状态设置为CREATING * 的初始流元数据。在此之后，它标识应该拥有的段容器并为此流创建段并同时调用create-segment。完成所有创建段后，创建流任务完成，从而将流移动到ACTIVE状态。所有故障都会以指数退避重试几次。但是，如果它无法完成任何步骤，则流将保持在CREATING状态。</p>
-<h2 id="更新流"><a href="#更新流" class="headerlink" title="更新流"></a>更新流</h2><p>更新流被实现为序列化请求处理程序/并发事件处理器框架上的任务。更新流由显式API调用来调用到控制器中。它首先将更新请求事件发布到请求流中。之后，它尝试创建临时更新属性。如果它无法创建临时更新属性，则请求失败，并且会通知调用方由于与另一个正在进行的更新冲突而无法更新流。</p>
-<p>事件由请求事件处理器选择。处理开始时，更新流任务期望找到要存在的临时更新流属性。如果找不到该属性，则通过将事件推回到内存中队列中来延迟更新处理，直到它认为事件已过期为止。如果在此期间找到要更新的属性，则在到期之前，处理该事件并执行更新流操作。现在处理开始，它首先将状态设置为UPDATING。在此之后，在元数据存储中更新流配置，然后通知段存储关于流的所有活动段关于策略的改变。现在状态重置为ACTIVE。</p>
-<h3 id="缩放流"><a href="#缩放流" class="headerlink" title="缩放流"></a>缩放流</h3><p>可以通过显式API调用（称为手动缩放）调用缩放，也可以基于缩放策略自动执行缩放（称为自动缩放）。我们首先编写事件，然后通过为要创建的所需段创建新条目来更新段表。此步骤是幂等的，并确保如果正在进行现有的缩放操作，则此启动新的缩放的尝试失败。处理的开始类似于更新流中遵循的机制。如果更新元数据，则事件处理并继续执行任务。如果元数据未在期望的时间范围内更新，则事件被丢弃。</p>
-<p>一旦缩放处理开始，它首先设置流状态SCALING。然后在段存储中创建新段。在成功创建新段之后，它使用对应于新时期的部分记录更新历史表，该新时期包含按比例显示的段列表。每个新的时期创建还创建新的根历元节点，在该节点下，来自该时期的所有事务的元数据驻留在该节点上。因此，当执行比例时，将存在与旧时期对应的节点，并且现在还将存在用于新时期的根节点。从这一点开始创建的任何事务都将针对新时期进行。现在，工作流尝试通过机会性地尝试删除旧时期来完成缩放。当且仅当其名下没有事务时，可以删除旧时期。一旦我们确定旧时期没有事务，我们就可以继续密封旧的段并完成规模。成功密封旧段后，历史表中的部分记录现已完成，从而完成了缩放工作流程。状态现在重置为ACTIVE。</p>
-<h3 id="截断流"><a href="#截断流" class="headerlink" title="截断流"></a>截断流</h3><p>Truncate遵循类似的机制进行更新，并具有用于截断的临时流属性，用于为截断流提供输入。一旦截断工作流标识它可以继续，它首先将状态设置为TRUNCATING。然后截断工作流查看请求的流截断，并检查它是否大于或等于现有截断点，然后它才是截断的有效输入并且工作流程开始。截断工作流接受请求的流截断，并计算要作为此截断请求的一部分删除的所有段。然后它调用相应的段存储来删除已识别的段。删除后，我们称在截止流中截断的流中描述的截断段，如流截断中所述。在此之后，截断记录将使用新的截断点和已删除的段进行更新。状态重置为ACTIVE。</p>
-<h2 id="密封流"><a href="#密封流" class="headerlink" title="密封流"></a>密封流</h2><p>可以通过对控制器的显式API调用来请求密封流。它首先将密封流事件发布到请求流中，然后尝试将流的状态设置为SEALING。如果事件被挑选并且没有找到流处于期望状态，则它通过将其重新发布在内存队列的后面来推迟密封流处理。一旦流被设置为密封状态，流的所有活动段都通过调用段存储来密封。在此之后，流在流元数据中被标记为SEALED。</p>
-<h3 id="删除流"><a href="#删除流" class="headerlink" title="删除流"></a>删除流</h3><p>可以通过对控制器的显式API调用来请求删除流。请求首先验证流是否处于SEALED状态。只有密封的流才能被删除，并在请求流中发布这样的事件。当事件被处理，它会再次验证流状态，然后通过调用段存储来继续从一开始就删除属于该流的所有段。成功删除所有段后，将清除与此流对应的流元数据。</p>
-<h2 id="流策略管理器"><a href="#流策略管理器" class="headerlink" title="流策略管理器"></a>流策略管理器</h2><p>如前所述，控制器负责执行的用户定义策略有两种类型，即自动缩放和自动保留。Controller不仅仅是流策略的存储，而是主动为其流实施这些用户定义的策略。</p>
-<h3 id="缩放基础架构"><a href="#缩放基础架构" class="headerlink" title="缩放基础架构"></a>缩放基础架构</h3><p>缩放基础架构与段存储一起构建。当控制器在段存储中创建新段时，它会将用户定义的缩放策略传递给段存储。然后，段存储监视所述段的流量，并且如果违反了从策略确定的某些阈值，则向控制器报告。Controller通过在专用内部流中发布的事件接收这些通知。可以为段接收两种类型的流量报告。第一种类型标识是否应该按比例放大（拆分）段，第二种类型标识是否应按比例缩小段。对于符合条件进行缩放的段，控制器会立即在请求流中发布段缩放请求，以便处理请求事件处理器。但是，为了缩小规模，控制器需要等待至少两个相邻的段，才有资格进行缩小。为此，它只是在元数据存储中将该段标记为冷。如果有相邻的段标记为冷，控制器会将它们合并，并发布缩小请求。然后，在请求事件处理器上异步执行缩放处理请求。</p>
-<h3 id="保留基础设施"><a href="#保留基础设施" class="headerlink" title="保留基础设施"></a>保留基础设施</h3><p>保留策略定义了应为给定流保留多少数据。这可以定义为基于时间或基于大小的。为了应用此策略，控制器定期收集流的流截断，并且如果策略指定，则有机会地对先前收集的流截断执行截断。由于这是需要为已定义保留策略的所有流执行的定期后台工作，因此迫切需要在所有可用的控制器实例之间公平地分配此工作负载。为实现这一点，我们依赖于将流转储到预定义集中，并在控制器实例之间分发这些集。这是通过使用zookeeper来存储此分发来完成的。在引导期间，每个控制器实例都尝试获取存储桶的所有权。拥有控制器监视桶下的所有流以保留机会。在每个周期里，控制器收集新的流截断并将其添加到所述流的保留集中。发布此消息后，它会查找存储在保留集中的候选流截断，这些流截断可以根据定义的保留策略进行截断。例如，在基于时间的保留中，选择早于指定保留期的最新流截断作为截断点。</p>
-<h2 id="事务管理器"><a href="#事务管理器" class="headerlink" title="事务管理器"></a>事务管理器</h2><p>控制器扮演的另一个重要角色是事务管理器。它负责创建，提交和中止事务。由于控制器是我们集群中的核心大脑和机构，并且是关于流的真实的持有者，因此writer请求控制器执行关于事务的所有控制平面动作。从创建事务到提交或中止事务的时间起，控制器在为事务提供保证方面发挥着积极作用。控制器跟踪每个事务的指定超时，如果超时超过，它会自动中止事务。</p>
-<p>控制器负责确保事务和潜在的并行规模操作相互配合，确保所有承诺都得到尊重和执行。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2FTransactionManagement.png" alt="TransactionManagement"></p>
-<p>事务管理图</p>
-<p>客户端调用控制器进程来创建，ping提交或中止事务。这些请求中的每一个都在控制器上接收并由Transaction Utility模块处理，该模块实现用于处理每个请求的业务逻辑。</p>
-<h3 id="创建事务"><a href="#创建事务" class="headerlink" title="创建事务"></a>创建事务</h3><p>writer与Controller交互以创建新事务。Controller Service将创建事务请求传递给事务工具Utility模块。模块中的create transaction函数执行以下步骤以创建事务：1。为事务生成唯一的UUID。2.它从元数据存储中获取流的当前活动的一组段，并从历史中获取其对应的时期标识符。3.它使用元数据存储接口在zookeeper中创建新的事务记录。4.然后，它请求段存储创建特定的事务段，这些段本质上链接到父活动段。<br>在创建事务时，控制器确保在我们尝试创建相应的事务段时不会密封父段。并且在事务的生命周期中，如果缩放开始，它应该等待旧时期事务在缩放之前完成，以便从旧时期密封段。</p>
-<h3 id="提交事务"><a href="#提交事务" class="headerlink" title="提交事务"></a>提交事务</h3><p>在收到提交事务的请求后，Controller Service将请求传递给Transaction Utility模块。该模块首先尝试通过元数据存储来标记事务特定元数据记录中的提交事务。在此之后，它在内部提交流中发布提交事件。提交事务工作流在提交事件处理器上实现，从而异步处理。提交事务工作流检查提交事务的是否合格，如果为true，则执行提交工作流，无限期重试，直到成功为止。如果事务不符合提交条件（通常在旧时期仍处于活动状态时在新时期上创建事务时发生），则此类事件将重新发布到内部流中以便稍后选取。</p>
-<p>成功提交事务后，事务的记录将从其时期根下被删除。然后，如果存在一个正在进行的缩放，则它呼叫尝试完成正在进行的缩放。试图完成缩放取决于删除旧时期的能力，当且仅当没有针对所述时期的未完成的活动事务时才能删除（有关更多细节，请参阅缩放工作流程）。</p>
-<h3 id="中止事务"><a href="#中止事务" class="headerlink" title="中止事务"></a>中止事务</h3><p>可以通过应用程序明确请求中止，类似于提交。但是，如果事务超时，则也可以自动启动中止。控制器跟踪系统中每个事务的超时，并且每当超时过去时，或者在显式用户请求时，事务实用程序模块在其各自元数据中将事务标记为中止。在此之后，事件被中止事件处理器处理，并立即尝试中止事务。中止事务没有排序要求，因此它同时并跨流执行。</p>
-<p>与提交一样，一旦事务中止，其节点将从其时期根目录中删除，如果存在持续的缩放，则尝试完成缩放流。</p>
-<h3 id="Ping事务"><a href="#Ping事务" class="headerlink" title="Ping事务"></a>Ping事务</h3><p>由于控制器对于正在写入事务中的段的数据没有对数据路径的可见性，因此控制器不知道是否正在主动处理事务，并且如果超时过去，它可能会尝试中止事务。为了使应用程序能够控制事务的命运，控制器公开API以允许应用程序更新事务超时期限。这种机制称为ping，只要应用程序ping事务，控制器就会为各自的事务重置其计时器。</p>
-<h3 id="事务超时管理"><a href="#事务超时管理" class="headerlink" title="事务超时管理"></a>事务超时管理</h3><p>控制器跟踪每个事务的超时。这是作为定时轮服务实现的。创建后，每个事务都会在创建它的控制器上注册到计时器服务中。可以在不同的控制器实例上接收事务的后续ping，并且基于通过zookeeper实现的所有权机制将定时器管理转移到最新的控制器实例。超时到期后，将尝试自动中止，如果能够成功将事务状态设置为中止，则启动中止工作流。</p>
-<p>控制器监视超时的每个事务都会添加到此进程索引中。如果此类控制器实例失败或崩溃，则其他控制器实例将收到节点失败通知，并尝试从失败的实例中扫描所有未完成的事务，并从该点开始监视其超时。</p>
-<h2 id="段容器到主机映射"><a href="#段容器到主机映射" class="headerlink" title="段容器到主机映射"></a>段容器到主机映射</h2><p>Controller还负责将段容器分配给段存储节点。维护此映射的责任落在单个控制器实例上，该实例是通过使用zookeeper的领导者选举选择的。当段存储节点被添加到/从集群中移除时，该领导控制器监视段存储节点的生命周期，并且跨可用的段存储节点执行段容器的重新分配。此分发映射存储在专用ZNode中。每个段存储周期性地轮询此znode以查找更改，如果找到更改，它将关闭并放弃它不再拥有的容器，并尝试获取分配给它的容器的所有权。</p>
-<p><a href="http://pravega.io/docs/latest/controller-service/#controllerClusterListener" target="_blank" rel="noopener">这里</a>已经讨论了有关实现的细节，特别是关于如何存储和管理元数据的细节。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
   </nav>
   
   
@@ -834,7 +829,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">32</a></div>
+      <div><a href="/archives">33</a></div>
     </div>
     
     

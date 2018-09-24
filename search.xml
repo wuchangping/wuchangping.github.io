@@ -3,6 +3,29 @@
   
     
     <entry>
+      <title>Apache Flink的文档</title>
+      <link href="/2018/09/24/flink-apache-flink-home/"/>
+      <url>/2018/09/24/flink-apache-flink-home/</url>
+      
+        <content type="html"><![CDATA[<h2 id="Apache-Flink文档"><a href="#Apache-Flink文档" class="headerlink" title="Apache Flink文档"></a>Apache Flink文档</h2><p>本文档适用于Apache Flink master版。</p><p>Apache Flink是一个用于分布式流和批处理数据处理的开源平台。Flink的核心是流数据流引擎，为数据流上的分布式计算提供数据分发，通信和容错。Flink在流引擎之上构建批处理，涵盖原生的迭代支持，受管理的内存和程序优化。</p><h2 id="第一步"><a href="#第一步" class="headerlink" title="第一步"></a>第一步</h2><p><strong>概念：</strong>从Flink的<a href="https://ci.apache.org/projects/flink/flink-docs-master/concepts/programming-model.html" target="_blank" rel="noopener">数据流编程模型</a>和<a href="https://ci.apache.org/projects/flink/flink-docs-master/concepts/runtime.html" target="_blank" rel="noopener">分布式运行时环境</a>的基本概念开始。这将有助于您了解文档的其他部分，包括配置和编程指南。我们建议您先阅读这部分内容。</p><p><strong>教程：</strong></p><ul><li><a href="https://ci.apache.org/projects/flink/flink-docs-master/tutorials/datastream_api.html" target="_blank" rel="noopener">实现并运行DataStream应用</a></li><li><a href="https://ci.apache.org/projects/flink/flink-docs-master/tutorials/local_setup.html" target="_blank" rel="noopener">配置本地Flink群集</a></li></ul><p><strong>编程指南：</strong>您可以阅读我们关于<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/api_concepts.html" target="_blank" rel="noopener">基本API概念</a>和<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/datastream_api.html" target="_blank" rel="noopener">DataStream API</a>或<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/index.html" target="_blank" rel="noopener">DataSet API</a>的指南，以了解如何编写您的第一个Flink程序。</p><h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>在将Flink作业投入生产之前，请阅读<a href="https://ci.apache.org/projects/flink/flink-docs-master/ops/production_ready.html" target="_blank" rel="noopener">生产准备清单</a>。</p><h2 id="发行说明"><a href="#发行说明" class="headerlink" title="发行说明"></a>发行说明</h2><p>发行说明涵盖了Flink版本之间的重要更改。如果您计划将Flink升级到更高版本，请仔细阅读这些说明。</p><ul><li><a href="https://ci.apache.org/projects/flink/flink-docs-master/release-notes/flink-1.6.html" target="_blank" rel="noopener">Flink 1.6发行说明</a></li><li><a href="https://ci.apache.org/projects/flink/flink-docs-master/release-notes/flink-1.5.html" target="_blank" rel="noopener">Flink 1.5的发行说明</a></li></ul><h2 id="外部资源"><a href="#外部资源" class="headerlink" title="外部资源"></a>外部资源</h2><ul><li><p>Flink Forward：<a href="http://flink-forward.org/" target="_blank" rel="noopener">Flink Forward网站</a>和<a href="https://www.youtube.com/channel/UCY8_lgiZLZErZPF47a2hXMA" target="_blank" rel="noopener">YouTube</a>上提供了以往会议的讲座。<a href="http://2016.flink-forward.org/kb_sessions/robust-stream-processing-with-apache-flink/" target="_blank" rel="noopener">使用Apache Flink进行可靠的流处理</a>，那这些资料是一个很好的起点。</p></li><li><p>培训：data Artisans的<a href="http://training.data-artisans.com/" target="_blank" rel="noopener">培训材料</a>包括幻灯片，练习和示例。</p></li><li><p>博客：<a href="https://flink.apache.org/blog/" target="_blank" rel="noopener">Apache Flink</a>和<a href="https://data-artisans.com/blog/" target="_blank" rel="noopener">data Artisans</a>博客会比较频繁的发布flink相关的、深入的技术文章。</p></li></ul>]]></content>
+      
+      
+      <categories>
+          
+          <category> flink </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> flink </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
       <title>flink常见问题</title>
       <link href="/2018/09/24/flink-faq/"/>
       <url>/2018/09/24/flink-faq/</url>
@@ -76,7 +99,7 @@
       <link href="/2018/09/23/microservice-weifuwunaxieshier/"/>
       <url>/2018/09/23/microservice-weifuwunaxieshier/</url>
       
-        <content type="html"><![CDATA[<h2 id="微服务解惑"><a href="#微服务解惑" class="headerlink" title="微服务解惑"></a>微服务解惑</h2><h3 id="微服务与容器"><a href="#微服务与容器" class="headerlink" title="微服务与容器"></a>微服务与容器</h3><p>微服务又指的是在传统应用架构的基础上，按照业务能力将系统拆分成多个服务，每个服务都是一个独立的应用，对外提供一些列的公共服务API，服务之间以轻量的方式互相调用。<br>微服务里的每个服务都是一个组件，通过编排组合从而达到独立、解耦、组件化、易维护、可复用、可替换、高可用的设计原则。微服务后，自动化部署以及运维是比较头疼的事，容器技术解决了这个问题。</p><ul><li>好的架构需要考虑后面的扩展以及修改</li><li>好的架构是解耦的，需改一个地方不会影响另外一个地方</li><li>好的架构是轻便灵活的，一个应用最好只解决一个问题，而不是叠加功能</li></ul><h3 id="微服务的标签"><a href="#微服务的标签" class="headerlink" title="微服务的标签"></a>微服务的标签</h3><ul><li>单一职责</li><li>微</li><li>面向服务</li><li>自治</li><li>易扩展</li><li>流程化</li></ul><h3 id="微服务的不足"><a href="#微服务的不足" class="headerlink" title="微服务的不足"></a>微服务的不足</h3><ul><li>时效性·服务间的调用延时可能导致系统相应慢的问题</li><li>一致性·微服务在保证一致性上需要做更多的工作</li></ul><h3 id="微服务的价值"><a href="#微服务的价值" class="headerlink" title="微服务的价值"></a>微服务的价值</h3><ul><li>资源价值，资源不足是自动扩容，资源过量时自动缩容；</li><li>业务价值，工作量、人员数量、交付质量、交付周期；</li><li>技术价值，技术是为业务来服务的（个人标注：技术也是业务的一部分而不只是为业务而服务）</li><li>用户价值，用户体验好，服务上线快</li><li>未来价值，技术不成为业务的瓶颈</li></ul><h3 id="微服务的小目标"><a href="#微服务的小目标" class="headerlink" title="微服务的小目标"></a>微服务的小目标</h3><ul><li>持续交付</li><li>业务敏捷</li><li>独立演进</li><li>高可用</li><li>高性能</li></ul><h3 id="微服务的拆与不拆"><a href="#微服务的拆与不拆" class="headerlink" title="微服务的拆与不拆"></a>微服务的拆与不拆</h3><p>依据：数据模型、业务模型、关键指标，粒度平衡，边界合理</p><h3 id="DevOPS"><a href="#DevOPS" class="headerlink" title="DevOPS"></a>DevOPS</h3><p>开发与运维是一个整体，devops是一种思维方式，微服务与devops是天生一对</p><h3 id="SpringCloud特点"><a href="#SpringCloud特点" class="headerlink" title="SpringCloud特点"></a>SpringCloud特点</h3><ul><li>功能齐全</li><li>标准化</li><li>简单方便</li><li>按需取用</li><li>轻量</li><li>易扩展、易维护</li><li>可复用性</li></ul><h3 id="分布式系统组件及操作："><a href="#分布式系统组件及操作：" class="headerlink" title="分布式系统组件及操作："></a>分布式系统组件及操作：</h3><p>配置管理（Spring cloud config）、服务发现/调用(Feign)、断路器、智能路由（ZUUL）、微代理、控制总线、一次性Token、全局锁、决策竞选、分布式会话、集群状态。</p><p>注册中心(Eureka)、负载均衡(Ribbon)、断路器（Hystrix）、服务追踪（Sleuth，zipkin）、权限（string security）、接口可视化（Swagger）。</p><p>以上内容为《微服务那些事儿》读书笔记。</p><h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1]. 微服务那些事儿，纪晓峰著</p>]]></content>
+        <content type="html"><![CDATA[<h2 id="微服务解惑"><a href="#微服务解惑" class="headerlink" title="微服务解惑"></a>微服务解惑</h2><h3 id="微服务与容器"><a href="#微服务与容器" class="headerlink" title="微服务与容器"></a>微服务与容器</h3><p>微服务又指的是在传统应用架构的基础上，按照业务能力将系统拆分成多个服务，每个服务都是一个独立的应用，对外提供一些列的公共服务API，服务之间以轻量的方式互相调用。<br>微服务里的每个服务都是一个组件，通过编排组合从而达到独立、解耦、组件化、易维护、可复用、可替换、高可用的设计原则。微服务后，自动化部署以及运维是比较头疼的事，容器技术解决了这个问题。</p><ul><li>好的架构需要考虑后面的扩展以及修改</li><li>好的架构是解耦的，需改一个地方不会影响另外一个地方</li><li>好的架构是轻便灵活的，一个应用最好只解决一个问题，而不是叠加功能</li></ul><h3 id="微服务的标签"><a href="#微服务的标签" class="headerlink" title="微服务的标签"></a>微服务的标签</h3><ul><li>单一职责</li><li>微</li><li>面向服务</li><li>自治</li><li>易扩展</li><li>流程化</li></ul><h3 id="微服务的不足"><a href="#微服务的不足" class="headerlink" title="微服务的不足"></a>微服务的不足</h3><ul><li>时效性·服务间的调用延时可能导致系统相应慢的问题</li><li>一致性·微服务在保证一致性上需要做更多的工作</li></ul><h3 id="微服务的价值"><a href="#微服务的价值" class="headerlink" title="微服务的价值"></a>微服务的价值</h3><ul><li>资源价值，资源不足是自动扩容，资源过量时自动缩容；</li><li>业务价值，工作量、人员数量、交付质量、交付周期；</li><li>技术价值，技术是为业务来服务的（个人标注：技术也是业务的一部分而不只是为业务而服务）</li><li>用户价值，用户体验好，服务上线快</li><li>未来价值，技术不成为业务的瓶颈</li></ul><h3 id="微服务的小目标"><a href="#微服务的小目标" class="headerlink" title="微服务的小目标"></a>微服务的小目标</h3><ul><li>持续交付</li><li>业务敏捷</li><li>独立演进</li><li>高可用</li><li>高性能</li></ul><h3 id="微服务的拆与不拆"><a href="#微服务的拆与不拆" class="headerlink" title="微服务的拆与不拆"></a>微服务的拆与不拆</h3><p>依据：数据模型、业务模型、关键指标，粒度平衡，边界合理</p><h3 id="DevOPS"><a href="#DevOPS" class="headerlink" title="DevOPS"></a>DevOPS</h3><p>开发与运维是一个整体，devops是一种思维方式，微服务与devops是天生一对</p><h3 id="SpringCloud特点"><a href="#SpringCloud特点" class="headerlink" title="SpringCloud特点"></a>SpringCloud特点</h3><ul><li>功能齐全</li><li>标准化</li><li>简单方便</li><li>按需取用</li><li>轻量</li><li>易扩展、易维护</li><li>可复用性</li></ul><h3 id="分布式系统组件及操作"><a href="#分布式系统组件及操作" class="headerlink" title="分布式系统组件及操作"></a>分布式系统组件及操作</h3><p>配置管理（Spring cloud config）、服务发现/调用(Feign)、断路器、智能路由（ZUUL）、微代理、控制总线、一次性Token、全局锁、决策竞选、分布式会话、集群状态。</p><p>注册中心(Eureka)、负载均衡(Ribbon)、断路器（Hystrix）、服务追踪（Sleuth，zipkin）、权限（string security）、接口可视化（Swagger）。</p><p>以上内容为《微服务那些事儿》读书笔记。</p><h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1]. 微服务那些事儿，纪晓峰著</p>]]></content>
       
       
       <categories>
@@ -748,18 +771,18 @@
     </entry>
     
     <entry>
-      <title>archives</title>
-      <link href="/archives/index.html"/>
-      <url>/archives/index.html</url>
+      <title>categories</title>
+      <link href="/categories/index.html"/>
+      <url>/categories/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       
     </entry>
     
     <entry>
-      <title>categories</title>
-      <link href="/categories/index.html"/>
-      <url>/categories/index.html</url>
+      <title>archives</title>
+      <link href="/archives/index.html"/>
+      <url>/archives/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       
