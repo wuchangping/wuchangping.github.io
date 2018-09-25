@@ -3,7 +3,30 @@
   
     
     <entry>
-      <title>Apache Flink的文档</title>
+      <title>flink handbook - flink数据流编程模型</title>
+      <link href="/2018/09/26/flink-concepts-programming-model/"/>
+      <url>/2018/09/26/flink-concepts-programming-model/</url>
+      
+        <content type="html"><![CDATA[<h2 id="抽象层次"><a href="#抽象层次" class="headerlink" title="抽象层次"></a>抽象层次</h2><p>Flink提供不同级别的抽象来开发流/批处理应用程序。</p><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/levels_of_abstraction.svg" alt="抽象层次"></p><ul><li><p>最低级抽象只提供有状态流。它通过Process Function嵌入到DataStream API中。它允许用户自由处理来自一个或多个流的事件，并使用一致的容错状态。此外，用户可以注册事件时间和处理时间回调，允许程序实现复杂的计算。</p></li><li><p>实际上，大多数应用程序不需要上述低级抽象，而是针对Core API编程， 如DataStream API（有界/无界流）和DataSet API （有界数据集）。这些流畅的API提供了用于数据处理的通用构建块，例如各种形式的用户指定的转换，连接，聚合，窗口，状态等。在这些API中处理的数据类型在相应的编程语言中表示为类。</p></li></ul><p>低级Process Function与DataStream API集成，因此只能对某些操作进行低级抽象。该数据集API提供的有限数据集的其他原语，如循环/迭代。</p><ul><li>该表API是为中心的声明性DSL表，其可被动态地改变的表（表示流时）。该表API遵循（扩展）关系模型：表有一个模式连接（类似于在关系数据库中的表）和API提供可比的操作，如选择，项目，连接，分组依据，聚合等表API程序以声明方式定义应该执行的逻辑操作，而不是准确指定 操作代码的外观。虽然Table API可以通过各种类型的用户定义函数进行扩展，但它的表现力不如Core API，但使用更简洁（编写的代码更少）。此外，Table API程序还会通过优化程序，在执行之前应用优化规则。</li></ul><p>可以在表和DataStream / DataSet之间无缝转换，允许程序混合Table API以及DataStream 和DataSet API。</p><ul><li>Flink提供的最高级抽象是SQL。这种抽象在语义和表达方面类似于Table API，但是将程序表示为SQL查询表达式。在SQL抽象与表API紧密地相互作用，和SQL查询可以通过定义表来执行表API。</li></ul><h2 id="程序和数据流"><a href="#程序和数据流" class="headerlink" title="程序和数据流"></a>程序和数据流</h2><p>Flink程序的基本构建块是流和转换。（请注意，Flink的DataSet API中使用的DataSet也是内部流 - 稍后会详细介绍。）从概念上讲，流是（可能永无止境的）数据记录流，而转换是将一个或多个流作为输入，并产生一个或多个流输出的结果。</p><p>执行时，Flink程序映射到流数据流，由流和转换运算符组成。每个数据流都以一个或多个源开头，并以一个或多个接收器结束。数据流类似于任意有向无环图 （DAG）。尽管通过迭代结构允许特殊形式的循环 ，但为了简单起见，我们将在大多数情况下对此进行掩饰。</p><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/program_dataflow.svg" alt="DataStream程序及其数据流"></p><p>通常，程序中的转换与数据流中的运算符之间存在一对一的对应关系。但是，有时一个转换可能包含多个转换运算符。</p><p>源流和接收器记录在流连接器和批处理连接器文档中。DataStream运算符和DataSet转换中记录了转换。</p><h2 id="并行数据流"><a href="#并行数据流" class="headerlink" title="并行数据流"></a>并行数据流</h2><p>Flink中的程序本质上是并行和分布式的。在执行期间，流具有一个或多个流分区，并且每个运算符具有一个或多个运算符子任务。运算符子任务彼此独立，并且可以在不同的线程中执行，并且可能在不同的机器或容器上执行。</p><p>运算符子任务的数量是该特定运算符的并行度。流的并行性始终是其生成运算符的并行性。同一程序的不同运算符可能具有不同的并行级别。</p><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/parallel_dataflow.svg" alt="并行数据流"></p><p>流可以以一对一（或转发）模式或以重新分发模式在两个运营商之间传输数据：</p><ul><li><p>一对一流（例如，在上图中的Source和map（）运算符之间）保留元素的分区和排序。这意味着map（）运算符的subtask [1] 将以与Source运算符的subtask [1]生成的顺序相同的顺序看到相同的元素。</p></li><li><p>重新分配流（在上面的map（）和keyBy / window之间，以及 keyBy / window和Sink之间）重新分配流。每个运算符子任务将数据发送到不同的目标子任务，具体取决于所选的转换。实例是 keyBy（） （其通过散列密钥重新分区），广播（） ，或重新平衡（） （其重新分区随机地）。在重新分配交换中，元素之间的排序仅保留在每对发送和接收子任务中（例如，map（）的子任务[1] 和子任务[2]keyBy / window）。因此，在此示例中，保留了每个密钥内的排序，但并行性确实引入了关于不同密钥的聚合结果到达接收器的顺序的非确定性。</p></li></ul><p>有关配置和控制并行性的详细信息，请参阅并行执行的文档。</p><h2 id="视窗"><a href="#视窗" class="headerlink" title="视窗"></a>视窗</h2><p>聚合事件（例如，计数，总和）在流上的工作方式与批处理方式不同。例如，不可能计算流中的所有元素，因为流通常是无限的（无界）。相反，流上的聚合（计数，总和等）由窗口限定，例如“在最后5分钟内计数”或“最后100个元素的总和”。</p><p>Windows可以是时间驱动的（例如：每30秒）或数据驱动（例如：每100个元素）。一个典型地区分不同类型的窗口，例如翻滚窗口（没有重叠）， 滑动窗口（具有重叠）和会话窗口（由不活动的间隙打断）。</p><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/windows.svg" alt="时间和计数Windows"></p><p>更多窗口示例可以在此博客文章中找到。更多详细信息在窗口文档中。</p><h2 id="时间"><a href="#时间" class="headerlink" title="时间"></a>时间</h2><p>当在流程序中引用时间（例如定义窗口）时，可以参考不同的时间概念：</p><ul><li><p>事件时间是创建事件的时间。它通常由事件中的时间戳描述，例如由生产传感器或生产服务附加。Flink通过时间戳分配器访问事件时间戳。</p></li><li><p>摄取时间是事件在源操作员处输入Flink数据流的时间。</p></li><li><p>处理时间是执行基于时间的操作的每个操作员的本地时间。</p></li></ul><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/event_ingestion_processing_time.svg" alt="事件时间，摄取时间和处理时间"></p><p>有关如何处理时间的更多详细信息，请参阅<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/event_time.html" target="_blank" rel="noopener">事件时间文档</a>。</p><h2 id="有状态的操作"><a href="#有状态的操作" class="headerlink" title="有状态的操作"></a>有状态的操作</h2><p>虽然数据流中的许多操作只是一次查看一个单独的事件（例如事件解析器），但某些操作会记住多个事件（例如窗口操作符）的信息。这些操作称为有状态。</p><p>状态操作的状态保持在可以被认为是嵌入式键/值存储的状态中。状态被分区并严格地与有状态运营商读取的流一起分发。因此，只有在keyBy（）函数之后才能在键控流上访问键/值状态，并且限制为与当前事件的键相关联的值。对齐流和状态的密钥可确保所有状态更新都是本地操作，从而保证一致性而无需事务开销。此对齐还允许Flink重新分配状态并透明地调整流分区。</p><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/state_partitioning.svg" alt="状态和分区"></p><p>有关更多信息，请参阅有关状态的文档。</p><h2 id="容错检查点"><a href="#容错检查点" class="headerlink" title="容错检查点"></a>容错检查点</h2><p>Flink使用流重放和检查点的组合实现容错。检查点与每个输入流中的特定点以及每个操作符的对应状态相关。通过恢复运算符的状态并从检查点重放事件，可以从检查点恢复流数据流，同时保持一致性（恰好一次处理语义）。</p><p>检查点间隔是在执行期间用恢复时间（需要重放的事件的数量）来折衷容错开销的手段。</p><p><a href="https://ci.apache.org/projects/flink/flink-docs-master/internals/stream_checkpointing.html" target="_blank" rel="noopener">容错内部</a>的描述提供了有关Flink如何管理检查点和相关主题的更多信息。有关启用和配置检查点的详细信息，请参阅检查点API文档。</p><h2 id="流媒体批处理"><a href="#流媒体批处理" class="headerlink" title="流媒体批处理"></a>流媒体批处理</h2><p>Flink执行<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/index.html" target="_blank" rel="noopener">批处理程序</a>作为流程序的特殊情况，其中流是有界的（有限数量的元素）。数据集在内部视为数据流。因此，上述概念以相同的方式应用于批处理程序，并且它们适用于流程序，除了少数例外：</p><ul><li><p><a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/fault_tolerance.html" target="_blank" rel="noopener">批处理程序的容错</a>不使用检查点。通过完全重放流来恢复。这是可能的，因为输入有限。这会使成本更多地用于恢复，但使常规处理更便宜，因为它避免了检查点。</p></li><li><p>DataSet API中的有状态操作使用简化的内存/核外数据结构，而不是键/值索引。</p></li><li><p>DataSet API引入了特殊的同步（超级步骤）迭代，这些迭代只能在有界流上进行。有关详细信息，请查看<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/iterations.html" target="_blank" rel="noopener">迭代文档</a>。</p></li></ul><h2 id="下一步"><a href="#下一步" class="headerlink" title="下一步"></a>下一步</h2><p>继续使用Flink的Distributed Runtime中的基本概念。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> flink </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> flink </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>Flink handbook - Apache Flink的文档</title>
       <link href="/2018/09/24/flink-apache-flink-home/"/>
       <url>/2018/09/24/flink-apache-flink-home/</url>
       
@@ -26,7 +49,7 @@
     </entry>
     
     <entry>
-      <title>flink常见问题</title>
+      <title>Flink handbook - flink常见问题</title>
       <link href="/2018/09/24/flink-faq/"/>
       <url>/2018/09/24/flink-faq/</url>
       
@@ -49,7 +72,7 @@
     </entry>
     
     <entry>
-      <title>flink用例</title>
+      <title>Flink handbook - flink用例</title>
       <link href="/2018/09/23/flink-use-cases/"/>
       <url>/2018/09/23/flink-use-cases/</url>
       
@@ -72,7 +95,7 @@
     </entry>
     
     <entry>
-      <title>什么是Apache Flink？</title>
+      <title>Flink handbook - 什么是Apache Flink？</title>
       <link href="/2018/09/23/flink-what-is-apache-flink/"/>
       <url>/2018/09/23/flink-what-is-apache-flink/</url>
       
@@ -187,7 +210,7 @@
     </entry>
     
     <entry>
-      <title>Pravega控制器服务之三</title>
+      <title>Pravega handbook - 控制器服务之三</title>
       <link href="/2018/09/20/pravega-controller-service-3/"/>
       <url>/2018/09/20/pravega-controller-service-3/</url>
       
@@ -210,7 +233,7 @@
     </entry>
     
     <entry>
-      <title>Pravega控制器服务之二</title>
+      <title>Pravega handbook - 控制器服务之二</title>
       <link href="/2018/09/20/pravega-controller-service-2/"/>
       <url>/2018/09/20/pravega-controller-service-2/</url>
       
@@ -233,7 +256,7 @@
     </entry>
     
     <entry>
-      <title>Pravega控制器服务之一</title>
+      <title>Pravega handbook - 控制器服务之一</title>
       <link href="/2018/09/20/pravega-controller-service-1/"/>
       <url>/2018/09/20/pravega-controller-service-1/</url>
       
@@ -256,7 +279,7 @@
     </entry>
     
     <entry>
-      <title>flink 集群与部署之kubernetes篇</title>
+      <title>Flink handbook - flink集群与部署之kubernetes篇</title>
       <link href="/2018/09/20/flink-deployment-kubernetes/"/>
       <url>/2018/09/20/flink-deployment-kubernetes/</url>
       
@@ -279,7 +302,7 @@
     </entry>
     
     <entry>
-      <title>flink 集群与部署之docker篇</title>
+      <title>Flink handbook - flink 集群与部署之docker篇</title>
       <link href="/2018/09/20/flink-deployment-docker/"/>
       <url>/2018/09/20/flink-deployment-docker/</url>
       
@@ -302,7 +325,7 @@
     </entry>
     
     <entry>
-      <title>pravega段容器</title>
+      <title>pravega handbook - 段容器</title>
       <link href="/2018/09/19/pravega-segment-containers/"/>
       <url>/2018/09/19/pravega-segment-containers/</url>
       
@@ -325,7 +348,7 @@
     </entry>
     
     <entry>
-      <title>pravega wire protocol</title>
+      <title>pravega handbook - wire protocol</title>
       <link href="/2018/09/19/pravega-wire-protocol/"/>
       <url>/2018/09/19/pravega-wire-protocol/</url>
       
@@ -348,7 +371,7 @@
     </entry>
     
     <entry>
-      <title>pravega数据面段存储服务之三</title>
+      <title>pravega handbook - 数据面段存储服务之三</title>
       <link href="/2018/09/18/pravega-segment-store-service-3/"/>
       <url>/2018/09/18/pravega-segment-store-service-3/</url>
       
@@ -371,7 +394,7 @@
     </entry>
     
     <entry>
-      <title>pravega数据面段存储服务之二</title>
+      <title>pravega handbook - 数据面段存储服务之二</title>
       <link href="/2018/09/18/pravega-segment-store-service-2/"/>
       <url>/2018/09/18/pravega-segment-store-service-2/</url>
       
@@ -394,7 +417,7 @@
     </entry>
     
     <entry>
-      <title>pravega数据面段存储服务之一</title>
+      <title>pravega handbook - 数据面段存储服务之一</title>
       <link href="/2018/09/18/pravega-segment-store-service-1/"/>
       <url>/2018/09/18/pravega-segment-store-service-1/</url>
       
@@ -417,7 +440,7 @@
     </entry>
     
     <entry>
-      <title>pravega reader groups设计</title>
+      <title>pravega handbook - reader groups设计</title>
       <link href="/2018/09/17/pravega-reader-groups/"/>
       <url>/2018/09/17/pravega-reader-groups/</url>
       
@@ -486,7 +509,7 @@
     </entry>
     
     <entry>
-      <title>pravega stateSynchronizer</title>
+      <title>pravega handbook - stateSynchronizer</title>
       <link href="/2018/09/16/pravega-statesynchronizer/"/>
       <url>/2018/09/16/pravega-statesynchronizer/</url>
       
@@ -509,7 +532,7 @@
     </entry>
     
     <entry>
-      <title>pravega常见问题</title>
+      <title>pravega handbook - 常见问题</title>
       <link href="/2018/09/16/pravega-faq/"/>
       <url>/2018/09/16/pravega-faq/</url>
       
@@ -532,7 +555,7 @@
     </entry>
     
     <entry>
-      <title>Pravega关键特性二</title>
+      <title>Pravega handbook - 关键特性二</title>
       <link href="/2018/09/16/pravega-key-features-2/"/>
       <url>/2018/09/16/pravega-key-features-2/</url>
       
@@ -555,7 +578,7 @@
     </entry>
     
     <entry>
-      <title>Pravega关键特性一</title>
+      <title>Pravega handbook - 关键特性一</title>
       <link href="/2018/09/16/pravega-key-features-1/"/>
       <url>/2018/09/16/pravega-key-features-1/</url>
       
@@ -578,7 +601,7 @@
     </entry>
     
     <entry>
-      <title>pravega相关术语</title>
+      <title>pravega handbook - 相关术语</title>
       <link href="/2018/09/16/pravega-terminology/"/>
       <url>/2018/09/16/pravega-terminology/</url>
       
@@ -601,7 +624,7 @@
     </entry>
     
     <entry>
-      <title>Pravega基本概念四 - 架构，小结</title>
+      <title>Pravega handbook - 基本概念四 - 架构，小结</title>
       <link href="/2018/09/16/pravega-concepts-4/"/>
       <url>/2018/09/16/pravega-concepts-4/</url>
       
@@ -624,7 +647,7 @@
     </entry>
     
     <entry>
-      <title>Pravega基本概念三 - ReaderGroup，Transactions，State Synchronizers</title>
+      <title>Pravega handbook - 基本概念三 - ReaderGroup，Transactions，State Synchronizers</title>
       <link href="/2018/09/16/pravega-concepts-3/"/>
       <url>/2018/09/16/pravega-concepts-3/</url>
       
@@ -647,7 +670,7 @@
     </entry>
     
     <entry>
-      <title>Pravega基本概念二 - Events, Segments, AutoScaling, Ordering</title>
+      <title>Pravega handbook - 基本概念二 - Events, Segments, AutoScaling, Ordering</title>
       <link href="/2018/09/16/pravega-concepts-2/"/>
       <url>/2018/09/16/pravega-concepts-2/</url>
       
@@ -670,7 +693,7 @@
     </entry>
     
     <entry>
-      <title>Pravega 基本概念一 - Streams, Events, Writers, Readers, ReaderGroups</title>
+      <title>Pravega handbook - 基本概念一 - Streams, Events, Writers, Readers, ReaderGroups</title>
       <link href="/2018/09/16/pravega-concepts-1/"/>
       <url>/2018/09/16/pravega-concepts-1/</url>
       
@@ -693,7 +716,7 @@
     </entry>
     
     <entry>
-      <title>pravega入门</title>
+      <title>pravega handbook - 入门</title>
       <link href="/2018/09/16/pravegage-usage/"/>
       <url>/2018/09/16/pravegage-usage/</url>
       
@@ -716,7 +739,7 @@
     </entry>
     
     <entry>
-      <title>pravega overview</title>
+      <title>pravega handbook - overview</title>
       <link href="/2018/09/15/pravega-overview/"/>
       <url>/2018/09/15/pravega-overview/</url>
       
@@ -771,18 +794,18 @@
     </entry>
     
     <entry>
-      <title>categories</title>
-      <link href="/categories/index.html"/>
-      <url>/categories/index.html</url>
+      <title>archives</title>
+      <link href="/archives/index.html"/>
+      <url>/archives/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       
     </entry>
     
     <entry>
-      <title>archives</title>
-      <link href="/archives/index.html"/>
-      <url>/archives/index.html</url>
+      <title>categories</title>
+      <link href="/categories/index.html"/>
+      <url>/categories/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       
