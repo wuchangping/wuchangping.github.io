@@ -68,7 +68,7 @@
     <script defer type="text/javascript" src="/js/index.js"></script>
     
     <script defer type="text/javascript" src="/js/custom.js"></script>
-    <title>pravega handbook - overview | 常平的技术网站 - 流处理,流计算,分布式系统,微服务</title>
+    <title>flink handbook - Flink分布式运行时 | 常平的技术网站 - 流处理,流计算,分布式系统,微服务</title>
   </head>
   <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
     
@@ -114,7 +114,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/15/pravega-overview/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/26/flink-concepts-distributed-runtime/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
        <meta itemprop="name" content="常平">
        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
@@ -125,11 +125,11 @@
       </span>
     </div>
     <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">pravega handbook - overview</h1>
+      <h1 class="post-title" itemprop="name headline">flink handbook - Flink分布式运行时</h1>
       <div class="post-meta">
         
         <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-15T22:15:59+08:00">2018-09-15 22:15:59</time></span>
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-26T22:34:39+08:00">2018-09-26 22:34:39</time></span>
         </span>
         
         
@@ -138,44 +138,50 @@
         
         <span class="post-categories">
           
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
         </span>
         
         
       </div>
     </header>
     <main class="post-main" itemprop="articleBody">
-      <p>当前的大数据处理系统无论是Lamda架构还是Kappa架构都面临一个问题，即：“计算是原生的流计算，而存储却不是原生的流存储” 。</p>
-<p>作为存储业界首屈一指的领导者，DELL EMC的存储专家们重新思考了这一基本的数据处理和存储规则，为这一场景重新设计了一种新的存储类型，即原生的流存储，命名为”Pravega”，在梵语里是“Good Speed”的意思。</p>
-<p>Pravega是一种流数据存储系统，其具有可持久化，弹性，数据只追加，字节序列无限制，性能良好和强一致性的特点。并且根据Apache 2.0许可证开源，DELLEMC的存储专家们相信这一颠覆性的技术应该开源出来与开源社区一起拥有与推动，Pravega相应的介绍以及代码可以从pravega.io获得。</p>
-<h2 id="主要特性"><a href="#主要特性" class="headerlink" title="主要特性"></a>主要特性</h2><ul>
-<li><p>正好一次 – 不管是客户端、服务端还是网络出现了故障，Pravega都能确保每个事件都只被传递和处理正好一次（exactly-once）。</p>
-</li>
-<li><p>自动伸缩 – 不同于静态分区系统只有固定大小的存储空间，当数据采集速率发生变化时Pravega可以根据场景自动调整空间大小以自动适应数据规模的变化。</p>
-</li>
-<li><p>分布式计算原语 – Pravega具有和zookeeper一样的选主功能，支持进程间传递消息，支持数据存储，非常适用于分布式计算场景。</p>
-</li>
-<li><p>写入效率好 – 目前Pravega 的写入时延在毫秒级，还能无缝的扩展以支持数千个客户端的同时并发读写，是IOT和其他时延敏感型应用的理想选择。</p>
-</li>
-<li><p>无限保存 – 数据永远都在流中采集、处理和保存，对于实时数据和历史数据使用一样的处理范式。</p>
-</li>
-<li><p>高效存储 – Pravega构建了一种数据处理通道，支持将批处理，实时处理以及其他应用比如数据检索，都构建在一个数据处理通道内，无需为每个处理模式都保留一份数据副本。</p>
-</li>
-<li><p>持久化 – Pravega保证无需在高性能，可持久化和一致性之间做权衡，在客户端确认写入操作已完成之前，Pravega将一直存留并保护数据。</p>
-</li>
-<li><p>支持事务 - 开发人员使用Pravega事务来确保一组事件原子性的写入流中。</p>
-</li>
+      <h2 id="任务和算子链"><a href="#任务和算子链" class="headerlink" title="任务和算子链"></a>任务和算子链</h2><p>对于分布式执行，Flink将算子子任务链接到任务中。每个任务由一个线程执行。将算子链接到任务中是一项有用的优化：它可以减少线程到线程切换和缓冲的开销，并在降低延迟的同时提高整体吞吐量。可以配置链接行为; 有关详细信息，请参阅链接文档。</p>
+<p>下图中的示例数据流由五个子任务执行，因此具有五个并行线程。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/tasks_chains.svg" alt="算子链接到任务"></p>
+<h2 id="作业管理器，任务管理器，客户端"><a href="#作业管理器，任务管理器，客户端" class="headerlink" title="作业管理器，任务管理器，客户端"></a>作业管理器，任务管理器，客户端</h2><p>Flink运行时包含两种类型的进程：</p>
+<ul>
+<li>JobManagers（也称为主作业）协调分布式执行。他们调度任务，协调检查点，协调故障恢复等。</li>
 </ul>
-<a id="more"></a> 
-<h2 id="Pravega的逻辑架构"><a href="#Pravega的逻辑架构" class="headerlink" title="Pravega的逻辑架构"></a>Pravega的逻辑架构</h2><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega_overview_1.jpg" alt="Pravega的逻辑架构"></p>
-<p>计算与存储解耦，计算包括 Flink,Spark,一个自我开发的分布式检索系统。<br>存储层实现了一个流抽象层，一级高性能存储采用Bookeeper，二级冷数据存储<br>可以支持开源的HDFS，CEPH，GlusterFS，Swift，云存储等。与Kafka对比，最大区别在于Pravega是专门为流数据而生的原生的流存储。</p>
+<p>总是至少有一个Job Manager。高可用性配置将具有多个JobManagers，其中一个始终是领导者，其他人则是备用者。</p>
+<ul>
+<li>TaskManagers（也叫工作者）执行数据流的任务（或者更具体地说，子任务），并且缓冲和交换数据流。</li>
+</ul>
+<p>必须至少有一个TaskManager。</p>
+<p>JobManagers和TaskManagers可以通过多种方式启动：直接作为独立集群、在容器中、或由YARN或Mesos等资源框架管理。TaskManagers连接到JobManagers，宣布它们自己是可用，并被分配工作。</p>
+<p>客户端不是运行时和程序执行的一部分，而是被用来准备和发送的数据流的JobManager。之后，客户端可以断开连接或保持连接以接收进度报告。客户端既可以作为触发执行的Java / Scala程序的一部分运行，也可以在命令行进程中运行./bin/flink run …。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/processes.svg" alt="执行Flink数据流所涉及的过程"></p>
+<h2 id="任务槽和资源"><a href="#任务槽和资源" class="headerlink" title="任务槽和资源"></a>任务槽和资源</h2><p>每个worker（TaskManager）都是一个JVM进程，可以在不同的线程中执行一个或多个子任务。为了控制worker接受的任务数量，工人有所谓的任务槽（至少一个）。</p>
+<p>每个任务槽代表TaskManager的固定资源子集。例如，具有三个插槽的TaskManager将其托管内存的1/3专用于每个插槽。对资源进行分隔意味着子任务不会与来自其他作业的子任务竞争托管内存，而是具有一定数量的保留托管内存。请注意，此处不会发生CPU隔离; 当前插槽只分离任务的托管内存。</p>
+<p>通过调整任务槽的数量，用户可以定义子任务如何相互隔离。每个TaskManager有一个插槽意味着每个任务组在一个单独的JVM中运行（例如，可以在一个单独的容器中启动）。拥有多个插槽意味着更多子任务共享同一个JVM。同一JVM中的任务共享TCP连接（通过多路复用）和心跳消息。它们还可以共享数据集和数据结构，从而减少每任务开销。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/tasks_slots.svg" alt="具有任务槽和任务的TaskManager"></p>
+<p>默认情况下，Flink允许子任务共享插槽，即使它们是不同任务的子任务，只要它们来自同一个作业。结果是一个槽可以容纳整个作业的管道。允许此插槽共享有两个主要好处：</p>
+<p>Flink集群需要与作业中使用的最高并行度一样多的任务槽。无需计算程序总共包含多少任务（具有不同的并行性）。</p>
+<p>更容易获得更好的资源利用率。如果没有插槽共享，非密集型源/ map（）子任务将阻止与资源密集型窗口子任务一样多的资源。通过插槽共享，将示例中的基本并行性从2增加到6可以充分利用时隙资源，同时确保繁重的子任务在TaskManagers之间公平分配。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/slot_sharing.svg" alt="具有共享任务槽的TaskManagers"></p>
+<p>API还包括可用于防止不期望的插槽共享的资源组机制。</p>
+<p>根据经验，一个好的默认任务槽数就是CPU核心数。使用超线程，每个插槽然后需要2个或更多硬件线程上下文。</p>
+<h2 id="状态后端"><a href="#状态后端" class="headerlink" title="状态后端"></a>状态后端</h2><p>存储键/值索引的确切数据结构取决于所选的状态后端。一个状态后端将数据存储在内存中的哈希映射中，另一个状态后端使用RocksDB作为键/值存储。除了定义保存状态的数据结构之外，状态后端还实现逻辑以获取键/值状态的时间点快照，并将该快照存储为检查点的一部分逻辑。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/checkpoints.svg" alt="检查点和快照"></p>
+<h2 id="保存点"><a href="#保存点" class="headerlink" title="保存点"></a>保存点</h2><p>用Data Stream API编写的程序可以从保存点恢复执行。保存点允许更新程序和Flink群集，而不会丢失任何状态。</p>
+<p>保存点是手动触发的检查点，它将程序的快照写入状态后端。他们依赖于常规的检查点机制。在执行期间，程序会周期性地在工作节点上创建快照并生成检查点。对于恢复，仅需要最后完成的检查点，并且一旦新的检查点完成，就可以安全地丢弃旧的检查点。</p>
+<p>保存点与这些定期检查点类似，不同之处在于它们由用户触发，并且在完成较新的检查点时不会自动过期。可以从命令行或通过REST API取消作业时创建保存点。</p>
 
     </main>
     <footer class="post-footer">
       
       <div class="post-tags">
         
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
         
       </div>
       
@@ -186,12 +192,10 @@
   <nav class="page-nav">
     <div class="page-nav-next page-nav-item">
       
-      <a href="/2018/09/13/hello-world/" rel="next" title="Hello World"><i class="fas fa-angle-left"></i><span class="nav-title">Hello World</span></a>
+      <a href="/2018/09/26/flink-concepts-programming-model/" rel="next" title="flink handbook - flink数据流编程模型"><i class="fas fa-angle-left"></i><span class="nav-title">flink handbook - flink数据流编程模型</span></a>
       
     </div>
     <div class="page-nav-prev page-nav-item">
-      
-      <a href="/2018/09/16/pravegage-usage/" rel="prev" title="pravega handbook - 入门"><span class="nav-title">pravega handbook - 入门</span><i class="fas fa-angle-right"></i></a>
       
     </div>
   </nav>
@@ -251,7 +255,7 @@
     <hr>
     <div class="post-toc sidebar-item" id="toc-div">
       <div><i class="fas fa-list-ol"></i>文章目录</div>
-      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#主要特性"><span class="toc-text">主要特性</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#Pravega的逻辑架构"><span class="toc-text">Pravega的逻辑架构</span></a></li></ol></div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#任务和算子链"><span class="toc-text">任务和算子链</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#作业管理器，任务管理器，客户端"><span class="toc-text">作业管理器，任务管理器，客户端</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#任务槽和资源"><span class="toc-text">任务槽和资源</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#状态后端"><span class="toc-text">状态后端</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#保存点"><span class="toc-text">保存点</span></a></li></ol></div>
     </div>
     
     
