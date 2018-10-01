@@ -115,6 +115,300 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/pravega-controller-service-1/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/20/pravega-controller-service-1/" itemprop="url">Pravega handbook - 控制器服务之一</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T21:29:36+08:00">2018-09-20 21:29:36</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>控制器服务是Pravega的核心组件，用于实现控制平面。它充当集群中执行的各种操作的中央协调器和管理器，主要分为两类：</p>
+<ol>
+<li>流管理</li>
+<li>集群管理</li>
+</ol>
+<p>控制器服务，此后简称为控制器，负责提供<a href="http://pravega.io/docs/latest/pravega-concepts/#streams" target="_blank" rel="noopener">流</a>的抽象，这是Pravega向应用程序公开的主要抽象。流包括一个或多个<a href="http://pravega.io/docs/latest/pravega-concepts/#stream-segments" target="_blank" rel="noopener">段</a>。每个段都是仅附加数据结构，用于存储字节序列。一个段本身与其他段的存在无关，并且不知道它与其对等段的逻辑关系。拥有和管理这些段的段存储没有任何流的概念。流是由Controller概念化的逻辑视图通过组合动态变化的一组段来满足一组预定义的逻辑不变量。控制器提供流抽象并协调流上的所有生命周期操作，同时确保抽象保持一致。</p>
+<p>控制器在流的生命周期中起着核心作用：创建，修改，<a href="http://pravega.io/docs/latest/pravega-concepts/#autoscalingthenumber-of-stream-segments-can-vary-over-time" target="_blank" rel="noopener">缩放</a>和删除。它通过维护每个流的元数据并在必要时对段执行必要的操作来完成这些操作。例如，作为流生命周期的一部分，可以创建新的段并密封现有的段。控制器决定何时执行这些操作，使得流继续可用并且对访问它们的客户端是一致的。</p>
+<h2 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h2><p>控制器服务由一个或多个无状态工作节点实例组成。每个新的控制器实例都可以独立启动，并成为pravega集群的一部分，它只需要指向相同的Apache Zookeeper。对于高可用性，建议是每个群集具有不止一个控制器服务实例。</p>
+<p>每个控制器实例都能够独立工作，并使用一个共享的持久存储作为控制器服务所拥有和管理的所属状态的真实来源。目前使用Apache ZooKeeper作为持久存储来保存所有的元数据。每个实例包括各种子系统，其负责对不同类别的元数据执行特定操作。这些子系统包括不同的API端点，元数据存储句柄，策略管理器和后台工作程序。</p>
+<p>控制器暴露两个端点，这些端点可用于与控制器服务交互。第一个端口用于为pravega客户端提供编程访问，并使用gRPC实现为RPC。另一个端点用于管理操作，并作为REST端点实现。</p>
+<h2 id="流管理"><a href="#流管理" class="headerlink" title="流管理"></a>流管理</h2><p>控制器拥有并管理流的概念，并负责维护每个流的元数据和生命周期。具体而言，它负责创建，更新，缩放，截断，密封和删除流。<br>流管理可以大致分为三类：</p>
+<ol>
+<li><p>流抽象<br>流可以被视为一系列动态变化的段集，其中流从一组一致的段转换到下一个。Controller是创建和管理此流抽象的地方。控制器决定流何时以及如何从一种状态转换到另一种状态，并负责执行这些转换，同时保持流的状态一致且可用。这些转换是受控制器强制执行的用户定义策略的支配。因此，作为流管理的一部分，控制器还会执行策略管理器的角色，以实现保留和缩放等策略。</p>
+</li>
+<li><p>自动策略管理<br>控制器负责通过主动监视流的状态来存储和实施用户定义的流策略。目前，我们有两个用户可以定义的策略，即<a href="https://github.com/pravega/pravega/blob/master/client/src/main/java/io/pravega/client/stream/ScalingPolicy.java" target="_blank" rel="noopener">缩放策略</a>和 <a href="https://github.com/pravega/pravega/blob/master/client/src/main/java/io/pravega/client/stream/RetentionPolicy.java" target="_blank" rel="noopener">保留策略</a>。缩放策略描述了流是否以及在何种情况下应自动缩放其段数。保留策略描述了有关在流中保留多少数据的策略。</p>
+</li>
+<li><p><a href="http://pravega.io/docs/latest/pravega-concepts/#transactions" target="_blank" rel="noopener">事务</a>管理<br>实现事务需要操作段。对于每个事务，Pravega创建一组事务段，这些事务段稍后在提交时合并到流段上或在中止时丢弃。控制器执行事务管理器的角色，负责在给定流上创建和提交事务。在创建事务时，控制器还跟踪事务超时并中止超时已过期的事务。事务管理的细节可以在文档的后面找到。</p>
+</li>
+</ol>
+<h2 id="集群管理"><a href="#集群管理" class="headerlink" title="集群管理"></a>集群管理</h2><p>控制器负责管理段存储集群。控制器管理段存储节点的生命周期，因为它们被添加到群集/从群集中删除，并在可用的段存储节点上执行段容器的重新分发。</p>
+<h2 id="系统图"><a href="#系统图" class="headerlink" title="系统图"></a>系统图</h2><p>下图显示了控制器进程的主要组件。我们接下来将详细讨论该图表的元素。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2FControllerSystemDiagram.png" alt="ControllerSystemDiagram"></p>
+<p>控制器流程图</p>
+<h1 id="组件"><a href="#组件" class="headerlink" title="组件"></a>组件</h1><h3 id="服务端点"><a href="#服务端点" class="headerlink" title="服务端点"></a>服务端点</h3><p>控制器公开了两个端口：客户端控制器API和管理API。客户端控制器通信被实现为RPC，RPC公开API以执行所有与流相关的控制平面操作。除此控制器外，还公开了一个作为REST实现的管理API集。</p>
+<p>每个端点都对Controller Service后端子系统执行适当的调用，该控制器服务子系统 具有对控制器拥有和管理的实体进行各种创建，读取，更新和删除（CRUD）操作的实际实现。</p>
+<h3 id="GRPC"><a href="#GRPC" class="headerlink" title="GRPC"></a>GRPC</h3><p>客户端控制器通信端点实现为gRPC 接口。完整的API列表可以在<a href="https://github.com/pravega/pravega/blob/master/shared/controller-api/src/main/proto/Controller.proto" target="_blank" rel="noopener">此处</a>找到 。这暴露了Pravega客户端（读者，写者和流管理器）使用的API，并启用了流管理。此API启用的请求包括创建，修改和删除流。底层gRPC框架提供同步和异步编程模型。我们在客户端控制器交互中使用异步模型，以便客户端线程不会阻止来自服务器的响应。</p>
+<p>为了能够附加和读取来自流，writer和reader的数据，查询控制器以在使用流时获得活动的段集，后继段和前置段。对于事务，客户端使用特定的API调用来请求控制器创建和提交事务。</p>
+<h3 id="REST"><a href="#REST" class="headerlink" title="REST"></a>REST</h3><p>对于管理，控制器实现并公开REST接口。这包括用于流管理的API调用以及主要处理范围创建和删除的其他管理API。我们使用swagger来描述我们的REST API。<a href="https://github.com/pravega/pravega/tree/master/shared/controller-api/src/main/swagger" target="_blank" rel="noopener">这里</a>可以找到swagger的yaml文件。</p>
+<h3 id="控制器服务"><a href="#控制器服务" class="headerlink" title="控制器服务"></a>控制器服务</h3><p>Controller服务是控制器端点（gRPC和REST）后面的后端层。提供控制器API调用所需的所有业务逻辑都在此处实现。该层包含所有其他子系统的句柄，如各种存储实现（流存储，主机存储和检查点存储）和后台处理框架（任务框架，事件处理器框架）。存储是提供对Controller管理的各种类型元数据的访问的接口。后台处理框架用于执行异步处理，该异步处理通常实现涉及元数据更新和对分段存储的请求的工作流。</p>
+<h3 id="流元数据存储"><a href="#流元数据存储" class="headerlink" title="流元数据存储"></a>流元数据存储</h3><p>流是动态改变的段序列，其中路由键空间的区域映射到开放段。随着流的段的集合发生变化，路由密钥空间到段的映射也会发生变化。<br>如果1）映射到集合中的段的关键空间区域的并集覆盖整个密钥空间，则该组段是一致的。2）密钥空间区域之间没有重叠。例如，假设集合S = { S 1，S 2，S 3 }，使得： - 区域[0,0.3]映射到区段S 1 - 区域[0.3,0.6]映射到区段S 2 - 区域[0.6 ，1.0）映射到段S 3<br>S是一致的段集。</p>
+<p>随着时间的推移，流会经历转换。流以初始的段集合开始，这些初始段集合在创建时由流配置确定，并且随着对流执行缩放操作时转换为新的段集。在任何给定时间点构成流的每一段被认为属于一个时期。因此，流以初始时期开始，该初始时期是时期0，并且在每次转换时，它在其时期中向前移动以描述流中的段的生成的变化。</p>
+<p>控制器维护流存储关于构成给定流的所有时期以及它们如何转换的信息。该存储旨在优化存储和查询与段及其相互关系相关的信息。<br>除了时期信息之外，它还保留了一些额外的元数据，例如状态及其策略以及流上的持续事务。</p>
+<p>控制器的各种子组件通过定义良好的接口访问每个流的存储元数据 。我们目前有两个具体的流存储接口实现：内存和zookeeper支持的存储。两者共享一个公共的基础实现，该实现依赖于流对象，为所有特定于流的元数据提供特定于存储类型的实现。流存储的基本实现创建并缓存这些流对象。</p>
+<p>流对象实现存储/流接口。具体的流实现特定于存储类型的，并负责实现存储特定的方法，以提供一致性和正确性。我们有一个提供乐观并发的所有存储类型的通用基础实现。此基类封装了针对支持Compare和Swap（CAS）的所有具体存储的流存储查询的逻辑。我们目前使用zookeeper作为我们的底层存储，它也支持CAS。我们在流特定的znodes（ZooKeeper数据节点）下以分层方式存储所有流元数据。</p>
+<p>对于基于ZooKeeper的存储，我们将元数据组织到不同的组中，以支持针对此元数据的各种查询。所有特定于流的元数据都存储在作用域/流根节点下。针对该元数据的查询包括（但不限于）查询在不同时间点形成流的段集，段特定信息，段前驱和后继。有关流元数据存储公开的API的详细信息，请参阅流元数据接口。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/flink-deployment-kubernetes/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/20/flink-deployment-kubernetes/" itemprop="url">Flink handbook - flink集群与部署之kubernetes篇</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T06:46:49+08:00">2018-09-20 06:46:49</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>本页介绍如何在Kubernetes上部署Flink作业和会话群集。</p>
+<h2 id="设置Kubernetes"><a href="#设置Kubernetes" class="headerlink" title="设置Kubernetes"></a>设置Kubernetes</h2><p>请参照<a href="https://kubernetes.io/docs/setup/" target="_blank" rel="noopener">Kubernetes的设置指南</a>来部署Kubernetes集群。如果您想在本地运行Kubernetes，我们建议使用<a href="https://kubernetes.io/docs/setup/minikube/" target="_blank" rel="noopener">MiniKube</a>来部署集群。</p>
+<blockquote>
+<p>注意：如果使用MiniKube，请确保<code>minikube ssh &#39;sudo ip link set docker0 promisc on&#39;</code>在部署Flink群集之前执行。否则，Flink组件无法通过Kubernetes服务自行引用。</p>
+</blockquote>
+<h2 id="Kubernetes上的Flink会话群集"><a href="#Kubernetes上的Flink会话群集" class="headerlink" title="Kubernetes上的Flink会话群集"></a>Kubernetes上的Flink会话群集</h2><p>Flink会话群集作为长期运行的Kubernetes部署来执行，请注意，可以在会话群集上运行多个Flink作业。在部署了集群之后，每个作业都需要提交到群集。</p>
+<p>一个基本的部署在Kubernetes上的Flink会话群集一般会有三个组件：</p>
+<ul>
+<li>一个运行JobManager的deployment或job</li>
+<li>一个TaskManagers池 deployment</li>
+<li>一个公开JobManager的REST和UI端口的service</li>
+</ul>
+<h2 id="在Kubernetes上部署Flink会话群集"><a href="#在Kubernetes上部署Flink会话群集" class="headerlink" title="在Kubernetes上部署Flink会话群集"></a>在Kubernetes上部署Flink会话群集</h2><p>使用会话群集的资源定义，采用kubectl命令启动群集：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">kubectl create -f jobmanager-service.yaml<br>kubectl create -f jobmanager-deployment.yaml<br>kubectl create -f taskmanager-deployment.yaml<br></code></pre></td></tr></table></figure>
+<p>然后，您可以通过kubectl proxy按以下方式访问Flink UI ：</p>
+<p>第一步，保证kubectl proxy在终端中运行</p>
+<p>第二步，在浏览器里输入 <code>http://localhost:8001/api/v1/namespaces/default/services/flink-jobmanager:ui/proxy</code></p>
+<p>如果要终止Flink会话群集，可以使用如下命令：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">kubectl delete -f jobmanager-deployment.yaml<br>kubectl delete -f taskmanager-deployment.yaml<br>kubectl delete -f jobmanager-service.yaml<br></code></pre></td></tr></table></figure>
+<h2 id="Kubernetes上的Flink作业集群"><a href="#Kubernetes上的Flink作业集群" class="headerlink" title="Kubernetes上的Flink作业集群"></a>Kubernetes上的Flink作业集群</h2><p>Flink作业集群是运行单个作业的专用集群，这项作业是打包在flink镜像里的，因此，不需要提交额外的作业对象，步骤如下：</p>
+<h3 id="创建特定于作业的镜像"><a href="#创建特定于作业的镜像" class="headerlink" title="创建特定于作业的镜像"></a>创建特定于作业的镜像</h3><p>Flink作业集群镜像需要包含启动集群的作业的用户代码jar。因此，需要为每个作业构建专用的容器镜像。请按照这些<a href="https://github.com/apache/flink/blob/master/flink-container/docker/README.md" target="_blank" rel="noopener">说明</a>构建Docker镜像。</p>
+<h3 id="在Kubernetes上部署Flink作业集群"><a href="#在Kubernetes上部署Flink作业集群" class="headerlink" title="在Kubernetes上部署Flink作业集群"></a>在Kubernetes上部署Flink作业集群</h3><p>要在Kubernetes上部署作业集群，请按照这些<a href="https://github.com/apache/flink/blob/master/flink-container/kubernetes/README.md#deploy-flink-job-cluster" target="_blank" rel="noopener">说明</a>进行操作。</p>
+<h2 id="高级群集部署"><a href="#高级群集部署" class="headerlink" title="高级群集部署"></a>高级群集部署</h2><p>GitHub上提供了早期版本的<a href="https://github.com/docker-flink/examples" target="_blank" rel="noopener">Flink Helm chart</a>。</p>
+<h1 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h1><h2 id="会话群集资源定义"><a href="#会话群集资源定义" class="headerlink" title="会话群集资源定义"></a>会话群集资源定义</h2><p>部署使用的最新镜像 <code>flink:latest</code> 可在<a href="https://hub.docker.com/r/_/flink/" target="_blank" rel="noopener">Docker Hub</a>上找到。该镜像是用这个工具 <code>https://github.com/docker-flink/docker-flink</code> 构建的</p>
+<p>jobmanager-deployment.yaml</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&quot;<br>apiVersion: extensions/v1beta1<br>kind: Deployment<br>metadata:<br>  name: flink-jobmanager<br>spec:<br>  replicas: 1<br>  template:<br>    metadata:<br>      labels:<br>        app: flink<br>        component: jobmanager<br>    spec:<br>      containers:<br>      - name: jobmanager<br>        image: flink:latest<br>        args:<br>        - jobmanager<br>        ports:<br>        - containerPort: 6123<br>          name: rpc<br>        - containerPort: 6124<br>          name: blob<br>        - containerPort: 6125<br>          name: query<br>        - containerPort: 8081<br>          name: ui<br>        env:<br>        - name: JOB_MANAGER_RPC_ADDRESS<br>          value: flink-jobmanager<br>&quot;<br></code></pre></td></tr></table></figure>
+<p>taskmanager-deployment.yaml</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&quot;<br>apiVersion: extensions/v1beta1<br>kind: Deployment<br>metadata:<br>  name: flink-taskmanager<br>spec:<br>  replicas: 2<br>  template:<br>    metadata:<br>      labels:<br>        app: flink<br>        component: taskmanager<br>    spec:<br>      containers:<br>      - name: taskmanager<br>        image: flink:latest<br>        args:<br>        - taskmanager<br>        ports:<br>        - containerPort: 6121<br>          name: data<br>        - containerPort: 6122<br>          name: rpc<br>        - containerPort: 6125<br>          name: query<br>        env:<br>        - name: JOB_MANAGER_RPC_ADDRESS<br>          value: flink-jobmanager<br>&quot;<br></code></pre></td></tr></table></figure>
+<p>jobmanager-service.yaml</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&quot;<br>apiVersion: v1<br>kind: Service<br>metadata:<br>  name: flink-jobmanager<br>spec:<br>  ports:<br>  - name: rpc<br>    port: 6123<br>  - name: blob<br>    port: 6124<br>  - name: query<br>    port: 6125<br>  - name: ui<br>    port: 8081<br>  selector:<br>    app: flink<br>    component: jobmanager<br>&quot;<br></code></pre></td></tr></table></figure>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/flink-deployment-docker/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/20/flink-deployment-docker/" itemprop="url">Flink handbook - flink 集群与部署之docker篇</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T06:46:03+08:00">2018-09-20 06:46:03</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="作者标注"><a href="#作者标注" class="headerlink" title="作者标注"></a>作者标注</h2><p>经过验证， 到当前版本为止 flink-1.7 snapshot，构建 flink docker镜像需要采用这个flink docker 构建工具 <code>https://github.com/docker-flink/docker-flink</code>，按照<a href="https://github.com/apache/flink/tree/master/flink-container" target="_blank" rel="noopener">flink官方代码库</a>里的构建出来的flink镜像有些功能不能用，比如 flink-standalone模式，report metrics等。</p>
+<h2 id="Docker设置"><a href="#Docker设置" class="headerlink" title="Docker设置"></a>Docker设置</h2><p>Docker Hub上有关于Apache Flink的Docker镜像，可用于部署flink群集。Flink镜像库还包含用于创建容器映像以部署flink工作集群的一些工具以及说明。</p>
+<h2 id="Flink-session群集"><a href="#Flink-session群集" class="headerlink" title="Flink session群集"></a>Flink session群集</h2><p>Flink会话群集可用于运行多个业务。在部署后，每个业务都需要提交到集群才能跑起来。</p>
+<h2 id="Docker镜像"><a href="#Docker镜像" class="headerlink" title="Docker镜像"></a>Docker镜像</h2><p>该<a href="https://hub.docker.com/_/flink/" target="_blank" rel="noopener">Flink镜像库</a>托管在docker hub，提供了flink1.2.1以及之后的版本镜像。</p>
+<p>注意： Docker镜像是由个人提供的社区项目，它们并不是Apache Flink PMC的官方版本（作者标注：所以需要用这个个人的<a href="https://github.com/docker-flink/docker-flink" target="_blank" rel="noopener">构建工具</a>，而不是官方代码库里的构建工具）。</p>
+<h2 id="Flink作业集群"><a href="#Flink作业集群" class="headerlink" title="Flink作业集群"></a>Flink作业集群</h2><p>Flink作业集群是运行单个作业的专用集群，这是镜像内容的一部分，因此，不需要额外的工作。</p>
+<h2 id="Docker镜像-1"><a href="#Docker镜像-1" class="headerlink" title="Docker镜像"></a>Docker镜像</h2><p>Flink作业集群镜像需要包含启动集群的作业的用户代码jar。因此，需要为每个作业构建专用的容器镜像。该flink-container模块包含一个build.sh脚本，可用于创建此类镜像。有关详细信息，请参阅<a href="https://github.com/apache/flink/blob/master/flink-container/docker/README.md" target="_blank" rel="noopener">说明</a>。（作者注：这个是官方的构建方式，试过有问题，比如跑 flink-standalone再 report metrics）</p>
+<h2 id="Flink与Docker-Compose"><a href="#Flink与Docker-Compose" class="headerlink" title="Flink与Docker Compose"></a>Flink与Docker Compose</h2><p>Docker Compose是一种很方便的用于在本地启动一组Flink Docker容器的方式。</p>
+<p>GitHub上提供了<a href="https://github.com/docker-flink/examples/blob/master/docker-compose.yml" target="_blank" rel="noopener">集群部署实例</a>和<a href="https://github.com/apache/flink/blob/master/flink-container/docker/docker-compose.yml" target="_blank" rel="noopener">作业群集示例</a>的配置文件。</p>
+<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><p>启动集群</p>
+<p><code>$docker-compose up</code></p>
+<p>以deamon的方式启动集群</p>
+<p> <code>$docker-compose up -d</code></p>
+<p>集群扩展 N 个 TaskManagers</p>
+<p><code>$docker-compose scale taskmanager=&lt;N&gt;</code></p>
+<p>销毁集群</p>
+<p><code>$docker-compose kill</code></p>
+<p>当拉起一个Flink群集后，您可以访问 <code>http：// localhost：8081</code>的Web UI ，在界面里您还可以将作业提交到群集。</p>
+<p>如果要通过命令行将作业提交到会话群集，必须将JAR复制到JobManager容器里并从那里执行作业。</p>
+<p>例如：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$ JOBMANAGER_CONTAINER=$(docker ps --filter name=jobmanager --format=&#123;&#123;.ID&#125;&#125;)<br>$ docker cp path/to/jar &quot;$JOBMANAGER_CONTAINER&quot;:/job.jar<br>$ docker exec -t -i &quot;$JOBMANAGER_CONTAINER&quot; flink run /job.jar<br></code></pre></td></tr></table></figure>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/19/pravega-segment-containers/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/19/pravega-segment-containers/" itemprop="url">pravega handbook - 段容器</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-19T20:59:45+08:00">2018-09-19 20:59:45</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="Pravega集群中的段容器"><a href="#Pravega集群中的段容器" class="headerlink" title="Pravega集群中的段容器"></a>Pravega集群中的段容器</h2><p>本文档描述了我们如何管理Pravega集群中Segment Containers生命周期的高级设计。</p>
+<h2 id="平衡段容器"><a href="#平衡段容器" class="headerlink" title="平衡段容器"></a>平衡段容器</h2><h2 id="段容器"><a href="#段容器" class="headerlink" title="段容器"></a>段容器</h2><p>在本文档中，我们将段容器称为容器。对于给定的部署，容器的总数是固定的。每个容器只能由一个Pravega主机拥有，并且群集中的所有容器都应该在任何时刻都是运行着的。</p>
+<h2 id="Pravega主机"><a href="#Pravega主机" class="headerlink" title="Pravega主机"></a>Pravega主机</h2><p>pravega主机是pravega服务的一个实例，它拥有并执行一组容器。</p>
+<h2 id="检测活动的Pravega主机"><a href="#检测活动的Pravega主机" class="headerlink" title="检测活动的Pravega主机"></a>检测活动的Pravega主机</h2><p>启动时每个pravega主机都会使用临时节点向Zookeeper注册。只要zookeeper从Pravega主机接收到适当的心跳，临时的节点就会出现在zookeeper中。我们依靠这些临时的节点来检测哪些pravega主机当前在群集中是活动的。</p>
+<h2 id="监控Pravega集群"><a href="#监控Pravega集群" class="headerlink" title="监控Pravega集群"></a>监控Pravega集群</h2><p>每个Pravega Controller都运行一项服务，监控zookeeper上的临时节点并检测集群中所有活动的pravega主机。在检测到对集群成员资格的任何更改时，我们会验证所有容器并将其重新映射到可用的pravega主机集。此信息以原子方式保存在HostStore中。它存储为单个blob，并包含主机拥有的主机到容器集的映射。</p>
+<p>我们使用zookeeper来确保只有一个pravega控制器监视集群，以避免多个同时写入HostStore的写入器。这将避免竞争条件，并允许状态更快地收敛。</p>
+<h2 id="再平衡频率"><a href="#再平衡频率" class="headerlink" title="再平衡频率"></a>再平衡频率</h2><p>当从群集中添加或删除pravega主机时，会发生容器所有权的重新平衡。由于这是一项代价高昂的操作，我们需要防止经常这样做。目前，我们确保在任何2次重新平衡操作之间保持配置的最小时间间隔。在最坏的情况下，这将按比例增加在集群中执行所有权更改所花费的时间。</p>
+<h2 id="所有权变更通知"><a href="#所有权变更通知" class="headerlink" title="所有权变更通知"></a>所有权变更通知</h2><p>每个pravega主机都有一个长期运行的Segment Manager服务。这会不断轮询/监视HostStore，以便对容器所有权进行任何更改。在检测到自身的所有权变更（由map中的主机密钥标识）时，段管理器会相应地触发添加和删除容器。</p>
+<h2 id="确保容器在另一台主机上启动之前在一台主机上停止"><a href="#确保容器在另一台主机上启动之前在一台主机上停止" class="headerlink" title="确保容器在另一台主机上启动之前在一台主机上停止"></a>确保容器在另一台主机上启动之前在一台主机上停止</h2><p>我们目前计划在Pravega主机上使用保守超时，以确保容器在另一个节点上停止之前不会启动。这需要进一步检阅/讨论。</p>
+<h2 id="检测和处理容器启动-停止故障"><a href="#检测和处理容器启动-停止故障" class="headerlink" title="检测和处理容器启动/停止故障"></a>检测和处理容器启动/停止故障</h2><p>任何容器启动/停止故障都被视为本地故障，我们希望Pravega主机尽可能在本地处理这些情况。Pravega Controller控制器不需要通过在不同主机上运行来纠正这一点。这需要进一步检阅/讨论。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/19/pravega-wire-protocol/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -616,351 +910,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/17/pravega-reader-groups/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术网站">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/17/pravega-reader-groups/" itemprop="url">pravega handbook - reader groups设计</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-17T20:52:45+08:00">2018-09-17 20:52:45</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h2><p>可以将一组读者组合在一起，以便可以并行读取流中的事件集。读者群组称为读者群。Pravega保证流中的每个事件都由读者组中的一个读者读取。<br>ReaderGroup中的每个Reader都分配了零个或多个段。分配给Segment的Reader是ReaderGroup中唯一一个从该Segment读取事件的Reader,这是Pravega向读者提供事件传递的顺序保证的基本机制,读者将按照他们发布到segment中的顺序接收事件。<br>这种机制存在以下几个挑战：</p>
-<ul>
-<li>如何维护ReaderGroup中哪个Reader的映射分配哪个Segment </li>
-<li>如何在Segments拆分和合并时管理上述映射 </li>
-<li>如何在将读者添加到ReaderGroup </li>
-<li>当读者通过显式操作离开ReaderGroup或reader因网络中断或Reader进程失败而变得不可用时，如何管理上述映射</li>
-</ul>
-<p>为了解决这些问题，我们可以使用[[StateSynchronizer | StateSynchronizer-design]]使读者能够相互协调。</p>
-<h2 id="如何使用一致的复制状态来解决问题"><a href="#如何使用一致的复制状态来解决问题" class="headerlink" title="如何使用一致的复制状态来解决问题"></a>如何使用一致的复制状态来解决问题</h2><p>每个reader中都创建了表示ReaderGroup元数据的一致复制状态对象,此ReaderGroup元数据包括：</p>
-<ul>
-<li>在线读者的映射表，他们拥有的segment可以接管的segment中的位置列表。</li>
-<li>每次ReaderGroup中的读者更改时，都可以更新状态。</li>
-<li>类似地，每当其中一个读者开始从一个新段读取时，它就可以更新复制状态。</li>
-</ul>
-<p>这允许所有读者了解ReaderGroup中的所有其他读者以及他们拥有的哪些片段。</p>
-<p>假设这样的信息：</p>
-<ul>
-<li><p>新读者可以知道哪些片段可读取,（因为无状态）处理合并的段变得容易，因为到达其合并前段的末尾的最后一个读者知道它可以自由地获得新段的所有权。</p>
-</li>
-<li><p>读者可以看到他们的相对负载以及他们相对于他们小组中其他读者的进展情况，并且如果事情失衡，他们可以决定转移segment。</p>
-</li>
-<li><p>这允许读者直接采取行动，以确保所有事件都被读取，而无需一些外部跟踪器。</p>
-</li>
-</ul>
-<h2 id="ReaderGroup的API"><a href="#ReaderGroup的API" class="headerlink" title="ReaderGroup的API"></a>ReaderGroup的API</h2><p>可以将用于管理ReaderGroup的外部API添加到StreamManager对象。它们包括：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">ReaderGroup createReaderGroup（String name，Stream stream，ReaderGroupConfig config）;<br>ReaderGroup getReaderGroup（String name，Stream stream）;<br>void deleteReaderGroup（ReaderGroup group）;<br></code></pre></td></tr></table></figure>
-<p>创建ReaderGroup时，它会创建一个由读者共享的[[StateSynchronizer | StateSynchronizer-design]]。要加入ReaderGroup，读者只需在其配置中指定它：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">ReaderConfig cc = new ReaderConfig（props）;<br>Reader &lt;T&gt; reader = a_stream.createReader（“my_reader_id”，“my_reader_group”，cc）;<br></code></pre></td></tr></table></figure>
-<p>当读者加入组时，他们使用状态来确定要读取的segment。当他们关闭时，他们会更新状态，以便其他读者可以接管他们的segment。</p>
-<h2 id="故障检测器"><a href="#故障检测器" class="headerlink" title="故障检测器"></a>故障检测器</h2><p>我们仍然需要某种心跳机制来判断读者是否还在线。问题大大简化，因为它不需要生成集群视图或管理任何状态。该组件只需要检测失败并调用<code>void readerOffline(String readerId, Position lastPosition);</code>ReaderGroup上的api</p>
-<p>为保持一致性，故障检测器不应将仍在处理事件的主机声明为死机，这样做可能会违反恰好一次处理保证。</p>
-<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><h2 id="新读者"><a href="#新读者" class="headerlink" title="新读者"></a>新读者</h2><ol>
-<li>当读者加入组时，其在线状态将添加到共享状态</li>
-<li>其他读者会收到共享状态的更新。</li>
-<li>当具有超过平均段数的读者看到新读者时，它可以通过将该段的位置写入共享状态来放弃段。</li>
-<li>新的读者可以通过记录它在共享状态下执行此操作来接管一个段。</li>
-<li>新读者可以从它从所拾取的段的共享状态读取的位置开始读取。</li>
-<li>多个读者之间没有同时上线的比赛，因为只有其中一个可以成功声明任何给定片段的所有权。</li>
-</ol>
-<h2 id="合并段"><a href="#合并段" class="headerlink" title="合并段"></a>合并段</h2><ol>
-<li>当读者到达其片段的末尾时，它会将此信息记录在共享状态中。</li>
-<li>当所有合并在一起的段完成后，读者可以声明对以下段的所有权。</li>
-</ol>
-<p>关于拥有者是谁，因为它存储在共享状态中没有歧义。不存在遗忘某个段的风险，因为任何读者都可以通过查看共享状态并声明它们来查看哪些段可用。</p>
-<h2 id="读者离线"><a href="#读者离线" class="headerlink" title="读者离线"></a>读者离线</h2><ol>
-<li>当读者离线时，readerOffline（）方法将由读者本身在正常关闭（在close方法内部）或通过活动检测器调用。在任何一种情况下，读者的最后位置都会被传入。</li>
-<li>最后一个位置写入状态。</li>
-<li>其他读者在更新本地状态时会看到这一点。</li>
-<li>他们中的任何一个都可以通过记录他们在状态对象中的意图来决定接管旧读者所拥有的一个或多个片段。</li>
-<li>状态更新后，新读者将被视为该segment受众群的所有者，并可随意阅读。</li>
-</ol>
-<h2 id="如果读者没有及时了解会发生什么"><a href="#如果读者没有及时了解会发生什么" class="headerlink" title="如果读者没有及时了解会发生什么"></a>如果读者没有及时了解会发生什么</h2><p>具有过期状态的读者可以从其现有段中读取而不受干扰。唯一的缺点是，如果有可用的话，它们不会给另一个读者带来负担。但是，因为他们必须写入共享状态才能从他们尚未拥有的任何段开始读取，所以他们必须在转移到新段之前获取最新信息。</p>
-<h2 id="可用性和延迟的影响"><a href="#可用性和延迟的影响" class="headerlink" title="可用性和延迟的影响"></a>可用性和延迟的影响</h2><p>读取和更新状态对象可以与读取并行发生，因此可能没有可见的延迟影响。如果Pravega以包含ReaderGroup信息的段落下并且保持离线足够长时间以使读者耗尽其现有段中的所有事件的方式失败，则流将无法读取。当然，如果Pravega以这种方式失败，那么至少某些部分流也会受到直接影响，并且无法读取任何事件。这种故障模式将表现为读者的延迟，类似于他们到达流尾部时会发生的情况。</p>
-<p>这比使用外部系统来管理这种协调更为可取，因为这需要添加可能以不同方式失败的新组件，而不是进一步依赖我们需要高度可用的小组。在网络分区的情况下，这尤其值得注意。如果网络被分开，与Pravega服务器位于分区同一侧的任何reader都可以继续工作。如果我们要利用外部服务，那么该服务可能被切断，即使他们可以与Pravega交互，读者也可能无法取得进展。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/distributed-dht-update/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术网站">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/16/distributed-dht-update/" itemprop="url">分布式系统中DHT算法改进</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T21:32:38+08:00">2018-09-16 21:32:38</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>通常，分布式存储系统以及分布式缓存系统习惯采用分布式哈希（DHT）算法来实现数据的分区分配（路由）以及负载均衡，普通的分布式hash算法通过增添虚拟节点，对物理的热点区间进行划分，将负载分配至其他节点，从而达到负载均衡的状态，但是这并不能保证集群的负载就一定很是的均衡。</p>
-<p>而一种改进过的一致性Hash算法，即带边界因子的一致性Hash算法，其严格控制每个节点的负载从而能获得更好的负载均衡效果[1][2]。</p>
-<h2 id="普通的DHT算法"><a href="#普通的DHT算法" class="headerlink" title="普通的DHT算法"></a>普通的DHT算法</h2><p>假设有8个Object，通过下图的DHT算法:</p>
-<ol>
-<li>object 0,1,2映射到了虚拟节点vNode0 ： object 0,1,2 –&gt; vNode0</li>
-<li>Object 3,4,5 映射到了vNode1：object 3,4,5 –&gt; vNode1</li>
-<li>Object 6映射到 vNode2：object 6 –&gt; vNode2</li>
-<li>Object 7映射到 vNodeN：object 7 –&gt; vNodeN</li>
-</ol>
-<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-1.png" alt="distributed-DHT-1"></p>
-<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-2.png" alt="distributed-DHT-2"></p>
-<p>很明显，Vnode0和vNode1 都落了三个 object，而 vNode2和vNodeN 都只落了 1个Object，这里的DHT算法负债均衡因子并不是很好。</p>
-<h2 id="带负载边界因子的DHT算法"><a href="#带负载边界因子的DHT算法" class="headerlink" title="带负载边界因子的DHT算法"></a>带负载边界因子的DHT算法</h2><p>假设有8个Object，通过如下图的DHT with bounded loads算法:</p>
-<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-3.png" alt="distributed-DHT-3"></p>
-<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-4.png" alt="distributed-DHT-4"></p>
-<p>第一轮映射：</p>
-<ol>
-<li>object 0,1,2 需要映射到了虚拟节点vNode0，但是vNode0的权重因子是 2，因此只完成了 object 0,1 –&gt; vNode0， object 2不能映射到节点 vNode0；</li>
-<li>Object 3,4,5 需要映射到了虚拟节点vNode1：但是vNode1的权重因子是 2，因此只完成了 object 3,4 –&gt; vNode1， object 5不能映射到节点 vNode1；</li>
-<li>Object 6映射到 vNode2：object 6 –&gt; vNode2</li>
-<li>Object 7映射到 vNodeN：object 7 –&gt; vNodeN</li>
-</ol>
-<p>第二轮映射：</p>
-<ol>
-<li>Object 2 映射到 vNode1，但是vNode1权重因子=0， 不能被接收，继续往下一个节点走，发现vNode2 权重因子是2,还剩权重因子1，可以被映射，因此 object 2–&gt;vNode2</li>
-<li>Object 5 映射到 vNode2，但是vNode2现在的权重因子=0， 不能被接收，继续往下一个节点走，发现vNodeN 权重因子是2,还剩权重因子1，可以被映射，因此 object 5–&gt;vNodeN</li>
-</ol>
-<p>最终的映射结果是:</p>
-<ol>
-<li>object 0,1映射到了虚拟节点vNode0 ： object 0,1 –&gt; vNode0</li>
-<li>Object 3,4 映射到了vNode1：object 3,4 –&gt; vNode1</li>
-<li>Object 2,6映射到 vNode2：object 2,6 –&gt; vNode2</li>
-<li>Object 5,7映射到 vNodeN：object 5,7 –&gt; vNodeN</li>
-</ol>
-<p>很明显，Vnode0，vNode1，vNode2, vNodeN 每个节点都分到2个 object，<br>显然带负载边界因子的DHT算法负债均衡比普通的DHT算法来的好。</p>
-<p>这些节点的负载因子可以从IO，CPU，MEM，Disk，Network等输入因子计算出来。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] <a href="https://research.googleblog.com/2017/04/consistent-hashing-with-bounded-loads.html" target="_blank" rel="noopener">https://research.googleblog.com/2017/04/consistent-hashing-with-bounded-loads.html</a></p>
-<p>[2] <a href="https://medium.com/vimeo-engineering-blog/improving-load-balancing-with-a-new-consistent-hashing-algorithm-9f1bd75709ed" target="_blank" rel="noopener">https://medium.com/vimeo-engineering-blog/improving-load-balancing-with-a-new-consistent-hashing-algorithm-9f1bd75709ed</a></p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/distributed-cap-pacelc/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术网站">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/16/distributed-cap-pacelc/" itemprop="url">是时候把分布式系统的理论指导从CAP升级到PACELC</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T21:09:29+08:00">2018-09-16 21:09:29</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="从-CAP到-PACELC"><a href="#从-CAP到-PACELC" class="headerlink" title="从 CAP到 PACELC"></a>从 CAP到 PACELC</h2><p>CAP理论是当前分布式系统设计的理论指导，而PACELC理论是CAP理论的扩展，分布式系统设计的理论依据是时候从CAP理论扩展为PACELC理论, PACELC在wiki上的定义是:</p>
-<blockquote>
-<p>It states that in case of network partitioning (P) in a distributed computer system, one has to choose between availability (A) and consistency (C) (as per the CAP theorem), but else (E), even when the system is running normally in the absence of partitions, one has to choose between latency (L) and consistency (C).</p>
-</blockquote>
-<p>简单来说这里的意思就是：</p>
-<blockquote>
-<p>如果有分区partition (P)，系统就必须在availability 和consistency (A and C)之间取得平衡; 否则else (E) 当系统运行在无分区情况下,系统需要在 latency (L) 和 consistency (C)之间取得平衡</p>
-</blockquote>
-<p>CAP理论认为以下三者不能同时满足：</p>
-<ul>
-<li><p>一致性(Consistency): 所有的节点在同一时刻看到同样的数据。</p>
-</li>
-<li><p>可用性(Availability):  节点失效不会影响系统的读写。</p>
-</li>
-<li><p>分区容忍性(Partition Tolerance): 系统能支持网络分区，即使分区之间的消息丢失系统也正常工作。</p>
-</li>
-</ul>
-<p>根据业务场景的不同，不同的分布式系统会根据自身业务的需求在CAP三者中进行权衡， CAP理论的意义是一种在分布式系统设计时权衡的因素，而非绝对的三者必舍其一，并且在CAP理论中是没有提到系统的时延（Latency）的，而访问时延（Latency）却是很重要的可用性(Availability)因素。</p>
-<p>因此重新定义一个新的模型PACELC，添加了系统中的Latency，如下图：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fcap-pacelc.png" alt="cap-pacelc"></p>
-<p>当前分布式系统设计指导理论应当用PACELC理论替代CAP理论，理由如下：</p>
-<ol>
-<li><p>PACELC更能满足实际操作中分布式系统的工作场景是更好的工程实现策略；</p>
-</li>
-<li><p>当partition (P)存在的场景下，需要在availability 和consistency (A and C)之间获得权衡，当时实际上分布式系统中绝大多数时间里partition (P)是不存在的，那么就需要在latency (L) 和 consistency (C)之间取得权衡。</p>
-</li>
-<li><p>availability在不存在partition (P)的场景下跟 latency关联,在partition (P)时跟reliable指标关联。</p>
-</li>
-<li><p>PACELC 可以在 latency vs consistency之间获得平衡</p>
-</li>
-<li><p>CAP 理论忽略了 一致性和时延之间的权衡</p>
-</li>
-</ol>
-<p>PACELC建立在CAP之上，二者都描述了在一致性(Consistency)，可用性(Availability)和分区容忍性(Partition Tolerance)之间的限制和权衡。而PACELC更进一步描述了即使在没有Partition的场景下，也存在Latency和Consistency之间的权衡，从而为分布式系统的Consistency模型提供了一个更为完整的理论依据。</p>
-<p>要保证系统的高可用（high availability）那么就必须复制数据，而分布式系统进行数据复制复制，就会出现在Consistency和Latency之间做个权衡的要求。</p>
-<p>举个栗子，如下图所示，</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fconsistency-latency.png" alt="consistency-latency"></p>
-<ol>
-<li><p>在强一致性复制场景下，需要三副本都下盘才能返回ok给client端，Master向 Slave 复制数据，Latancy的限制是 20ms，有时候，slave 2 硬盘或网络出现故障，Master 往 Slave 复制数据的时延超过 20ms了，这个时候如果还一致等待 slave 2 返回结果再notify 给client就会出现性能和时延抖动，而且这种抖动是经常发生的长尾效应。</p>
-</li>
-<li><p>依据PACELC理论，我们可以在 consistency和Latency之间做个权衡，比如 slave 2 节点的时延超过 20ms了，就不等待slave 2 返回，master 和 slave 1 返回结果给client即可，如果 slave 2 出现 超时的 次数超过 5次那么就认为 这个节点可能出现故障，打个故障标签，进行后续的处理。</p>
-</li>
-</ol>
-<h3 id="参考文献："><a href="#参考文献：" class="headerlink" title="参考文献："></a>参考文献：</h3><p>[1] <a href="https://en.wikipedia.org/wiki/PACELC_theorem" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/PACELC_theorem</a></p>
-<p>[2] CAP理论与分布式系统设计，S先生</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-statesynchronizer/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术网站">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravega-statesynchronizer/" itemprop="url">pravega handbook - stateSynchronizer</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T19:04:36+08:00">2018-09-16 19:04:36</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="StateSynchronizer的设计"><a href="#StateSynchronizer的设计" class="headerlink" title="StateSynchronizer的设计"></a>StateSynchronizer的设计</h2><p>StateSynchronizer提供了一种方法，通过这种方法可以支持多个进程同时对一份数据进行写入和读取，并且使用了一种乐观检查的方法来保证数据的一致性。</p>
-<p>这项工作保证每个进程都有一份数据的副本。所有的数据更新都是通过StateSynchronizer写入，它将这些数据附加到Pravega的段里。通过从段里消费数据来跟踪数据的最新变化，并且使用了有条件追加数据的方法提供了一致性保证。<br>这样可确保更新的过程只有在有最新数据时才可以继续执行更新。最后，为了防止段数据无节制地增长，我们使用了一种重写最新数据的简单方法，并截断旧数据，以便可以删除它。</p>
-<p>当大多数更新与存储的总数据大小相比较小时，此模型运行良好，因为它们可以写成小的增量。与任何乐观并发系统一样，当众多进程都试图同时尝试更新相同的信息时，工作状态最差。</p>
-<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><p>这里有一个同步集合内容的具体示例，此外我们还有一个示例，即同步一组主机的成员资格。</p>
-<p>想象一下，许多进程同时共享一个映射表的场景。这可以通过StateSynchronizer创建来完成，这将有助于协调对映射表的更改。每个客户端在内存中都有自己的一份映射表副本，可以通过将映射表生成器传递给StateSynchronizer来更新。每次尝试更新时，更新都会先记录到段中。除非传递给进程的映射表与已记录到段中的映射表一致，否则更新将失败。如果发生这种情况，则使用最新状态调用生成器以再次尝试。因此，更新的顺序由它们写入段的顺序定义。</p>
-<h2 id="如何实现"><a href="#如何实现" class="headerlink" title="如何实现"></a>如何实现</h2><p>为此，我们使用了Pravega Segment Store Service的两个功能。</p>
-<h3 id="条件追加"><a href="#条件追加" class="headerlink" title="条件追加"></a>条件追加</h3><p>附加方法可以指定追加期望的偏移量，如果追加数据失败，则不执行任何操作而是返回失败给客户端。</p>
-<h3 id="截断段"><a href="#截断段" class="headerlink" title="截断段"></a>截断段</h3><p>截断段删除给定偏移之前的所有数据（此操作不会影响现有偏移量），对于低于此值的偏移量的任何读取都将失败，并且在此偏移下的任何数据都可以删除。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/2/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -986,7 +935,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">35</a></div>
+      <div><a href="/archives">39</a></div>
     </div>
     
     

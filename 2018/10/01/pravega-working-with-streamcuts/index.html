@@ -68,7 +68,7 @@
     <script defer type="text/javascript" src="/js/index.js"></script>
     
     <script defer type="text/javascript" src="/js/custom.js"></script>
-    <title>Flink handbook - 什么是Apache Flink？ | 常平的技术网站 - 流处理,流计算,分布式系统,微服务</title>
+    <title>pravega handbook - 开发pravega应用 - streamcuts | 常平的技术网站 - 流处理,流计算,分布式系统,微服务</title>
   </head>
   <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
     
@@ -114,7 +114,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/flink-what-is-apache-flink/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/01/pravega-working-with-streamcuts/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
        <meta itemprop="name" content="常平">
        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
@@ -125,11 +125,11 @@
       </span>
     </div>
     <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">Flink handbook - 什么是Apache Flink？</h1>
+      <h1 class="post-title" itemprop="name headline">pravega handbook - 开发pravega应用 - streamcuts</h1>
       <div class="post-meta">
         
         <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-23T21:18:21+08:00">2018-09-23 21:18:21</time></span>
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-01T09:16:31+08:00">2018-10-01 09:16:31</time></span>
         </span>
         
         
@@ -138,45 +138,33 @@
         
         <span class="post-categories">
           
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
         </span>
         
         
       </div>
     </header>
     <main class="post-main" itemprop="articleBody">
-      <p>Apache Flink是一个框架和分布式处理引擎，用于对无界和有界数据流进行有状态计算。Flink设计为在所有常见的集群环境中运行，以内存速度和任何规模执行计算。</p>
-<p>在这里，我们解释了Flink架构的重要方面。</p>
-<h2 id="无界和有界数据的处理"><a href="#无界和有界数据的处理" class="headerlink" title="无界和有界数据的处理"></a>无界和有界数据的处理</h2><p>任何类型的数据都是作为事件流产生的。信用卡交易，传感器测量，机器日志或网站或移动应用程序上的用户交互，所有这些数据都作为流生成。</p>
-<p>数据可以作为无界或有界流处理。</p>
-<ol>
-<li><p><strong>无界流</strong> 有一个开始，但没有定义的结束。它们不会终止并提供其生成的数据。无界流必须持续处理，即必须在摄取事件后立即处理事件。不可能等待所有的输入数据都到达，因为输入是无界的，并且在任何时间点都不会结束。处理无界数据通常要求以特定顺序（例如事件发生的顺序）摄取事件，以便能够推断结果的完整性。</p>
-</li>
-<li><p><strong>有界流</strong>具有定义的开始和结束。可以在执行任何计算之前，通过摄取所有数据来处理有界流。有界数据集是可以被排序的，因此处理有界流不需要有序摄取。有界流的处理也称为批处理。</p>
-</li>
-</ol>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fbounded-unbounded.png" alt=""></p>
-<p><strong>Apache Flink擅长处理无界和有界数据集</strong>。精确控制时间和状态使Flink的运行时能够在无界流上运行任何类型的应用程序。有界流由算法和数据结构在内部处理，这些算法和数据结构专门针对固定大小的数据集而设计，从而发挥出性能优势。</p>
-<h2 id="随处部署应用"><a href="#随处部署应用" class="headerlink" title="随处部署应用"></a>随处部署应用</h2><p>Apache Flink是一个分布式系统，需要计算资源才能执行的应用程序。Flink可以与所有常见的集群资源管理器（如Hadoop YARN，Apache Mesos和Kubernetes）集成，但也可以设置为独立的集群运行。</p>
-<p>Flink旨在很好地适用于之前列出的每个资源管理器，这是通过特定于资源管理器的部署模式实现的，这些模式允许Flink以其惯用的方式与每个资源管理器进行交互。</p>
-<p>部署Flink应用程序时，Flink会根据应用程序配置的并行性自动识别所需资源，并从资源管理器里申请它们。如果发生故障，Flink会通过申请新资源来替换发生故障的容器。所有提交或控制应用程序的通信都是通过REST调用来进行，这简化了Flink在许多环境中的集成。</p>
-<h2 id="以任何规模运行应用"><a href="#以任何规模运行应用" class="headerlink" title="以任何规模运行应用"></a>以任何规模运行应用</h2><p>Flink旨在以任何规模运行有状态的流应用，应用程序可以并行化为数千个在集群中分布和同时执行的任务。因此，应用程序可以利用几乎无限量的CPU、主内存、磁盘和网络IO。而且，Flink可以轻松维护数据量非常大的应用状态。其异步和增量检查点算法确保对处理的延迟影响最小，同时保证恰好一次状态的一致性。</p>
-<p>用户报告了在其生产环境中运行的Flink集群的规模，这样的规模有点令人印象深刻，例如</p>
-<ul>
-<li>应用程序每天处理数万亿个事件，</li>
-<li>应用程序维护多个TB的状态，以及</li>
-<li>应用程序在数千个内核的运行。</li>
-</ul>
-<h2 id="内存的性能优势"><a href="#内存的性能优势" class="headerlink" title="内存的性能优势"></a>内存的性能优势</h2><p>有状态Flink应用针对本地状态的访问进行了优化。任务状态始终保留在内存中，或者，如果状态大小超过可用内存，则保存在可高效访问的磁盘上的数据结构中。因此，任务通过访问本地（通常是内存中）状态来执行所有计算，从而产生非常低的处理延迟。Flink通过定期并且异步地把本地状态打检查点并持久化到存储设备来保证在出现故障时的恰好一次状态的一致性。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Flocal-state.png" alt=""></p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1].<a href="https://flink.apache.org/flink-architecture.html" target="_blank" rel="noopener">https://flink.apache.org/flink-architecture.html</a></p>
+      <p>本节介绍StreamCuts以及如何将它们与流客户端和批处理客户端一起使用。先决条件：您应该熟悉Pravega Concepts。</p>
+<h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>Pravega流由一个或多个并行段形成，用于存储/读取事件。Pravega流是弹性的，这意味着并行段的数量可能随时间变化以适应波动的工作负载。也就是说，StreamCut表示流中的一致位置。它包含一组用于单个流的段和偏移对，它表示给定时间点的完整键空间。偏移量始终指向事件边界，因此没有指向不完整事件的偏移量。</p>
+<p>表示流尾部的StreamCut（带有最新事件）是一个不断变化的流，因为事件可被连续地加入到流中，并且指向具有更新事件流的尾部的streamCuts将具有不同的值。类似地，StreamCut表示流的头部（具有最旧的事件）是不断变化的，因为流保留策略可以截断流并且StreamCut指向截断的流的头部将具有不同的值。 StreamCut.UNBOUNDED用于表示流中的这种位置，用户可以使用它来指定这个不断变化的流位置（流的头部和尾部）。</p>
+<p>应当注意，StreamCut使用流客户端和批量客户端获得的流可以互换使用。</p>
+<h2 id="StreamCut-with-reader"><a href="#StreamCut-with-reader" class="headerlink" title="StreamCut with reader"></a>StreamCut with reader</h2><p>ReaderGroup是一组命名的读者集合，它们并行地从给定的Stream中读取的事件。每个Reader始终与ReaderGroup相关联。StreamCut（s）可以使用以下api从ReaderGroup获得io.pravega.client.stream.ReaderGroup.getStreamCuts。此api返回一个 Map&lt;Stream, StreamCut&gt;表示ReaderGroup管理的所有流的reader的最后已知位置。</p>
+<p>StreamCut可用于配置ReaderGroup以允许对Stream进行有界处理。StreamCutStream 的开始和/或结束可以作为ReaderGroup配置的一部分传递。以下示例显示了将StreamCuts用作</p>
+<p>ReaderGroup配置的一部分的不同方法。</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/*<br> * The below ReaderGroup configuration ensures that the readers belonging to<br> * the ReaderGroup read events from<br> *   - Stream &quot;s1&quot; from startStreamCut1 (representing the oldest event) upto<br>          endStreamCut1 (representing the newest event)<br> *   - Stream &quot;s2&quot; from startStreamCut2 upto the tail of the stream, this is similar to using StreamCut.UNBOUNDED<br> *        for endStreamCut.<br> *   - Stream &quot;s3&quot; from the current head of the stream upto endStreamCut2<br> *   - Stream &quot;s4&quot; from the current head of the stream upto the tail of the stream.<br> */<br>ReaderGroupConfig.builder()<br>                .stream(&quot;scope/s1&quot;, startStreamCut1, endStreamCut1)<br>                .stream(&quot;scope/s2&quot;, startStreamCut2)<br>                .stream(&quot;scope/s3&quot;, StreamCut.UNBOUNDED, endStreamCut2)<br>                .stream(&quot;scope/s4&quot;)<br>                .build();<br></code></pre></td></tr></table></figure>
+<p>以下API可用于使用新的ReaderGroup配置重置现有ReaderGroup，而不是创建ReaderGroup。</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/*<br> * ReaderGroup api used to reset a ReaderGroup to a newer ReaderGroup configuration.<br> */<br>io.pravega.client.stream.ReaderGroup.resetReaderGroup(ReaderGroupConfig config)<br></code></pre></td></tr></table></figure>
+<h2 id="StreamCut-with-BatchClient"><a href="#StreamCut-with-BatchClient" class="headerlink" title="StreamCut with BatchClient"></a>StreamCut with BatchClient</h2><p>StreamCut 表示流的当前头部和当前尾部可以使用以下BatchClient API获得。</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/*<br> * The API io.pravega.client.batch.BatchClient.getStreamInfo(Stream stream) fetches the StreamCut representing the<br> * current head and tail of the stream. StreamInfo.getHeadStreamCut() and StreamInfo.getTailStreamCut() can be<br> * used to fetch the StreamCuts.<br> */<br>CompletableFuture&lt;StreamInfo&gt; getStreamInfo(Stream stream);<br></code></pre></td></tr></table></figure>
+<p>BatchClient可用于在给定开始和结束StreamCuts的情况下执行流的有界处理。BatchClient api io.pravega.client.batch.BatchClient.getSegments(stream, startStreamCut, endStreamCut)用于获取位于给定startStreamCut和endStreamCut之间的段。利用检索到的段信息，用户可以并行地消耗所有事件而不必遵守事件的时间排序。<br>必须注意的是，传递StreamCut.UNBOUNDED给startStreamCut和endStreamCut将分别导致使用流的当前头部和流的当前尾部。</p>
 
     </main>
     <footer class="post-footer">
       
       <div class="post-tags">
         
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
         
       </div>
       
@@ -187,12 +175,10 @@
   <nav class="page-nav">
     <div class="page-nav-next page-nav-item">
       
-      <a href="/2018/09/23/microservice-weifuwunaxieshier/" rel="next" title="微服务-微服务解惑"><i class="fas fa-angle-left"></i><span class="nav-title">微服务-微服务解惑</span></a>
+      <a href="/2018/10/01/pravega-working-with-transactions/" rel="next" title="pravega handbook - 开发pravega应用 - 事务"><i class="fas fa-angle-left"></i><span class="nav-title">pravega handbook - 开发pravega应用 - 事务</span></a>
       
     </div>
     <div class="page-nav-prev page-nav-item">
-      
-      <a href="/2018/09/23/flink-use-cases/" rel="prev" title="Flink handbook - flink用例"><span class="nav-title">Flink handbook - flink用例</span><i class="fas fa-angle-right"></i></a>
       
     </div>
   </nav>
@@ -252,7 +238,7 @@
     <hr>
     <div class="post-toc sidebar-item" id="toc-div">
       <div><i class="fas fa-list-ol"></i>文章目录</div>
-      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#无界和有界数据的处理"><span class="toc-text">无界和有界数据的处理</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#随处部署应用"><span class="toc-text">随处部署应用</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#以任何规模运行应用"><span class="toc-text">以任何规模运行应用</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#内存的性能优势"><span class="toc-text">内存的性能优势</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#参考资料"><span class="toc-text">参考资料</span></a></li></ol></div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#定义"><span class="toc-text">定义</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#StreamCut-with-reader"><span class="toc-text">StreamCut with reader</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#StreamCut-with-BatchClient"><span class="toc-text">StreamCut with BatchClient</span></a></li></ol></div>
     </div>
     
     

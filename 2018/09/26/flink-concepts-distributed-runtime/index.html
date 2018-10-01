@@ -160,13 +160,13 @@
 <p>JobManagers和TaskManagers可以通过多种方式启动：直接作为独立集群、在容器中、或由YARN或Mesos等资源框架管理。TaskManagers连接到JobManagers，宣布它们自己是可用，并被分配工作。</p>
 <p>客户端不是运行时和程序执行的一部分，而是被用来准备和发送的数据流的JobManager。之后，客户端可以断开连接或保持连接以接收进度报告。客户端既可以作为触发执行的Java / Scala程序的一部分运行，也可以在命令行进程中运行./bin/flink run …。</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/processes.svg" alt="执行Flink数据流所涉及的过程"></p>
-<h2 id="任务槽和资源"><a href="#任务槽和资源" class="headerlink" title="任务槽和资源"></a>任务槽和资源</h2><p>每个worker（TaskManager）都是一个JVM进程，可以在不同的线程中执行一个或多个子任务。为了控制worker接受的任务数量，工人有所谓的任务槽（至少一个）。</p>
+<h2 id="任务槽和资源"><a href="#任务槽和资源" class="headerlink" title="任务槽和资源"></a>任务槽和资源</h2><p>每个worker（TaskManager）都是一个JVM进程，可以在不同的线程中执行一个或多个子任务。为了控制worker接受的任务数量，worker有所谓的任务槽（至少一个）。</p>
 <p>每个任务槽代表TaskManager的固定资源子集。例如，具有三个插槽的TaskManager将其托管内存的1/3专用于每个插槽。对资源进行分隔意味着子任务不会与来自其他作业的子任务竞争托管内存，而是具有一定数量的保留托管内存。请注意，此处不会发生CPU隔离; 当前插槽只分离任务的托管内存。</p>
 <p>通过调整任务槽的数量，用户可以定义子任务如何相互隔离。每个TaskManager有一个插槽意味着每个任务组在一个单独的JVM中运行（例如，可以在一个单独的容器中启动）。拥有多个插槽意味着更多子任务共享同一个JVM。同一JVM中的任务共享TCP连接（通过多路复用）和心跳消息。它们还可以共享数据集和数据结构，从而减少每任务开销。</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/tasks_slots.svg" alt="具有任务槽和任务的TaskManager"></p>
 <p>默认情况下，Flink允许子任务共享插槽，即使它们是不同任务的子任务，只要它们来自同一个作业。结果是一个槽可以容纳整个作业的管道。允许此插槽共享有两个主要好处：</p>
 <p>Flink集群需要与作业中使用的最高并行度一样多的任务槽。无需计算程序总共包含多少任务（具有不同的并行性）。</p>
-<p>更容易获得更好的资源利用率。如果没有插槽共享，非密集型源/ map（）子任务将阻止与资源密集型窗口子任务一样多的资源。通过插槽共享，将示例中的基本并行性从2增加到6可以充分利用时隙资源，同时确保繁重的子任务在TaskManagers之间公平分配。</p>
+<p>更容易获得更好的资源利用率。如果没有插槽共享，非密集型源/ map（）子任务将阻止与资源密集型窗口子任务一样多的资源。通过插槽共享，将示例中的基本并行性从2增加到6可以充分利用插槽资源，同时确保繁重的子任务在TaskManagers之间公平分配。</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/slot_sharing.svg" alt="具有共享任务槽的TaskManagers"></p>
 <p>API还包括可用于防止不期望的插槽共享的资源组机制。</p>
 <p>根据经验，一个好的默认任务槽数就是CPU核心数。使用超线程，每个插槽然后需要2个或更多硬件线程上下文。</p>
@@ -197,6 +197,8 @@
     </div>
     <div class="page-nav-prev page-nav-item">
       
+      <a href="/2018/10/01/pravega-working-with-reader-and-writer/" rel="prev" title="pravega handbook - 开发pravega应用 - Basic reader and writer"><span class="nav-title">pravega handbook - 开发pravega应用 - Basic reader and writer</span><i class="fas fa-angle-right"></i></a>
+      
     </div>
   </nav>
   
@@ -220,7 +222,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">35</a></div>
+      <div><a href="/archives">39</a></div>
     </div>
     
     
