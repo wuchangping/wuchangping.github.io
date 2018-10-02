@@ -115,6 +115,120 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/18/pravega-segment-store-service-1/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/18/pravega-segment-store-service-1/" itemprop="url">pravega handbook - 数据面段存储服务之一</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-18T21:42:08+08:00">2018-09-18 21:42:08</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>Pravega Segment Store Service是Pravega的核心子系统，它提供了创建，删除和修改/访问其内容的功能，是管理流段的主要入口。Pravega客户端与Pravega stream controller互动以确定需要使用哪些段（对于流），流控制面和客户端一起处理段存储服务从而操作这些流段。<br>Segment Store Service背后的基本思想是，它将输入的数据缓存在一个非常快速且持久化的append only介质（第1层存储）中，并将其与高吞吐量（但不一定是低延迟）存储系统（第2层存储）同步，同时将多个小流段合并到大的流段里。</p>
+<p>Pravega Segment Store Service可提供以下保证：</p>
+<ul>
+<li>流段长度不受限制，仅具有附加语义，但支持任意偏移读取</li>
+<li>无论底层第2层存储系统的性能如何，执行小型附加时都不会降低吞吐量</li>
+<li>多个并发写入到同一个段</li>
+<li>在单个写入的上下文中保证顺序，但是来自多个并发写入的附加数据行为将按照接收它们的顺序来添加（附加是原子的而不交错其内容）。</li>
+<li>并发写入和读取段，写入和读取之间的延迟相对较低。</li>
+</ul>
+<h2 id="术语"><a href="#术语" class="headerlink" title="术语"></a>术语</h2><p>在本文档的其余部分中，我们将使用以下术语：</p>
+<ul>
+<li>流段或段：连续的字节序列。类似于没有大小限制的文件。这是Stream的一部分，限制是暂时的并且是横向的（根据key值）。Streams的 范围 和如何将Stream Segments映射到此Streams超出了本文档需要阐述的内容。</li>
+<li>第2层存储或永久存储：数据的最终存储位置。</li>
+<li>第1层存储：快速附加存储，用于在将数据刷到第2层存储之前持久缓冲输入的append only数据。</li>
+<li>缓存：键值本地缓存，不期望持久性。</li>
+<li>Pravega Segment Store服务或Segment Store：本文档描述的服务。</li>
+<li>事务：与段相关的一系列附加操作，如果持久化，它将在段中构成连续的字节范围。这用于摄取非常大的记录或用于累积可能或可能不会持久存储到段中的数据（但其如何使用以后才能确定）。</li>
+</ul>
+<p>请注意，在Pravega级别，事务适用于整个流。在本文档中，事务适用于单个段。</p>
+<h2 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h2><p>段储存由以下几部分组成：</p>
+<ul>
+<li>Pravega Node：运行Pravega进程的主机。</li>
+<li>流段容器（或段容器）：流段的逻辑分组。Segments到Containers的映射是确定性的，不需要任何持久存储; 段通过hash函数（基于段的名称）映射到容器。</li>
+<li>持久数据日志适配器（或DurableDataLog）：第1层存储的抽象层。</li>
+<li>存储适配器：第2层存储的抽象层。</li>
+<li>缓存：用于追加数据缓存的抽象层。</li>
+<li>Streaming Client：可用于与Pravega Segment Store通信的API。</li>
+<li>Segment Container Manager：可用于确定Pravega节点上Segment Containers生命周期的组件。该组件用于启动或停止Segment Containers， 而这些段容器是基于外部协调服务（例如Pravega控制器）的。</li>
+</ul>
+<p>首先段存储通过将数据写入快速存储（最好是SSD）上的日志层（持久数据日志），并在数据被持久存储后立即返回给客户端。随后，这些写入的数据被合并成更大的数据块并在后台刷新到第2层存储。已经确认（并且在第1层中）但尚未在第2层中的附加数据存储在缓存中（除了第1层）。一旦将此类数据写入第2层存储，它可能会也可能不会保留在缓存中，具体取决于许多因素，例如缓存利用率/压力和访问模式。<br>有关上述每个组件的更多详细信息，请参阅“ 组件”部分（下面）。</p>
+<h2 id="系统图"><a href="#系统图" class="headerlink" title="系统图"></a>系统图</h2><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2FSegment.Store.Components.png" alt="Segment.Store.Components"></p>
+<p>在此图中，我们显示了Segment Store的主要组件（为简单起见，仅描绘了一个Segment Container）。显示所有Container组件和它们之间的主要链接（它们如何相互交互）。所述容器的元数据组件未示出。<br>更详细的图表可以在数据流部分（下面）中找到。</p>
+<h1 id="组件"><a href="#组件" class="headerlink" title="组件"></a>组件</h1><h2 id="段容器"><a href="#段容器" class="headerlink" title="段容器"></a>段容器</h2><p>段容器是段的逻辑组，负责跨越这些段的所有操作。Segment Container由多个子组件组成：</p>
+<ul>
+<li>段容器元数据：一组段的元数据，用于描述每个段的当前状态（第2层中的数据量，第1层中的数量，是否密封等），以及关于每个容器的其他错误信息。</li>
+<li>可持久化日志：Container将其接收的每个操作都写入此日志，并仅在日志显示已被接受且持久化存储时才返回。</li>
+<li>读索引：可从中读取数据的内存索引。Container将所有读取请求委托给它，它负责从当前所在的任何位置（Cache，Tier-1 Storage或Tier-2 Storage）获取数据。</li>
+<li>缓存：用于存储仅在第1层（尚未存在于第2层）中的附加数据，以及支持读取的数据块。</li>
+<li>Storage Writer：处理持久日志操作并将它们应用于第2层存储（按接收顺序）。此组件也是将多个操作合并在一起的组件，以获得更好的后端吞吐量。</li>
+</ul>
+<h2 id="段容器元数据"><a href="#段容器元数据" class="headerlink" title="段容器元数据"></a>段容器元数据</h2><p>段容器元数据对其组件的良好运行和同步至关重要。此元数据在所有组件之间共享，它分为两个级别：容器范围的元数据和每个段的元数据。每个服务都有不同的用途，如下所述。<br>容器元数据<br>每个Segment Container都需要保存一些影响容器内所有操作的通用元数据：</p>
+<ul>
+<li>操作序列号：持久日志分配的最大序列号。每次通过持久日志接收并成功处理新操作时，此数字都会递增（其值永远不会减少或以其他方式回滚，即使操作未能保存）。</li>
+<li>操作序列号保证严格单调递增（没有两个操作具有相同的值，并且操作将始终具有比之前的所有操作更大的序列号）。</li>
+<li>Epoch：每次成功恢复（Container Start）时会增加的数字。该值可以持续递增并作为恢复的一部分进行存储，并且可以用于许多场景（例如作为HDFS的第2层防护，HDFS不能为此提供良好的原生保护机制）。</li>
+<li>活动段元数据：有关每个活动段的信息（请参阅下一节）。如果Segment最近有活动（读取或写入）并且当前已加载到内存中，则它处于活动状态。如果这个段有一段时间内未使用，或者当前有太多个段处于活动状态，那么通过将段的元数据刷新到第2层存储并且将段的元数据从内存中淘汰，从而可以使得这个段变为非活动状态。</li>
+<li>第1层元数据：在该点之前的所有操作已经持久存储到第2层，可用于准确截断第1层存储日志的各种信息。</li>
+<li>检查点：通过将容器元数据的整个快照（包括活动段）序列化到第1层存储来定期对容器元数据打检查点。检查点充当第1层的截断点，这意味着它包含通过之前所有已处理的操作对Container进行的所有更新，因此我们不再需要这些操作来重建元数据。如果我们在Checkpoint上截断Tier-1，那么我们可以使用来自Tier-2和此Checkpoint的信息来重建先前元数据中的内容，而不依赖于Tier-1中之前的任何操作。</li>
+</ul>
+<h2 id="段元数据"><a href="#段元数据" class="headerlink" title="段元数据"></a>段元数据</h2><p>每个段容器都需要保留每个段的元数据，用于在处理每个段的操作时跟踪每个段的状态。元数据可以是易失性的（可以在恢复时完全重建），并且包含当前正在使用的每个段的以下属性：</p>
+<ul>
+<li>Name 段的名称。</li>
+<li>Id：内部分配的唯一段ID。这用于指代Segments，它比段的名称更受欢迎。此ID在段的生命周期内是不会改变的，这意味着即使段变为非活动状态，将来重新激活也会将其映射到相同的Id。</li>
+<li>StartOffset（也称为TruncationOffset）：可用于读取的数据的最低偏移量。非截断段的Start Offset将等于0，而后续Truncate操作将增加（但永不减少）此数字。</li>
+<li>StorageLength：第2层存储中存在的数据的最高偏移量。</li>
+<li>Length：第1层存储中已提交数据的最高偏移量。</li>
+<li>LastModified：上次处理（和确认）附加的时间戳。</li>
+<li>IsSealed：segment是否已关闭追加数据（此值可能尚未应用于Tier-2存储）。</li>
+<li>IsSealedInStorage：Segment是否已关闭追加数据（并且这已在第2层存储中保留）。</li>
+<li>IsMerged：此段是否已合并到另一个段中（但尚未在第2层存储中保留）。这仅适用于事务。一旦合并持续到第2层，事务段就不再存在（因此IsDeleted将成为现实）。</li>
+<li>IsDeleted：segment是否被删除或最近是否已合并到另一个segment中。这仅适用于最近删除的segment，而不适用于从未存在过的segment。<br>对于任何segment，以下内容  始终为true：</li>
+<li>StorageLength &lt;= Length</li>
+<li>StartOffset &lt;= Length</li>
+</ul>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/17/pravega-reader-groups/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -682,173 +796,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-terminology/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术网站">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravega-terminology/" itemprop="url">pravega handbook - 相关术语</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T13:39:53+08:00">2018-09-16 13:39:53</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h3 id="以下是与Pravega相关的术语表："><a href="#以下是与Pravega相关的术语表：" class="headerlink" title="以下是与Pravega相关的术语表："></a>以下是与Pravega相关的术语表：</h3><table>
-<thead>
-<tr>
-<th style="text-align:left">术语</th>
-<th style="text-align:left">定义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left">Pravega</td>
-<td style="text-align:left">Pravega是一个开源存储原语，为连续和无界数据实现流式存储,Pravega是Flink最好的拍档。</td>
-</tr>
-<tr>
-<td style="text-align:left">流</td>
-<td style="text-align:left">一种可持久化，弹性，append-only，无限制的字节序列，具有良好的性能和强一致性。</td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">流通过名称和范围来标识。</td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">流由一个或多个数据流段组成。</td>
-</tr>
-<tr>
-<td style="text-align:left">流段</td>
-<td style="text-align:left">流的碎片</td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">流中流段的数量会随着负载和缩放策略的变化而变化</td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">当没有发生缩放事件时，事件写入流中，具有相同路由密钥的事件存储在同一流段中，并且这些事件全部都是有序的. 当发生缩放事件时，与事件之后使用相同路由密钥K写入的事件相比，在缩放事件之前使用给定路由密钥K写入的流段数量发生了变化，给定路由密钥K写入的事件被存储在不同的流段中。流段可与Reader Groups相结合，流段的数量是并发读取流的最大的Reader数量。</td>
-</tr>
-<tr>
-<td style="text-align:left">Scope</td>
-<td style="text-align:left">流名称的命名空间。在一个scope内的流的名称必须是独一无二的。</td>
-</tr>
-<tr>
-<td style="text-align:left">事件</td>
-<td style="text-align:left">Stream中的字节集合。 事件与路由密钥相关联。</td>
-</tr>
-<tr>
-<td style="text-align:left">路由密钥</td>
-<td style="text-align:left">用于将消息路由到Reader的事件的属性。两个具有相同路由密钥的事件将以与它们所写的完全相同的顺序被Reader所读取</td>
-</tr>
-<tr>
-<td style="text-align:left">Reader</td>
-<td style="text-align:left">从一个或多个Streams读取数据的应用程序。</td>
-</tr>
-<tr>
-<td style="text-align:left">Writer</td>
-<td style="text-align:left">将数据写入一个或多个Streams的应用程序。</td>
-</tr>
-<tr>
-<td style="text-align:left">Pravega Java客户端库</td>
-<td style="text-align:left">应用程序用于与Pravega交互的 Java库</td>
-</tr>
-<tr>
-<td style="text-align:left">ReaderGroup</td>
-<td style="text-align:left">一个或多个Reader的命名集合，它们并发读取Stream。 Pravega为Reader分配了Stream  Segments，确保一个Stream Segments至少对应一个Reader，并且保证reader之间的平衡。</td>
-</tr>
-<tr>
-<td style="text-align:left">位置</td>
-<td style="text-align:left">Stream中的偏移量，代表了Reader的恢复点。如果Reader崩溃，可以从这个位置来恢复Reader，以便从这个故障点恢复对流的持续处理。</td>
-</tr>
-<tr>
-<td style="text-align:left">1层存储</td>
-<td style="text-align:left">短期，低延迟的数据存储，可确保写入Streams的数据的持久性。 第1层的当前实现使用   Apache Bookkeeper。 第1层存储保留了Pravega中最新的流。随着第1层中的数据老化，它将从第1 层移到第2层。</td>
-</tr>
-<tr>
-<td style="text-align:left">2层存储</td>
-<td style="text-align:left">Pravega存储的一部分，基于比较便宜的磁盘介质，如HDFS，DellEMC的Isilon或DellEMC的弹性云存储。</td>
-</tr>
-<tr>
-<td style="text-align:left">PravegaServer</td>
-<td style="text-align:left">Pravega的一个组件，其实现了Pravega数据面API，用于读取和写入Streams等操作。Pravega的数据面，也称为Segment Store，由一个或多个Pravega  Server实例组成。</td>
-</tr>
-<tr>
-<td style="text-align:left">Segment Store</td>
-<td style="text-align:left">PravegaServer的集合，它们聚合形成Pravega集群的数据面。</td>
-</tr>
-<tr>
-<td style="text-align:left">Controller</td>
-<td style="text-align:left">Pravega的一个组件，其实现了Pravega控制面API，用于创建和检索有关Streams的信息。 Pravega的控制面由Zookeeper协调的一个或多个Controller实例组成。</td>
-</tr>
-<tr>
-<td style="text-align:left">Auto Scaling</td>
-<td style="text-align:left">一个Pravega概念，基于缩放策略，它允许流中流段的数量随时间的推移而改变</td>
-</tr>
-<tr>
-<td style="text-align:left">缩放策略</td>
-<td style="text-align:left">一个流的配置项，它确定一个流中流段的数量如何随着时间的改变而改变 。  缩放策略有三种，Stream在任何给定时间都有其中一种。 - 固定数量的流段- 根据写入流的每秒字节数更改流段数 - 根据写入流的每秒的事件数更改流段数</td>
-</tr>
-<tr>
-<td style="text-align:left">缩放事件</td>
-<td style="text-align:left">缩放事件有两种类型：Scale-Up Event和Scale-Down Event。一个缩放事件触发自动缩放。放大事件是一种情况，其中负载的增加导致一个或多个流段被分割，从而增加流中的流段的数量。缩小事件是负载减少导致一个或多个流段合并的情况，从而减少流中的流段数。</td>
-</tr>
-<tr>
-<td style="text-align:left">事务</td>
-<td style="text-align:left">Stream写操作的集合，以原子的方式应用于Stream。事务中的所有字节要么都成功写入Stream，要么都没写入。</td>
-</tr>
-<tr>
-<td style="text-align:left">状态同步器</td>
-<td style="text-align:left">在Pravega之上构建的抽象，使用Pravega 段来支持复制状态的实现，以支持状态转换。状态同步器允许在多个进程之间共享一段数据，具有很强的一致性和乐观的并发性</td>
-</tr>
-<tr>
-<td style="text-align:left">checkpoint</td>
-<td style="text-align:left">一种事件，表示reader group内的所有reader都要持久化它们的状态。</td>
-</tr>
-<tr>
-<td style="text-align:left">StreamCut</td>
-<td style="text-align:left">StreamCut代表了流中的一致性位置。它包含一组针对单个流的段和偏移对，这些对表示给定时间点上的完整密钥空间。偏移总是指向事件边界，因此将没有偏移指向不完整事件。</td>
-</tr>
-</tbody>
-</table>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/3/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/5/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -874,7 +821,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">39</a></div>
+      <div><a href="/archives">40</a></div>
     </div>
     
     
