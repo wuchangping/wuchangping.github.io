@@ -115,6 +115,84 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/pravega-controller-service-3/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/20/pravega-controller-service-3/" itemprop="url">Pravega handbook - 控制器服务之三</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T21:59:55+08:00">2018-09-20 21:59:55</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="角色和责任"><a href="#角色和责任" class="headerlink" title="角色和责任"></a>角色和责任</h2><h3 id="流操作"><a href="#流操作" class="headerlink" title="流操作"></a>流操作</h3><p>控制器是所有流相关元数据的真实存储。Pravega客户端（EventStreamReaders和EventStreamWriters）与控制器一起确保流不变量在流上工作时得到满足和尊重。控制器维护流的元数据，包括段的整个历史。访问流的客户端需要联系控制器以获取有关段的信息。<br>客户端查询控制器以了解如何导航流。为此，控制器公开适当的API以获取活动段，后继者，前驱者和段信息以及Uris。这些查询使用存储和通过流存储接口访问元数据来提供这些查询服务。<br>Controller还提供了修改流的状态和行为的工作流程。这些工作流程包括创建，缩放，截断，更新，密封和删除。这些工作流程既可以通过直接API调用，也可以通过后台策略管理器（自动调整和保留）调用。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2FRequestProcessing.png" alt="RequestProcessing"><br>请求处理流程</p>
+<h2 id="创建流"><a href="#创建流" class="headerlink" title="创建流"></a>创建流</h2><p>创建流是作为任务框架上的任务来实现的。创建流工作流首先创建流状态设置为CREATING * 的初始流元数据。在此之后，它标识应该拥有的段容器并为此流创建段并同时调用create-segment。完成所有创建段后，创建流任务完成，从而将流移动到ACTIVE状态。所有故障都会以指数退避重试几次。但是，如果它无法完成任何步骤，则流将保持在CREATING状态。</p>
+<h2 id="更新流"><a href="#更新流" class="headerlink" title="更新流"></a>更新流</h2><p>更新流被实现为序列化请求处理程序/并发事件处理器框架上的任务。更新流由显式API调用来调用到控制器中。它首先将更新请求事件发布到请求流中。之后，它尝试创建临时更新属性。如果它无法创建临时更新属性，则请求失败，并且会通知调用方由于与另一个正在进行的更新冲突而无法更新流。</p>
+<p>事件由请求事件处理器选择。处理开始时，更新流任务期望找到要存在的临时更新流属性。如果找不到该属性，则通过将事件推回到内存中队列中来延迟更新处理，直到它认为事件已过期为止。如果在此期间找到要更新的属性，则在到期之前，处理该事件并执行更新流操作。现在处理开始，它首先将状态设置为UPDATING。在此之后，在元数据存储中更新流配置，然后通知段存储关于流的所有活动段关于策略的改变。现在状态重置为ACTIVE。</p>
+<h3 id="缩放流"><a href="#缩放流" class="headerlink" title="缩放流"></a>缩放流</h3><p>可以通过显式API调用（称为手动缩放）调用缩放，也可以基于缩放策略自动执行缩放（称为自动缩放）。我们首先编写事件，然后通过为要创建的所需段创建新条目来更新段表。此步骤是幂等的，并确保如果正在进行现有的缩放操作，则此启动新的缩放的尝试失败。处理的开始类似于更新流中遵循的机制。如果更新元数据，则事件处理并继续执行任务。如果元数据未在期望的时间范围内更新，则事件被丢弃。</p>
+<p>一旦缩放处理开始，它首先设置流状态SCALING。然后在段存储中创建新段。在成功创建新段之后，它使用对应于新时期的部分记录更新历史表，该新时期包含按比例显示的段列表。每个新的时期创建还创建新的根历元节点，在该节点下，来自该时期的所有事务的元数据驻留在该节点上。因此，当执行比例时，将存在与旧时期对应的节点，并且现在还将存在用于新时期的根节点。从这一点开始创建的任何事务都将针对新时期进行。现在，工作流尝试通过机会性地尝试删除旧时期来完成缩放。当且仅当其名下没有事务时，可以删除旧时期。一旦我们确定旧时期没有事务，我们就可以继续密封旧的段并完成规模。成功密封旧段后，历史表中的部分记录现已完成，从而完成了缩放工作流程。状态现在重置为ACTIVE。</p>
+<h3 id="截断流"><a href="#截断流" class="headerlink" title="截断流"></a>截断流</h3><p>Truncate遵循类似的机制进行更新，并具有用于截断的临时流属性，用于为截断流提供输入。一旦截断工作流标识它可以继续，它首先将状态设置为TRUNCATING。然后截断工作流查看请求的流截断，并检查它是否大于或等于现有截断点，然后它才是截断的有效输入并且工作流程开始。截断工作流接受请求的流截断，并计算要作为此截断请求的一部分删除的所有段。然后它调用相应的段存储来删除已识别的段。删除后，我们称在截止流中截断的流中描述的截断段，如流截断中所述。在此之后，截断记录将使用新的截断点和已删除的段进行更新。状态重置为ACTIVE。</p>
+<h2 id="密封流"><a href="#密封流" class="headerlink" title="密封流"></a>密封流</h2><p>可以通过对控制器的显式API调用来请求密封流。它首先将密封流事件发布到请求流中，然后尝试将流的状态设置为SEALING。如果事件被挑选并且没有找到流处于期望状态，则它通过将其重新发布在内存队列的后面来推迟密封流处理。一旦流被设置为密封状态，流的所有活动段都通过调用段存储来密封。在此之后，流在流元数据中被标记为SEALED。</p>
+<h3 id="删除流"><a href="#删除流" class="headerlink" title="删除流"></a>删除流</h3><p>可以通过对控制器的显式API调用来请求删除流。请求首先验证流是否处于SEALED状态。只有密封的流才能被删除，并在请求流中发布这样的事件。当事件被处理，它会再次验证流状态，然后通过调用段存储来继续从一开始就删除属于该流的所有段。成功删除所有段后，将清除与此流对应的流元数据。</p>
+<h2 id="流策略管理器"><a href="#流策略管理器" class="headerlink" title="流策略管理器"></a>流策略管理器</h2><p>如前所述，控制器负责执行的用户定义策略有两种类型，即自动缩放和自动保留。Controller不仅仅是流策略的存储，而是主动为其流实施这些用户定义的策略。</p>
+<h3 id="缩放基础架构"><a href="#缩放基础架构" class="headerlink" title="缩放基础架构"></a>缩放基础架构</h3><p>缩放基础架构与段存储一起构建。当控制器在段存储中创建新段时，它会将用户定义的缩放策略传递给段存储。然后，段存储监视所述段的流量，并且如果违反了从策略确定的某些阈值，则向控制器报告。Controller通过在专用内部流中发布的事件接收这些通知。可以为段接收两种类型的流量报告。第一种类型标识是否应该按比例放大（拆分）段，第二种类型标识是否应按比例缩小段。对于符合条件进行缩放的段，控制器会立即在请求流中发布段缩放请求，以便处理请求事件处理器。但是，为了缩小规模，控制器需要等待至少两个相邻的段，才有资格进行缩小。为此，它只是在元数据存储中将该段标记为冷。如果有相邻的段标记为冷，控制器会将它们合并，并发布缩小请求。然后，在请求事件处理器上异步执行缩放处理请求。</p>
+<h3 id="保留基础设施"><a href="#保留基础设施" class="headerlink" title="保留基础设施"></a>保留基础设施</h3><p>保留策略定义了应为给定流保留多少数据。这可以定义为基于时间或基于大小的。为了应用此策略，控制器定期收集流的流截断，并且如果策略指定，则有机会地对先前收集的流截断执行截断。由于这是需要为已定义保留策略的所有流执行的定期后台工作，因此迫切需要在所有可用的控制器实例之间公平地分配此工作负载。为实现这一点，我们依赖于将流转储到预定义集中，并在控制器实例之间分发这些集。这是通过使用zookeeper来存储此分发来完成的。在引导期间，每个控制器实例都尝试获取存储桶的所有权。拥有控制器监视桶下的所有流以保留机会。在每个周期里，控制器收集新的流截断并将其添加到所述流的保留集中。发布此消息后，它会查找存储在保留集中的候选流截断，这些流截断可以根据定义的保留策略进行截断。例如，在基于时间的保留中，选择早于指定保留期的最新流截断作为截断点。</p>
+<h2 id="事务管理器"><a href="#事务管理器" class="headerlink" title="事务管理器"></a>事务管理器</h2><p>控制器扮演的另一个重要角色是事务管理器。它负责创建，提交和中止事务。由于控制器是我们集群中的核心大脑和机构，并且是关于流的真实的持有者，因此writer请求控制器执行关于事务的所有控制平面动作。从创建事务到提交或中止事务的时间起，控制器在为事务提供保证方面发挥着积极作用。控制器跟踪每个事务的指定超时，如果超时超过，它会自动中止事务。</p>
+<p>控制器负责确保事务和潜在的并行规模操作相互配合，确保所有承诺都得到尊重和执行。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2FTransactionManagement.png" alt="TransactionManagement"></p>
+<p>事务管理图</p>
+<p>客户端调用控制器进程来创建，ping提交或中止事务。这些请求中的每一个都在控制器上接收并由Transaction Utility模块处理，该模块实现用于处理每个请求的业务逻辑。</p>
+<h3 id="创建事务"><a href="#创建事务" class="headerlink" title="创建事务"></a>创建事务</h3><p>writer与Controller交互以创建新事务。Controller Service将创建事务请求传递给事务工具Utility模块。模块中的create transaction函数执行以下步骤以创建事务：1。为事务生成唯一的UUID。2.它从元数据存储中获取流的当前活动的一组段，并从历史中获取其对应的时期标识符。3.它使用元数据存储接口在zookeeper中创建新的事务记录。4.然后，它请求段存储创建特定的事务段，这些段本质上链接到父活动段。<br>在创建事务时，控制器确保在我们尝试创建相应的事务段时不会密封父段。并且在事务的生命周期中，如果缩放开始，它应该等待旧时期事务在缩放之前完成，以便从旧时期密封段。</p>
+<h3 id="提交事务"><a href="#提交事务" class="headerlink" title="提交事务"></a>提交事务</h3><p>在收到提交事务的请求后，Controller Service将请求传递给Transaction Utility模块。该模块首先尝试通过元数据存储来标记事务特定元数据记录中的提交事务。在此之后，它在内部提交流中发布提交事件。提交事务工作流在提交事件处理器上实现，从而异步处理。提交事务工作流检查提交事务的是否合格，如果为true，则执行提交工作流，无限期重试，直到成功为止。如果事务不符合提交条件（通常在旧时期仍处于活动状态时在新时期上创建事务时发生），则此类事件将重新发布到内部流中以便稍后选取。</p>
+<p>成功提交事务后，事务的记录将从其时期根下被删除。然后，如果存在一个正在进行的缩放，则它呼叫尝试完成正在进行的缩放。试图完成缩放取决于删除旧时期的能力，当且仅当没有针对所述时期的未完成的活动事务时才能删除（有关更多细节，请参阅缩放工作流程）。</p>
+<h3 id="中止事务"><a href="#中止事务" class="headerlink" title="中止事务"></a>中止事务</h3><p>可以通过应用程序明确请求中止，类似于提交。但是，如果事务超时，则也可以自动启动中止。控制器跟踪系统中每个事务的超时，并且每当超时过去时，或者在显式用户请求时，事务实用程序模块在其各自元数据中将事务标记为中止。在此之后，事件被中止事件处理器处理，并立即尝试中止事务。中止事务没有排序要求，因此它同时并跨流执行。</p>
+<p>与提交一样，一旦事务中止，其节点将从其时期根目录中删除，如果存在持续的缩放，则尝试完成缩放流。</p>
+<h3 id="Ping事务"><a href="#Ping事务" class="headerlink" title="Ping事务"></a>Ping事务</h3><p>由于控制器对于正在写入事务中的段的数据没有对数据路径的可见性，因此控制器不知道是否正在主动处理事务，并且如果超时过去，它可能会尝试中止事务。为了使应用程序能够控制事务的命运，控制器公开API以允许应用程序更新事务超时期限。这种机制称为ping，只要应用程序ping事务，控制器就会为各自的事务重置其计时器。</p>
+<h3 id="事务超时管理"><a href="#事务超时管理" class="headerlink" title="事务超时管理"></a>事务超时管理</h3><p>控制器跟踪每个事务的超时。这是作为定时轮服务实现的。创建后，每个事务都会在创建它的控制器上注册到计时器服务中。可以在不同的控制器实例上接收事务的后续ping，并且基于通过zookeeper实现的所有权机制将定时器管理转移到最新的控制器实例。超时到期后，将尝试自动中止，如果能够成功将事务状态设置为中止，则启动中止工作流。</p>
+<p>控制器监视超时的每个事务都会添加到此进程索引中。如果此类控制器实例失败或崩溃，则其他控制器实例将收到节点失败通知，并尝试从失败的实例中扫描所有未完成的事务，并从该点开始监视其超时。</p>
+<h2 id="段容器到主机映射"><a href="#段容器到主机映射" class="headerlink" title="段容器到主机映射"></a>段容器到主机映射</h2><p>Controller还负责将段容器分配给段存储节点。维护此映射的责任落在单个控制器实例上，该实例是通过使用zookeeper的领导者选举选择的。当段存储节点被添加到/从集群中移除时，该领导控制器监视段存储节点的生命周期，并且跨可用的段存储节点执行段容器的重新分配。此分发映射存储在专用ZNode中。每个段存储周期性地轮询此znode以查找更改，如果找到更改，它将关闭并放弃它不再拥有的容器，并尝试获取分配给它的容器的所有权。</p>
+<p><a href="http://pravega.io/docs/latest/controller-service/#controllerClusterListener" target="_blank" rel="noopener">这里</a>已经讨论了有关实现的细节，特别是关于如何存储和管理元数据的细节。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/pravega-controller-service-2/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -779,116 +857,9 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/18/pravega-segment-store-service-2/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术网站">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/18/pravega-segment-store-service-2/" itemprop="url">pravega handbook - 数据面段存储服务之二</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-18T21:42:28+08:00">2018-09-18 21:42:28</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="日志操作"><a href="#日志操作" class="headerlink" title="日志操作"></a>日志操作</h2><p>一个日志操作是在可持久化的日志里序列化的基本单元。它本身并不代表一个动作，而是几个可序列化操作的基础（我们可以序列化多种类型的操作，而不仅仅是Appends）。每个操作都是外部操作（表示更改段）或内部触发（如元数据维护操作）的结果。<br>每个日志操作都具有以下元素： <code>- SequenceNumber</code>：分配给此条目的唯一序列号（请参阅容器元数据下的更多信息）。</p>
-<p>这些是各种类型的日志操作：</p>
-<ul>
-<li>存储操作表示需要应用于底下第2层存储的操作：</li>
-<li>StreamSegmentAppendOperation：表示对特定段的附加。</li>
-<li>CachedStreamSegmentAppendOperation：与StreamSegmentAppendOperation相同，但这是供内部使用的（它不是具有实际的数据有效负载，而是指向缓存中可以从中检索数据的位置）。</li>
-<li>StreamSegmentSealOperation：处理后，它会在内存中的元数据中设置一个标记，以便不再接收附加内容。当Storage Writer处理它时，它会在第2层存储中将Segment标记为只读。</li>
-<li>StreamSegmentTruncateOperation：截断特定偏移处的段。这会导致segment的StartOffset发生变化。</li>
-<li>MergeTransactionOperation：表示要将事务合并到其父段中。</li>
-<li>元数据操作是指示容器元数据更改的辅助操作。它们可能是外部操作的结果（我们之前收到了一个我们从未知道的段的请求，因此我们必须为其分配一个唯一的ID）或者对整个元数据进行快照（这有助于恢复和清理第1层）存储）。元数据操作的目的是减少故障转移恢复所需的时间（如果需要）：</li>
-<li>StreamSegmentMapOperation：将Id映射到段名称。</li>
-<li>TransactionMapOperation：将Id映射到事务及其父段。</li>
-<li>UpdateAttributesOperation：更新segment上的任何属性。</li>
-<li>MetadataCheckpoint包括元数据的整个快照。这在恢复期间非常有用 - 它包含到目前为止的所有元数据，这是之后所有操作的基础。</li>
-</ul>
-<h2 id="可持久化日志"><a href="#可持久化日志" class="headerlink" title="可持久化日志"></a>可持久化日志</h2><p>该可持久化日志是处理所有操作日志的核心组成部分。所有操作（由Container创建）都会添加到持久日志中，该日志按照接收顺序处理它们。它由一些其他组件组成，在不影响数据完整性的情况下，所有这些组件的唯一目标都是致力于尽快处理所有输入操作。</p>
-<p>可持久化日志中的信息流:</p>
-<ol>
-<li>所有收到的操作都被添加到操作队列中 （调用方接收一个当操作持久地完成时将完成的未来）</li>
-<li>该运算处理器选取目前在队列中可用的所有操作（如果队列为空，则等到至少一个操作被添加）。</li>
-<li><p>所述操作处理器运行作为一个连续的环（在后台线程中），并且具有四个主要阶段。</p>
-<ul>
-<li>从操作队列中出列所有未完成的操作（如上所述）</li>
-<li>预处理操作（验证它们是否正确并且不会导致意外行为，分配偏移量（如果需要），分配序列号等）</li>
-<li>写操作的数据帧生成器，其序列化和包装的操作数据帧。数据框完成后（完整或不再需要添加操作），数据框构建器将数据框发送到_可持久化的数据日志。请注意，操作可能跨越多个DataFrame - 目标是通过尽可能大的写入（但也考虑到每次写入可能有最大大小限制）来充分利用持久数据日志吞吐量容量。</li>
-</ul>
-</li>
-</ol>
-<ol start="4">
-<li><p>当持久数据日志中的DataFrame持久存在时，操作处理器会对迄今为止完全写入的所有操作进行后处理（将它们添加到内存中结构，更新索引等）并完成与它们相关的未来。</p>
-</li>
-<li><p>Operation Processor异步工作，因为它在开始另一个数据帧并将其发送到持久数据日志之前不等待写入特定的数据帧。因此，多个DataFrame可能正在运行（但是以特定的顺序），并且操作处理器依赖于持久数据日志中的某些排序保证（如果特定DataFrame被攻击，那么在此之前的所有DataFrame也以正确的顺序被成功提交）。</p>
-<ul>
-<li>操作处理器不执行任何写入限制（将其留给持久数据日志实现），但它控制发送给它的数据帧的大小。</li>
-</ul>
-</li>
-</ol>
-<h2 id="截断"><a href="#截断" class="headerlink" title="截断"></a>截断</h2><p>根据提供的配置，Durable Log会自动添加一种特殊的操作，命名为MetadataCheckpointOperation。此操作在由操作处理器处理时，收集整个Container Metadata的快照，并将其序列化为Durable Data Log。此特殊操作标记一个截断点 - 日志操作流中的一个位置，我们可以在其中发出截断操作。非常重要的是，在每次截断之后，在日志中找到的第一个操作是一个 MetadataCheckpointOperation，因为没有先前的操作来重建元数据，这是能够处理后续操作的唯一方法。</p>
-<p>注意：不应将持久数据日志（第1层）截断与段截断相混淆。它们用于不同的目的，适用于不同的目标。</p>
-<h2 id="操作处理器"><a href="#操作处理器" class="headerlink" title="操作处理器"></a>操作处理器</h2><p>操作处理器是处理日志输入操作的可持久化的日志的子组件。其目的是基于每个操作的内容来验证、持久化和更新元数据和其他内部结构。<br>操作元数据更新器</p>
-<p>操作元数据更新器是持久日志的子组件，负责基于元数据的当前状态验证操作，以及在成功提交操作之后更新元数据。在内部，它有各种机制来应对失败，并且它可以回滚失败情况下的某些变化。</p>
-<h2 id="持久数据日志"><a href="#持久数据日志" class="headerlink" title="持久数据日志"></a>持久数据日志</h2><p>持久数据日志是一个外部组件的抽象层，提供仅附加语义。它是一个向日志提供非常快速附加的系统，它保证了写入数据的持久性和一致性。读取性能不是一个很重要的因素，因为我们不直接从该组件读取数据 - 我们只在需要恢复持久日志的内容时才从该组件读取日志数据。</p>
-<p>如上所述，日志操作被序列化为数据框架（如果需要的话，单个操作能够跨越多个这样的框架），然后这些数据框架被序列化为持久数据日志的条目。这仅用作故障安全，并且我们只需要在需要执行恢复时才需要读回这些框架（在这种情况下，我们需要按照接收它们的相同顺序反序列化它们中包含的所有日志操作）。</p>
-<h2 id="内存操作日志"><a href="#内存操作日志" class="headerlink" title="内存操作日志"></a>内存操作日志</h2><p>内存中操作日志包含提交（和复制）的日志操作，其顺序与添加到持久数据日志的顺序完全相同。虽然持久数据日志包含一系列数据帧（其中包含操作的序列化），但是内存日志包含实际的操作，这些操作可以在整个持久日志（以及存储写入器）中使用。</p>
-<p>内存日志本质上是在接收操作时命令的日志操作链。我们总是在一端添加，然后从另一端移除。当我们截断持久数据日志时，内存日志也被截断在同一位置。</p>
-<h2 id="读取索引"><a href="#读取索引" class="headerlink" title="读取索引"></a>读取索引</h2><p>读取索引有助于段容器在任意偏移量下执行从流读取。虽然耐用日志按照接收的顺序记录（并且只能重放）数据，但是Read Index可以以随机方式访问数据。读取索引由多个片段读取索引（每个活片段之一）构成。</p>
-<p>段读取索引是一种数据结构，用于提供从内存的读取，以及从第2层存储中提取数据，并在数据尚未可用时提供未来读取（尾部读取）。当接收到读取请求时，段读取索引返回一个读取迭代器，只要读取请求参数尚未满足，该迭代器将返回数据。迭代器要么从存储器中取出立即可用的数据，要么从第2层存储器中请求数据（并将其带到存储器中），要么如果到达段当前末端，返回Future并在添加新数据时完成（从而提供尾随或未来读取）。</p>
-<p>段读索引的核心是条目的排序索引（由它们的起始偏移量索引），用于在需要时定位所请求的数据。索引本身由定制的平衡二进制搜索树（更确切地说，是AVL树）实现，其目标是最小化内存使用而不牺牲插入或访问性能。条目本身不包含数据，而是一些少量的元数据，这些元数据用于定位缓存中的数据并确定使用模式（对缓存撤出很有好处）。</p>
-<h2 id="高速缓存"><a href="#高速缓存" class="headerlink" title="高速缓存"></a>高速缓存</h2><p>缓存是一个组件，其中所有数据（无论是从新添加的还是从第二存储中提取的）都被存储。它是一个完全由读取索引管理的密钥值存储。</p>
-<p>缓存被定义为抽象层，并且有两个实现：</p>
-<ul>
-<li>内存实现（通过哈希图）。目前只用于单元测试。</li>
-<li>内存与磁盘混合，由ROCKSDB提供支持。这是首选的（默认的）实现，因为它不受可用堆空间或机器RAM的限制，其性能与内存大小成正比。</li>
-</ul>
-<h2 id="存储写入"><a href="#存储写入" class="headerlink" title="存储写入"></a>存储写入</h2><p>Pravega绝不是数据的最终安放位置，也不是存储服务。Tier-2 Storage是我们希望数据长期存在的地方而Pravega仅用于存储非常短的尾部（使用第1层存储），足够快速追加并将它们聚合成更大的块以便提交给第2层存储。为了执行此操作，它需要另一个组件（存储写入），该组件按照接收顺序从持久日志中读取数据，对其进行聚合，并将其发送到第2层存储。</p>
-<p>就像持久日志一样，每个段容器都有一个存储写入器。每个写入器从内存操作日志中读取日志操作（通过持久日志中的read()方法公开），按照它们被处理的顺序。它通过它的序列号来跟踪最后一个读项目。此状态不被持久化，并且在恢复时，它可以从可用的持久日志的开始开始。</p>
-<p>Storage Writer可以处理任何存储操作（附加，密封，合并），并且由于Pravega是在第2层中修改此类数据的唯一参与者，因此它可以不受约束地应用它们。它有几种机制可以检测和恢复可能的数据丢失或外部参与者同时修改数据。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/4/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
   </nav>
   
   
@@ -911,7 +882,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">40</a></div>
+      <div><a href="/archives">41</a></div>
     </div>
     
     
