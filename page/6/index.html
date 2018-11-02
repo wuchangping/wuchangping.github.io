@@ -115,6 +115,76 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/15/pravega-overview/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/15/pravega-overview/" itemprop="url">pravega handbook - overview</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-15T22:15:59+08:00">2018-09-15 22:15:59</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>当前的大数据处理系统无论是Lamda架构还是Kappa架构都面临一个问题，即：“计算是原生的流计算，而存储却不是原生的流存储” 。</p>
+<p>作为存储业界首屈一指的领导者，DELL EMC的存储专家们重新思考了这一基本的数据处理和存储规则，为这一场景重新设计了一种新的存储类型，即原生的流存储，命名为”Pravega”，在梵语里是“Good Speed”的意思。</p>
+<p>Pravega是一种流数据存储系统，其具有可持久化，弹性，数据只追加，字节序列无限制，性能良好和强一致性的特点。并且根据Apache 2.0许可证开源，DELLEMC的存储专家们相信这一颠覆性的技术应该开源出来与开源社区一起拥有与推动，Pravega相应的介绍以及代码可以从pravega.io获得。</p>
+<h2 id="主要特性"><a href="#主要特性" class="headerlink" title="主要特性"></a>主要特性</h2><ul>
+<li><p>正好一次 – 不管是客户端、服务端还是网络出现了故障，Pravega都能确保每个事件都只被传递和处理正好一次（exactly-once）。</p>
+</li>
+<li><p>自动伸缩 – 不同于静态分区系统只有固定大小的存储空间，当数据采集速率发生变化时Pravega可以根据场景自动调整空间大小以自动适应数据规模的变化。</p>
+</li>
+<li><p>分布式计算原语 – Pravega具有和zookeeper一样的选主功能，支持进程间传递消息，支持数据存储，非常适用于分布式计算场景。</p>
+</li>
+<li><p>写入效率好 – 目前Pravega 的写入时延在毫秒级，还能无缝的扩展以支持数千个客户端的同时并发读写，是IOT和其他时延敏感型应用的理想选择。</p>
+</li>
+<li><p>无限保存 – 数据永远都在流中采集、处理和保存，对于实时数据和历史数据使用一样的处理范式。</p>
+</li>
+<li><p>高效存储 – Pravega构建了一种数据处理通道，支持将批处理，实时处理以及其他应用比如数据检索，都构建在一个数据处理通道内，无需为每个处理模式都保留一份数据副本。</p>
+</li>
+<li><p>持久化 – Pravega保证无需在高性能，可持久化和一致性之间做权衡，在客户端确认写入操作已完成之前，Pravega将一直存留并保护数据。</p>
+</li>
+<li><p>支持事务 - 开发人员使用Pravega事务来确保一组事件原子性的写入流中。</p>
+</li>
+</ul>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/13/hello-world/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -175,7 +245,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">41</a></div>
+      <div><a href="/archives">42</a></div>
     </div>
     
     
