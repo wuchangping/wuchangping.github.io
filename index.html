@@ -115,6 +115,119 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/11/17/pravega-blog-streams-in-and-out/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/11/17/pravega-blog-streams-in-and-out/" itemprop="url">pravega blog - streams in 与 streams out</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-11-17T11:09:20+08:00">2018-11-17 11:09:20</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>读和写是Pravega提供的最基本的功能。应用程序通过写入一个或多个Pravega流来摄取数据，并通过从一个或多个流中读取数据来使用数据。但是，要使用Pravega正确实现应用程序，开发人员必须了解一些核心的写入和读取的附加功能。例如，写入可以是事务性的，reader可以被Group织成Group。</p>
+<p>在本文中，我们将介绍开发人员在使用Pravega开发应用程序时必须注意的一些基本概念和功能，重点是读和写。我们鼓励reader在“开发Pravega应用程序”部分中另外查看Pravega文档站点，了解一些代码和更多细节。</p>
+<h2 id="写入流"><a href="#写入流" class="headerlink" title="写入流"></a>写入流</h2><p>我们当前公开的用于编写的API使应用程序能够将事件附加到流中。事件是一个应用程序概念，应用程序可以定义事件是什么以及它代表什么。就Pravega而言，事件是字节序列，而Pravega并不试图理解事件。我们希望应用程序传递一个串行器，使  Pravega  能够接收任意类型的事件并将它们转换为字节序列。最终，  Pravega  在流段中存储字节序列，并且不知道事件类型。</p>
+<p>存储字节序列而不是事件使得Pravega能够支持除API中的事件之外的抽象，例如，我们计划公开对读取和写入字节流的调用。当应用程序有其他包含不可变数据的大对象要存储时（例如Apache Flink中的检查点），此功能将非常有用。使用这样的API，应用程序能够直接在Pravega中存储这些对象，而不是依赖于单独的存储。<br>回想一下，Pravega流由段Group成，任何给定的流都可以在任何时间点打开许多并行段。为了将事件映射到段，应用程序会传递  路由键  以及事件本身。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-blog-streams-inout-1.png" alt="路由键到段图"></p>
+<p>路由键是一个字符串，经过哈希处理以确定要将事件追加到哪个段。 Pravega  保证将路由密钥分配给段是一致的。请注意，由于流缩放，路由密钥到段的映射并不总是相同，但它是一致的。在两个缩放事件之间，写入具有相同路由密钥的流的所有事件都映射到同一个段。跨比例事件的分段根据缩放排序。为了使其具体化，例如示例，我们从一个区段S1向上扩展到区段S2和S3。S1的关键空间与S2和S3的关键空间重叠，但是S2和S3没有交集，所以可以简单地附加到S2和S3，但不要同时附加说S1和S2，因为具有相同路由键的事件可以转到两个不同的段。为了防止后一种情况发生，在S1被密封之前，S2和S3不会发生附加，这会在缩放事件之前和之后推广到任意数量的段。因此，一旦由于缩放事件而将段密封，则将未来事件附加到密封段的后继者，从而保留路由键顺序。</p>
+<p>将事件写入流很简单，有两个选项：  常规 和  事务。通过常规写入，writer可以简单地触发写入事件的调用：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>// Set up a new scope and stream with a single segment (no scaling)<br>StreamManager streamManager = StreamManager.create(controllerURI);<br>StreamConfiguration streamConfig = StreamConfiguration.builder()<br>    .scope(scope).streamName(streamName)<br>    .scalingPolicy(ScalingPolicy.fixed(1))<br>    .build();<br>streamManager.createScope(scope);<br>streamManager.createStream(scope, streamName, streamConfig);<br> <br>// Create a client factory, a writer and append events<br>try(ClientFactory clientFactory = <br>      ClientFactory.withScope(scope, controllerURI) &#123;<br>    EventStreamWriter&lt;String&gt; writer = clientFactory<br>         .createEventWriter(streamName, <br>                            new JavaSerializer&lt;String&gt;(),<br>                            EventWriterConfig.builder().build()); <br>    writer.writeNext(&quot;Key 1&quot;, &quot;Hola&quot;); <br>    writer.writeNext(&quot;Key 2&quot;, &quot;Mundo!&quot;);<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>通过事务，writer开始一个事务并根据需要调用事件来进行多次调用：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>Transaction&lt;String&gt; txn = writer.beginTxn();<br>txn.writeEvent(&quot;Key 1&quot;, &quot;Hola&quot;);<br>txn.writeEvent(&quot;Key 2&quot;, &quot;Mundo!&quot;);<br>txn.commit();<br></code></pre></td></tr></table></figure>
+<p>一旦完成，它就会提交事务，这使得事务中的写入可供读取。应用程序还可以选择中止事务，在这种情况下，作为事务的一部分编写的事件不可见。</p>
+<p>关于writer的一些非常有趣的观点值得一提：重复和分段顺序。</p>
+<h2 id="避免重复"><a href="#避免重复" class="headerlink" title="避免重复"></a>避免重复</h2><p>流中的重复可能是有问题的：它们通常会导致不正确的结果或不正确的行为。例如，重复可能导致实例的计数错误或状态机中的错误转换。一些应用程序对这种偏差非常敏感。</p>
+<p>为避免重复，writer内部具有一个ID，用于确定重新连接时写入的最后一个事件。当writer有要追加的事件时，它会启动一个事件块的写入。一旦完成附加块，writer就会发送一个  块结束  命令，其中  包含写入  的事件数和  最后一个事件编号。writer附加块以便能够从批处理中受益。</p>
+<p>段存储必须记住任何给定writerID的最后一个事件编号。否则，它无法发现重复。要记住给定writerID的最后一个事件编号，它会将writerID，事件编号对保留为该段的属性，作为处理追加请求的一部分。在writer断开连接并创建新连接的情况下，段存储将获取此属性并返回作为与客户端握手的一部分写入的最后一个事件编号。来自分段存储的响应使writer能够在其附加未完成的情况下从正确的事件中恢复。</p>
+<p>但是，writer不会持久存在甚至暴露其writerID。如果writer崩溃并且实例化了新的writer，则新writer将使用新的writerID。尽管writer崩溃，为避免重复，我们需要将此writerID重复数据删除与事务相结合。通过事务性写入，如果写入程序在提交一批写入之前崩溃，那么它可以让事务超时并中止，在这种情况下，新写入程序可以从上一个写入程序停止的最后一个提交点恢复。</p>
+<p>总而言之，  Pravega  通过检查与writerID相关联的事件编号以及使用事务写入来容忍writer崩溃来避免写入时的重复。在writer在事务中间崩溃的情况下，应用程序可以简单地让事务超时并中止。此类事务的部分写入不会向reader公开。</p>
+<h2 id="段顺序"><a href="#段顺序" class="headerlink" title="段顺序"></a>段顺序</h2><p>流缩放导致流的段数随着时间而改变。流的段数的变化会导致随着时间的推移，路由关键字范围到段的映射发生变化。但是，如果映射发生变化，我们如何保证reader按照附加顺序接收具有相同路由键的事件？</p>
+<p>为了保证具有相同路由密钥的事件的顺序，客户端与控制器一起根据它们的创建顺序读取段。例如，假设流以一个我们称为S1的段开始  。在时间  T1，段  S1  分成  S2  和  S3。因此，如缩放流的一部分，我们分离的键范围  S1  之间  S2  和  S3。为了简化讨论，让我们说我们将它分开，所以  S2  最终得到[0.0,0.5]，而  S3 以[0.5,1.0]结束。为了保证可以按附加顺序读取具有相同路由键的所有事件，我们需要确保在密封S1之前，writer不能附加到S2或S3。事实上，这正是writer的操作方式：当它发现一个段密封时，它会向控制器询问后继者。在这个例子中，当它到达S1的末尾   （表示段密封的返回代码）时，writer询问控制器并接收S2  和  S3  是后继者的响应  。下图说明了这种情况：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-blog-streams-inout-2.png" alt="读取和缩放"></p>
+<p>在reader方，我们还必须遵循段的顺序，接下来当我们介绍reader和reader group时，我们将更详细地讨论它。</p>
+<h2 id="从流中读取"><a href="#从流中读取" class="headerlink" title="从流中读取"></a>从流中读取</h2><p>流可以有多个段，writer可以并行追加。这种并行性不仅对于实现更高的摄取能力而且在读取和处理事件时实现并行性也很重要。</p>
+<p>将事件附加到流时，我们可以让许多writer同时访问流的所有段。writer彼此独立，处理事件而无需进一步协调。我们也可以在读取方面有很多reader，但reader却不同。通常，事件只需要处理一次，因此一Groupreader需要协调段的工作负载分布，以便在整个Group中进行分割。</p>
+<p>为了使reader能够有效地共享一个或多个流的工作负载，我们使用reader Group的概念  ：</p>
+<p><strong>Reader Group</strong>：一reader Group是一Group RG 的  Pravega  reader和流S的一Group相关联，使得对于每个 ř ∈ RG，S（R）＆SubsetEqual; ⋃s∈ S C（S） 。在任何时间和任何两个不同的reader R，R ‘ ∈ RG ， S（R）∩ S（R’）是空的。</p>
+<p>在该定义中，s（r）是分配给reader r的段的集合，并且c（s）是流的当前活动段的集合（用于读取的非密封段）。注意，这个定义并不意味着在所有的段 ⋃ 小号 ∈ 小号 C（S）在任何时间分配给一些reader。reader可能已经发布了一个片段，而其他人尚未获得该片段，或者尚未获得某些新片段。Reader Group的合约是，最终分配给⋃ 小号∈ 小号 C（S）中的任何段。因此，readerGroup不保证在任何时候 ⋃ 小号∈ 小号C（S）= ⋃ [R ∈ RG S（R） ，虽然我们保证了活性，所有 X ∈ ⋃ s∈ S C（S） ，最终x被分配到一些reader。 </p>
+<p>每个reader都必须属于readerGroup。以下代码段说明了如何设置 reader：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>// Set up a new scope and stream with a single segment (no scaling)<br>StreamManager streamManager = StreamManager.create(controllerURI);<br>StreamConfiguration streamConfig = StreamConfiguration.builder()<br>    .scope(scope).streamName(streamName)<br>    .scalingPolicy(ScalingPolicy.fixed(1))<br>    .build();<br>streamManager.createScope(scope);<br>streamManager.createStream(scope, streamName, streamConfig);<br> <br>try (ReaderGroupManager manager =<br>              ReaderGroupManager.withScope(scope, controllerURI)) &#123;<br>    manager.createReaderGroup(readerGroup, <br>                              readerGroupConfig, <br>                              Collections.singleton(streamName));<br>&#125;<br> <br>try(ClientFactory clientFactory = <br>      ClientFactory.withScope(scope, controllerURI) &#123;<br>    EventStreamReader&lt;String&gt; reader = <br>             clientFactory.createReader(&quot;reader&quot;,<br>                                        readerGroup,<br>                                        new JavaSerializer&lt;String&gt;(),<br>                                        ReaderConfig.builder().build());<br>   while(!stop) &#123;<br>        EventRead&lt;String&gt; event = <br>                  reader.readNextEvent(READER_TIMEOUT_MS);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>将段分配给Group中的reader取决于使用我们在Pravega中称为stateSynchronizer的机制的reader的分布式协调  。stateSynchronizer使reader能够获得分布状态的一致视图，他们使用这些视图来协商Group状态的变化，  例如，分配了哪些分段以及分配给哪些分Group。我们用来确定分配的特定启发式算法很简单，但我们会对另一篇文章进行详细讨论。</p>
+<p>reader和Group体有四个方面值得强调。</p>
+<h2 id="段顺序-1"><a href="#段顺序-1" class="headerlink" title="段顺序"></a>段顺序</h2><p>为了保证reader在附加顺序中读取具有相同键的事件，reader遵循与writer类似的过程。当readerGroup 中的reader遇到密封段时，它会提取后继者，以便该Group可以从这些段中读取。如果后继者对应于分割密封片段的结果，那么reader可以立即开始阅读后继者。下图说明了这种情况：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-blog-streams-inout-3.png" alt="读取和缩放"></p>
+<p>最初，流具有单个段  S1 ， 并且它最终扩展，导致S1分裂成  S2  和  S3。一旦reader 到达S1的末尾  ，它就会从控制器请求后继者，并开始从新的段中读取。</p>
+<p>但是，如果密封段实际上与另一段合并而另一段尚未完全读取，该怎么办？让我们通过一个例子使这个方面更加具体。<br>假设我们有一个readerGroup  G，  有两个reader，  R1  和  R2。方案如下：</p>
+<ul>
+<li>Group  G  正在读取当前具有两个段  S1  和  S2的流。</li>
+<li>R1  正在读取  S1，而  R2  正在读取  S2。</li>
+<li>段合并为  S3  （S1  和  S2  是密封的，它们不接受进一步的附加）。</li>
+<li>Reader  R1  命中S1结束   并请求其后继者。</li>
+<li>reader  R1  回来说  S3  是S1的继承者  。</li>
+<li>reader  R2  尚未完成  S2。</li>
+</ul>
+<p>如果  R1  或  R2  在R2  完成读取  S2之前   继续读取  S3，那么我们可能会违背我们在附加顺序中使用相同键读取事件的承诺。因此，为了满足我们的顺序属性，我们将  S3  置于保持状态，直到  R2标记它已完成  S2。只有这样   才能分配和读取S3。</p>
+<p>为了协调分段的分配和顺序，我们再次依赖状态同步器。当reader获得段的后继者时，它会相应地更新状态，并且该状态将在ReaderGroup之间同步。具体到该示例，Reader  R1  将段S3添加   到未来 段的列表中  ，并且仅在完全读取S2的所有前任之后才分配段。</p>
+<h2 id="检查点"><a href="#检查点" class="headerlink" title="检查点"></a>检查点</h2><p>我们目前不会通过reader GroupAPI向应用程序公开任何段信息。这是故意的。为了保证流的读取遵循正确的顺序，我们选择隐藏应用程序中后继者，前任和未来段的复杂性。即使应用程序没有明确地看到段，它仍然需要某种方式来确定流中在所有活动段中保持一致的点，并使应用程序从此点恢复。例如，如果应用程序想要从流中的较早点重新启动并恢复，则需要一种机制来引用此前一点。</p>
+<p>检查点是我们提供的一种机制，使应用程序能够请求一个对象，该对象包含当前正在读取或可供读取的每个段的偏移量。检查点在内部使用状态同步器实现。一旦触发，reader就会协调生成一个不透明的检查点对象，该对象包含当前正在读取或可供读取的每个段的偏移量。</p>
+<p>每个reader将其指定段的当前位置记录到状态一次：</p>
+<p>1.它了解到有一个检查点在继续;<br>2.它已经发布了一个  检查点事件。</p>
+<p>检查点事件通过reader 通知应用程序检查点正在进行中，并且应用程序应该采取任何适当的步骤（如果有的话）。例如，作为检查其状态的一部分，应用程序可能需要获取其输入的位置（  Pravega 流），为执行Reader的每个进程收集任何本地状态，并向下游刷新输出。因此，应用程序可能希望通过收集任何状态检查点信息并刷新下游的任何输出来对检查点事件作出反应，以避免重复。</p>
+<p>如果需要，我们还利用检查点的机会重新平衡分段的分配。必须在检查点时执行此操作，以便应用程序有机会刷新任何挂起的状态更改，消息和事件，以避免任何重复。</p>
+<h2 id="下游故障与重复"><a href="#下游故障与重复" class="headerlink" title="下游故障与重复"></a>下游故障与重复</h2><p>readerGroup使一组reader可以集中读取流。Reader Group逻辑以试图保持负载平衡的方式在Reader之间分配段。<br>一个重要的问题是当reader崩溃时会发生什么。具体来说，分配给该reader 的段会发生什么？显然，要在这些段存储取得进展，我们需要将它们重新分配给新的reader。在重新分配这些段时，我们需要从某个偏移量恢复。理想情况下，此偏移量是前一个Reader未读取的第一个偏移量。从第一个段偏移（偏移零）开始可能导致重复处理事件。如果应用程序对重复项敏感，则这是不可取的。</p>
+<p>为了使应用程序在从Pravega读取时避免重复  ，我们执行以下操作。对于应用程序读取的每个事件，我们提供一个  位置 对象。position对象是一个可序列化的不透明对象，它包含reader当前分配的段的偏移量。此对象类似于检查点对象，但缩小为单个Reader。reader应该将此对象作为处理事件的一部分来持久化。如果Reader 崩溃，  Pravega  希望应用程序通过调用readerGroup API的方法并传递Reader 的最后一个位置对象来使Reader 脱机。此位置对象确定剩余Reader需要从指定段中的位置。</p>
+<p>到目前为止，我们已选择将崩溃检测推送到应用程序。Reader Group API提供reader Offline调用，但它不提供任何检测崩溃的机制。因此，应用程序需要提供检测并相应地调用reader Offline。</p>
+<p>请注意，使用位置对象背后没有任何魔力。我们要求应用程序合作：完全取决于应用程序持久保存这样的位置对象并在Reader崩溃时检索最新的位置对象。如果维护这些对象的成本很高或不合需要，那么根据所执行的处理的性质，应用程序在其输出中存在重复的风险。</p>
+<h2 id="批读取"><a href="#批读取" class="headerlink" title="批读取"></a>批读取</h2><p>有时候应用程序想要简单地处理存储在流中的所有事件而不依赖于顺序。例如，假设应用程序想要收集流中的所有用户ID，事件中的单词，甚至执行经典的单词计数。在这种情况下，段的顺序并不重要。</p>
+<p>对于这种情况，我们公开了一个批处理API，它使应用程序能够利用并行性并以任何顺序迭代流的各个段并使用它所需的任何程度的并行性。</p>
+<p>要执行批量读取，应用程序会通过段请求迭代器：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>Iterator&lt;SegmentInfo&gt; segments = client.listSegments(stream);<br>SegmentInfo segmentInfo = segments.next();<br></code></pre></td></tr></table></figure>
+<p>一旦它有了这个迭代器，它就可以继续单独遍历各个段：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>SegmentIterator&lt;T&gt; events = client.readSegment(segmentInfo.getSegment(),<br>                   deserializer);<br> <br>while (events.hasNext()) &#123;<br>    processEvent(events.next());<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>如果应用程序选择，它可以并行读取所有段。请注意，在撰写本文时，此API是实验性的，并且可能会发生变化。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>在这里，我们介绍了一些关于Pravega摄取和读的基本概念，和不是那么基本的一些概念  。这些是了解Pravega需要理解的一些主要概念 ， 基本功能易于使用和理解，但关于顺序和重复，在我们公开的属性中有一些细微差别，这对于开发人员来说是很重要的。更多的信息，我们建议读者们查看 Pravega.io网站  文档 和github上的代码库。</p>
+<p><strong>原文</strong> ： <a href="http://blog.pravega.io/2018/02/12/streams-in-and-out-of-pravega/" target="_blank" rel="noopener">http://blog.pravega.io/2018/02/12/streams-in-and-out-of-pravega/</a></p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/11/11/pravega-blog-storage-reimagined/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -242,6 +355,12 @@
 <h2 id="结束思考"><a href="#结束思考" class="headerlink" title="结束思考"></a>结束思考</h2><p>我们是充满激情的存储界人，我们喜欢流式的想法，我们觉得Flink这样的“原生的流式”计算非常的有意思。我们认为这个世界需要一种互补的存储技术。Pravega是我们贡献的开源流存储项目：pravega.io，我们相信它将进一步推动流式技术的发展.</p>
 <p>请记住，当您考虑流式应用时，请将数据视为连续且无限的，而不是静态和有限的。想想企业存储的重要性，如持久性、一致性弹性、以及现在的：无限性。</p>
 <p>另外我们鼓励您加入我们的社区！</p>
+<blockquote>
+<p>原文链接：<a href="http://blog.pravega.io/2017/04/09/storage-reimagined-for-a-streaming-world/" target="_blank" rel="noopener">http://blog.pravega.io/2017/04/09/storage-reimagined-for-a-streaming-world/</a></p>
+</blockquote>
+<blockquote>
+<p>About the Author： Salvatore DeSimone – VP and CTO Advanced Software Division at Dell EMC</p>
+</blockquote>
 
       
     </main>
@@ -824,151 +943,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/01/pravega-working-with-reader-and-writer/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术网站">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/10/01/pravega-working-with-reader-and-writer/" itemprop="url">pravega handbook - 开发pravega应用 - Basic reader and writer</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-01T09:15:18+08:00">2018-10-01 09:15:18</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>本文讲述如何构建简单的Pravega应用程序。最简单的Pravega应用程序使用Pravega Reader读取Pravega Stream或写入Pravega Stream的Pravega Writer。两个简单的例子都可以在Pravega Samples <code>“hello world”</code> 中找到。这些示例提供了一个非常基本的例子，说明Java应用程序如何使用Pravega Java Client Library来访问Pravega功能。</p>
-<p>有关运行示例的说明，请参阅Pravega Samples自述文件。在阅读本页之前，您应该熟悉Pravega Concepts（请参阅Pravega Concepts）。</p>
-<h2 id="HelloWorldWriter"><a href="#HelloWorldWriter" class="headerlink" title="HelloWorldWriter"></a>HelloWorldWriter</h2><p>HelloWorldWriter应用是使用EventStreamWriter将事件写入Pravega的简单演示。<br>首先看一下HelloWorldWriter示例应用，代码的关键部分在run（）方法中：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>public void run(String routingKey, String message) &#123;<br>    StreamManager streamManager = StreamManager.create(controllerURI);<br><br>    final boolean scopeCreation = streamManager.createScope(scope);<br>    StreamConfiguration streamConfig = StreamConfiguration.builder()<br>            .scalingPolicy(ScalingPolicy.fixed(1))<br>            .build();<br>    final boolean streamCreation = streamManager.createStream(scope, streamName, streamConfig);<br><br>    try (ClientFactory clientFactory = ClientFactory.withScope(scope, controllerURI);<br>         EventStreamWriter&lt;String&gt; writer = clientFactory.createEventWriter(streamName,<br>                                                          new JavaSerializer&lt;String&gt;(),<br>                                                   EventWriterConfig.builder().build())) &#123;<br><br>         System.out.format(&quot;Writing message: &apos;%s&apos; with routing-key: &apos;%s&apos; to stream &apos;%s / %s&apos;%n&quot;,<br>                message, routingKey, scope, streamName);<br>         final CompletableFuture&lt;Void&gt; writeFuture = writer.writeEvent(routingKey, message);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>run（）方法的目的是创建一个Stream（第2-9行）并将给定的Event输出到该Stream（第10-18行）。</p>
-<h2 id="创建流和StreamManager接口"><a href="#创建流和StreamManager接口" class="headerlink" title="创建流和StreamManager接口"></a>创建流和StreamManager接口</h2><p>Stream是在Scope的上下文中创建的; Scope充当命名空间机制，以便可以为不同的目的对不同的Streams集进行分类。例如，对于每个应用程序都有可能有一个单独的作用域。可以选择创建一组Scopes，一个scope对应于一个组织中的一个部门。在多租户环境中，每个租户可能有一个单独的Scope。作为开发人员，我可以选择我需要的任何分类方案，并使用Scope概念在该分类方案中组织我的Streams。</p>
-<p>通过StreamManager接口创建和操作Scopes和Streams到Pravega控制器。您需要为集群中的任何Pravega Controller实例提供URI才能创建StreamManager对象。这在第2行中显示。</p>
-<p>在HelloWorld示例应用的设置中，在启动示例应用时，controllerURI被配置为命令行参数。对于Pravega的“单节点”部署，Controller正在侦听localhost，端口9090。</p>
-<p>StreamManager提供对Pravega中与Scopes和Streams相关的各种控制平面功能的访问：</p>
-<table>
-<thead>
-<tr>
-<th>方法</th>
-<th>参数</th>
-<th>讨论</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>(static) create</td>
-<td>(URI controller)</td>
-<td>给定Pravega集群中某个Pravega Controller实例的URI，创建一个Stream Manager对象。</td>
-</tr>
-<tr>
-<td>createScope</td>
-<td>（String scopeName）</td>
-<td>创建具有给定名称的Scope。如果创建了Scope，则返回true;如果Scope已存在，则返回false。即使Scope已经存在，您也可以调用此方法，它不会对任何内容造成任何伤害。</td>
-</tr>
-<tr>
-<td>deleteScope</td>
-<td>（String scopeName）</td>
-<td>删除具有给定名称的范围。如果删除范围，则返回true，否则返回false。请注意，如果Scope包含Streams，则deleteScope操作将失败并出现异常。如果删除不存在的Scope，则该方法将成功并返回false。</td>
-</tr>
-<tr>
-<td>createStream</td>
-<td>（String scopeName，String streamName，StreamConfiguration config）</td>
-<td>在给定范围内创建流。请注意，范围名称和流名称都受以下模式限制：[a-zA-Z0-9] +（即仅字母和数字，没有标点符号）,另请注意：Scope必须存在，如果在不存在的作用域中创建Stream，则抛出异常。StreamConfiguration使用构建器模式构建.如果创建了Stream，则返回true;如果Stream已存在，则返回false。即使Stream已经存在，您也可以调用此方法，它不会损害任何内容。</td>
-</tr>
-<tr>
-<td>updateStream</td>
-<td>（String scopeName，String streamName，StreamConfiguration config）</td>
-<td>交换Stream的配置。请注意，Stream必须已存在，如果更新不存在的流，则会引发异常。如果Stream已更改，则返回true</td>
-</tr>
-<tr>
-<td>sealStream</td>
-<td>（String scopeName，String streamName）</td>
-<td>防止对Stream进行任何进一步写入,注意Stream必须已经存在，如果密封不存在的流，则抛出异常。如果Stream成功密封，则返回true</td>
-</tr>
-<tr>
-<td>deleteStream</td>
-<td>（String scopeName，String streamName）</td>
-<td>从Pravega中删除Stream并恢复该Stream使用的所有资源,请注意，Stream必须已存在，如果删除不存在的流，则会引发异常。如果删除了流，则返回true。</td>
-</tr>
-</tbody>
-</table>
-<p>在代码中的第3行完成之后，我们已经建立Scope，然后我们可以继续在第5-8行创建Stream。 </p>
-<p>StreamManager需要3个输入来创建Stream，Scope的名称，Stream的名称和StreamConfiguration。最有趣的任务是创建StreamConfiguration。</p>
-<p>与Pravega中的许多对象一样，Stream使用配置对象，允许开发人员控制Stream的各种行为。Pravega中的所有配置对象都使用builder模式进行构造。实际上有两个与流相关的重要配置项：保留策略和扩展策略。 </p>
-<p>保留策略允许开发人员控制数据在删除之前保存在Stream中的时间。他/她可以指定数据应保留一段时间（对于强制执行某些保留期的法规遵从性这样的情况是理想的）或保留数据直到消耗了一定数量的字节。目前，保留政策尚未完全实施。默认情况下，RetentionPolicy设置为“无限制”，意味着数据不会从Stream中删除。</p>
-<p>缩放策略允许开发人员配置Stream以利用Pravega自动缩放功能的方式。在第6行中，我们使用固定策略，这意味着Stream配置了给定数量的流段，并且不会改变。其他选项是按每秒给定数量的事件或每秒给定的千字节数进行缩放。在这两个策略中，开发人员指定目标速率，缩放因子和最小段数。目标速率是直接的，如果摄取率在一段时间内超过一定数量的事件或几千字节的数据，Pravega将尝试向流添加新的流段。如果速率在一段持续的时间内降至该阈值以下，Pravega将尝试合并相邻的流段。缩放因子是缩放策略上的一个设置，用于确定在超过目标速率（事件或千字节）时应添加的流段数。最小段数是设置要保持的最小读取并行度的因素; 例如，如果此值设置为3，则流上始终会有3个Stream Segments可用。目前，此属性仅在创建流时有效; 在未来的某个时刻，更新流将允许使用此因子来更改现有流上的最小读取并行度。例如，如果此值设置为3，则流上始终会有3个Stream Segments可用。目前，此属性仅在创建流时有效; 在未来的某个时刻，更新流将允许使用此因子来更改现有流上的最小读取并行度。</p>
-<p>一旦创建StreamConfiguration对象后，创建Stream是直接的（第8行）。在创建Stream之后，我们都准备开始向Stream写入Event。</p>
-<h2 id="使用EventWriter编写事件"><a href="#使用EventWriter编写事件" class="headerlink" title="使用EventWriter编写事件"></a>使用EventWriter编写事件</h2><p>应用程序使用EventStreamWriter对象将事件写入Stream。创建EventStreamWriter的关键对象是ClientFactory。ClientFactory用于创建Readers，Writers和其他类型的Pravega Client对象，例如State Synchronizer（请参阅  使用Pravega：状态同步器）。</p>
-<p>第10行显示了ClientFactory的创建。ClientFactory是在Scope的上下文中创建的，因为ClientFactory创建的所有Readers，Writers和其他客户端都是在该Scope的上下文中创建的。ClientFactory还需要一个Pravega控制器的URI，就像StreamManager一样。</p>
-<p>因为ClientFactory及其创建的对象消耗Pravega的资源，所以在try-with-resources语句中创建这些对象。由于ClientFactory及其创建的对象都实现了Autocloseable，因此try-with-resources方法可确保无论应用程序如何结束，Pravega资源都将以正确的顺序正确关闭。<br>现在我们有了ClientFactory，我们可以用它来创建一个Writer。在创建Writer之前，开发人员需要了解一些事项：</p>
-<ol>
-<li>要写入的Stream的名称是什么？注意：在创建ClientFactory时已经确定了Scope</li>
-<li>什么类型的Event对象将被写入Stream？</li>
-<li>什么序列化器将用于将Event对象转换为字节？回想一下，Pravega只知道字节序列，它对Java对象一无所知。</li>
-<li>Writer是否需要配置任何特殊行为？</li>
-</ol>
-<p>在我们的例子中，第11-13行显示了所有这些决定。此Writer写入在HelloWorldWriter对象本身的配置中指定的Stream（默认情况下，流在“示例”Scope中命名为“helloStream”）。Writer将Java String对象作为Events处理，并使用内置的Java序列化程序进行Strings。<br>EventWriterConfig允许开发人员指定诸如在放弃之前尝试重试请求的次数以及相关的指数返回设置。在连接失败或Pravega组件中断可能暂时阻止请求成功的情况下，Pravega会小心重试请求，因此应用程序逻辑不需要处理间歇性群集故障。在我们的例子中，我们在第13行中采用了EventWriterConfig的默认设置。</p>
-<p>现在我们可以将事件写入Stream，如第17行所示.EventStreamWriter提供了一个writeEvent（）操作，它使用给定的路由键将给定的非null Event对象写入Stream，以确定它应该出现在哪个Stream Segment上。Pravega中的许多操作，例如writeEvent（），都是异步的，并返回某种Future对象。如果应用程序需要确保将事件持久地写入Pravega并可供读者使用，那么它可以在继续之前等待Future。在我们简单的“hello world”的例子中，我们不必等待。</p>
-<p>EventStreamWriter也可用于开始事务。我们在其他地方更详细地介绍事务事务（使用Pravega：事务）。<br>这就是写事件的原因。现在让我们来看看如何使用Pravega读取事件。</p>
-<h2 id="HelloWorldReader"><a href="#HelloWorldReader" class="headerlink" title="HelloWorldReader"></a>HelloWorldReader</h2><p>HelloWorldReader是使用EventStreamReader的简单演示。应用只是从给定的Stream读取事件，并将这些事件的字符串表示形式打印到控制台上。<br>就像HelloWorldWriter示例一样，HelloWorldReader应用的关键部分是在run（）方法中：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>public void run() &#123;<br>   StreamManager streamManager = StreamManager.create(controllerURI);<br><br>   final boolean scopeIsNew = streamManager.createScope(scope);<br>   StreamConfiguration streamConfig = StreamConfiguration.builder()<br>           .scalingPolicy(ScalingPolicy.fixed(1))<br>           .build();<br>   final boolean streamIsNew = streamManager.createStream(scope, streamName, streamConfig);<br><br>   final String readerGroup = UUID.randomUUID().toString().replace(&quot;-&quot;, &quot;&quot;);<br>   final ReaderGroupConfig readerGroupConfig = ReaderGroupConfig.builder()<br>                                                                .stream(Stream.of(scope, streamName))<br>                                                                .build();<br>   try (ReaderGroupManager readerGroupManager = ReaderGroupManager.withScope(scope, controllerURI)) &#123;<br>       readerGroupManager.createReaderGroup(readerGroup, readerGroupConfig);<br>   &#125;<br><br>   try (ClientFactory clientFactory = ClientFactory.withScope(scope, controllerURI);<br>        EventStreamReader&lt;String&gt; reader = clientFactory.createReader(&quot;reader&quot;,<br>                                                                      readerGroup,<br>                                                     new JavaSerializer&lt;String&gt;(),<br>                                                  ReaderConfig.builder().build())) &#123;<br>        System.out.format(&quot;Reading all the events from %s/%s%n&quot;, scope, streamName);<br>        EventRead&lt;String&gt; event = null;<br>        do &#123;<br>           try &#123;<br>               event = reader.readNextEvent(READER_TIMEOUT_MS);<br>               if (event.getEvent() != null) &#123;<br>                   System.out.format(&quot;Read event &apos;%s&apos;%n&quot;, event.getEvent());<br>               &#125;<br>           &#125; catch (ReinitializationRequiredException e) &#123;<br>               //There are certain circumstances where the reader needs to be reinitialized<br>               e.printStackTrace();<br>           &#125;<br>       &#125; while (event.getEvent() != null);<br>       System.out.format(&quot;No more events from %s/%s%n&quot;, scope, streamName);<br>   &#125;<br></code></pre></td></tr></table></figure>
-<p>第2-8行设置了Scope和Stream，就像在HelloWorldWriter应用中一样。第10-15行设置ReaderGroup作为创建EventStreamReader并使用它从Stream读取事件的先决条件（第17-36行）。</p>
-<h2 id="ReaderGroup基础"><a href="#ReaderGroup基础" class="headerlink" title="ReaderGroup基础"></a>ReaderGroup基础</h2><p>Pravega中的任何读者都属于某些ReaderGroup。ReaderGroup是一个或多个读取器的分组，它们并行使用Stream。在创建Reader之前，我们需要创建一个ReaderGroup（或者知道现有ReaderGroup的名称）。此应用仅使用ReaderGroup的基础知识。</p>
-<p>第10-15行显示了基本的ReaderGroup创建。ReaderGroup对象是从ReaderGroupManager对象创建的。反过来，ReaderGroupManager对象是在给定的Scope上创建的，其中包含一个Pravega控制器的URI，就像创建ClientFactory一样。在第14行创建了ReaderGroupManager对象。请注意，创建也在try-with-resources语句中，以确保正确清理ReaderGroupManager。ReaderGroupManager允许开发人员按名称创建，删除和检索ReaderGroup对象。</p>
-<p>要创建ReaderGroup，开发人员需要ReaderGroup的名称，该组件包含一组或多个要读取的Streams。  </p>
-<p>ReaderGroup的名称可能对应用程序有意义，例如“WebClickStreamReaders”。在我们的例子中，在第10行，我们有一个简单的UUID作为名称（注意修改UUID字符串以删除“ - ”字符，因为ReaderGroup名称只能包含字母和数字）。如果您有多个读者并行阅读并且每个阅读器都在一个单独的过程中，那么为ReaderGroup提供一个可读的名称会很有帮助。在我们的例子中，我们有一个Reader，单独读取，因此UUID是一种安全的方式来命名ReaderGroup。由于ReaderGroup是通过ReaderGroupManager创建的，并且由于ReaderGroupManager是在Scope的上下文中创建的，因此我们可以安全地得出结论，ReaderGroup名称由该Scope命名。  </p>
-<p>ReaderGroupConfig现在没有太多行为。开发人员指定Stream，它应该是ReaderGroup的一部分及其下限和上限。在我们的例子中，在第11行，我们从Stream的开头开始。其他配置项（例如指定检查点等）是可通过ReaderGroupConfig获得的选项。但就目前而言，我们保持简单。<br>ReaderGroup可以配置为从多个Streams读取这一事实很有意思。想象一下，我收集了来自工厂车间的传感器数据流，每台机器都有自己的传感器数据流。我可以构建每个Stream使用ReaderGroup的应用，以便应用可以从一台机器中获取数据。我可以构建其他使用ReaderGroup配置为从所有Streams读取的应用。在我们的例子中，在第14行，ReaderGroup只读取一个Stream。</p>
-<p>您可以多次使用相同的参数调用createReaderGroup（），它不会造成任何损害，并且每次最初创建后都会返回相同的ReaderGroup。<br>请注意，在其他情况下，如果开发人员知道要使用的ReaderGroup的名称并且知道它已经创建，则他/她可以使用ReaderGroupManager上的getReaderGroup（）来按名称检索ReaderGroup对象。</p>
-<p>所以在代码的这一点上，我们设置了Scope和Stream，我们创建了ReaderGroup，现在我们需要创建一个Reader并开始阅读Events。</p>
-<h2 id="使用EventStreamReader读取事件"><a href="#使用EventStreamReader读取事件" class="headerlink" title="使用EventStreamReader读取事件"></a>使用EventStreamReader读取事件</h2><p>第17-36行显示了设置EventStreamReader并使用该EventStreamReader读取事件的示例。</p>
-<p>首先，我们在第17行创建一个ClientFactory，就像我们在HelloWorldWriter应用中一样。  </p>
-<p>然后我们使用ClientFactory创建一个EventStreamReader对象。开发人员需要创建Reader的四件事：读者的名称，它应该是readerGroup的一部分，Stream上预期的对象类型，用于将存储在Pravega中的字节转换为事件的序列化器对象和ReaderConfig。第18-21行显示了EventStreamReader的创建。Reader的名称可以是任何有效的Pravega名称（数字和字母）。当然，阅读器的名称在Scope中是命名空间。我们在上一节讨论了ReaderGroup的创建。与EventStreamWriter一样，EventStreamReader使用Java泛型类型来允许开发人员指定类型安全的Reader。在我们的例子中，我们从流中读取字符串并使用标准的Java String Serializer将从流中读取的字节转换为String对象。最后，创建了ReaderConfig，但目前没有与Reader关联的配置项，因此空的ReaderConfig只是一个占位符，因为Pravega演变为在读者上包含配置项。</p>
-<p>请注意，您不能多次创建相同的Reader。基本上你需要调用createReader（）它会尝试将Reader添加到ReaderGroup。如果ReaderGroup已包含具有该名称的Reader，则会引发异常。</p>
-<p>现在我们已经创建了一个EventStreamReader，我们可以开始使用它来从流中读取事件。这是在第26行完成的。readNextEvent（）操作返回Stream上可用的下一个Event，或者如果没有这样的Event，则阻塞指定的超时时间。如果在超时期限到期且没有可用于读取的事件之后，则返回null。这就是为什么在第27行进行空检查（以避免向控制台打印出虚假的“null”事件消息）。它也用作第34行循环的终止。请注意，Event本身包含在EventRead对象中。</p>
-<p>值得注意的是，readNextEvent（）可能会抛出异常（在第30-33行中处理）。如果ReaderGroup中的Readers需要重置为检查点或者ReaderGroup本身已被更改并且因此读取的Streams集已被更改，则会处理此异常。</p>
-<p>就是这样了。简单的HelloWorldReader循环，从Stream读取事件，直到不再有更多事件，然后应用程序终止。</p>
-<h2 id="批量读取"><a href="#批量读取" class="headerlink" title="批量读取"></a>批量读取</h2><p>对于想要执行历史流数据批量读取的应用程序，BatchClient提供了执行此操作的方法。它允许列出流中的所有段，并读取其数据。<br>当以这种方式读取数据时，不是加入自动分区数据的读取器组，而是公开流的底层结构，由应用程序决定如何处理它。因此，以这种方式读取的事件不需要按顺序读取。</p>
-<p>显然，这个API并不适用于所有应用，主要优点是它允许与批处理框架（如MapReduce）进行低级集成。</p>
-<p>作为一个例子来遍历流中所有的段：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>//将null传递给fromStreamCut和toStreamCut将导致分别使用当前流的开始和流的当前结束。<br>//Passing null to fromStreamCut and toStreamCut will result in using the current start of stream and the current end of stream respectively.<br>Iterator&lt;SegmentRange&gt; segments = client.listSegments(stream, null, null).getIterator();<br>SegmentRange segmentInfo = segments.next();<br></code></pre></td></tr></table></figure>
-<p>或者从段中读取事件：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>SegmentIterator&lt;T&gt; events = client.readSegment(segmentInfo, deserializer);<br>while (events.hasNext()) &#123;<br>    processEvent(events.next());<br>&#125;<br></code></pre></td></tr></table></figure>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -994,7 +968,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">43</a></div>
+      <div><a href="/archives">44</a></div>
     </div>
     
     
