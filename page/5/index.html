@@ -115,6 +115,199 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/17/pravega-reader-groups/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/17/pravega-reader-groups/" itemprop="url">pravega handbook - reader groups设计</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-17T20:52:45+08:00">2018-09-17 20:52:45</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h2><p>可以将一组读者组合在一起，以便可以并行读取流中的事件集。读者群组称为读者群。Pravega保证流中的每个事件都由读者组中的一个读者读取。<br>ReaderGroup中的每个Reader都分配了零个或多个段。分配给Segment的Reader是ReaderGroup中唯一一个从该Segment读取事件的Reader,这是Pravega向读者提供事件传递的顺序保证的基本机制,读者将按照他们发布到segment中的顺序接收事件。<br>这种机制存在以下几个挑战：</p>
+<ul>
+<li>如何维护ReaderGroup中哪个Reader的映射分配哪个Segment </li>
+<li>如何在Segments拆分和合并时管理上述映射 </li>
+<li>如何在将读者添加到ReaderGroup </li>
+<li>当读者通过显式操作离开ReaderGroup或reader因网络中断或Reader进程失败而变得不可用时，如何管理上述映射</li>
+</ul>
+<p>为了解决这些问题，我们可以使用[[StateSynchronizer | StateSynchronizer-design]]使读者能够相互协调。</p>
+<h2 id="如何使用一致的复制状态来解决问题"><a href="#如何使用一致的复制状态来解决问题" class="headerlink" title="如何使用一致的复制状态来解决问题"></a>如何使用一致的复制状态来解决问题</h2><p>每个reader中都创建了表示ReaderGroup元数据的一致复制状态对象,此ReaderGroup元数据包括：</p>
+<ul>
+<li>在线读者的映射表，他们拥有的segment可以接管的segment中的位置列表。</li>
+<li>每次ReaderGroup中的读者更改时，都可以更新状态。</li>
+<li>类似地，每当其中一个读者开始从一个新段读取时，它就可以更新复制状态。</li>
+</ul>
+<p>这允许所有读者了解ReaderGroup中的所有其他读者以及他们拥有的哪些片段。</p>
+<p>假设这样的信息：</p>
+<ul>
+<li><p>新读者可以知道哪些片段可读取,（因为无状态）处理合并的段变得容易，因为到达其合并前段的末尾的最后一个读者知道它可以自由地获得新段的所有权。</p>
+</li>
+<li><p>读者可以看到他们的相对负载以及他们相对于他们小组中其他读者的进展情况，并且如果事情失衡，他们可以决定转移segment。</p>
+</li>
+<li><p>这允许读者直接采取行动，以确保所有事件都被读取，而无需一些外部跟踪器。</p>
+</li>
+</ul>
+<h2 id="ReaderGroup的API"><a href="#ReaderGroup的API" class="headerlink" title="ReaderGroup的API"></a>ReaderGroup的API</h2><p>可以将用于管理ReaderGroup的外部API添加到StreamManager对象。它们包括：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">ReaderGroup createReaderGroup（String name，Stream stream，ReaderGroupConfig config）;<br>ReaderGroup getReaderGroup（String name，Stream stream）;<br>void deleteReaderGroup（ReaderGroup group）;<br></code></pre></td></tr></table></figure>
+<p>创建ReaderGroup时，它会创建一个由读者共享的[[StateSynchronizer | StateSynchronizer-design]]。要加入ReaderGroup，读者只需在其配置中指定它：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">ReaderConfig cc = new ReaderConfig（props）;<br>Reader &lt;T&gt; reader = a_stream.createReader（“my_reader_id”，“my_reader_group”，cc）;<br></code></pre></td></tr></table></figure>
+<p>当读者加入组时，他们使用状态来确定要读取的segment。当他们关闭时，他们会更新状态，以便其他读者可以接管他们的segment。</p>
+<h2 id="故障检测器"><a href="#故障检测器" class="headerlink" title="故障检测器"></a>故障检测器</h2><p>我们仍然需要某种心跳机制来判断读者是否还在线。问题大大简化，因为它不需要生成集群视图或管理任何状态。该组件只需要检测失败并调用<code>void readerOffline(String readerId, Position lastPosition);</code>ReaderGroup上的api</p>
+<p>为保持一致性，故障检测器不应将仍在处理事件的主机声明为死机，这样做可能会违反恰好一次处理保证。</p>
+<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><h2 id="新读者"><a href="#新读者" class="headerlink" title="新读者"></a>新读者</h2><ol>
+<li>当读者加入组时，其在线状态将添加到共享状态</li>
+<li>其他读者会收到共享状态的更新。</li>
+<li>当具有超过平均段数的读者看到新读者时，它可以通过将该段的位置写入共享状态来放弃段。</li>
+<li>新的读者可以通过记录它在共享状态下执行此操作来接管一个段。</li>
+<li>新读者可以从它从所拾取的段的共享状态读取的位置开始读取。</li>
+<li>多个读者之间没有同时上线的比赛，因为只有其中一个可以成功声明任何给定片段的所有权。</li>
+</ol>
+<h2 id="合并段"><a href="#合并段" class="headerlink" title="合并段"></a>合并段</h2><ol>
+<li>当读者到达其片段的末尾时，它会将此信息记录在共享状态中。</li>
+<li>当所有合并在一起的段完成后，读者可以声明对以下段的所有权。</li>
+</ol>
+<p>关于拥有者是谁，因为它存储在共享状态中没有歧义。不存在遗忘某个段的风险，因为任何读者都可以通过查看共享状态并声明它们来查看哪些段可用。</p>
+<h2 id="读者离线"><a href="#读者离线" class="headerlink" title="读者离线"></a>读者离线</h2><ol>
+<li>当读者离线时，readerOffline（）方法将由读者本身在正常关闭（在close方法内部）或通过活动检测器调用。在任何一种情况下，读者的最后位置都会被传入。</li>
+<li>最后一个位置写入状态。</li>
+<li>其他读者在更新本地状态时会看到这一点。</li>
+<li>他们中的任何一个都可以通过记录他们在状态对象中的意图来决定接管旧读者所拥有的一个或多个片段。</li>
+<li>状态更新后，新读者将被视为该segment受众群的所有者，并可随意阅读。</li>
+</ol>
+<h2 id="如果读者没有及时了解会发生什么"><a href="#如果读者没有及时了解会发生什么" class="headerlink" title="如果读者没有及时了解会发生什么"></a>如果读者没有及时了解会发生什么</h2><p>具有过期状态的读者可以从其现有段中读取而不受干扰。唯一的缺点是，如果有可用的话，它们不会给另一个读者带来负担。但是，因为他们必须写入共享状态才能从他们尚未拥有的任何段开始读取，所以他们必须在转移到新段之前获取最新信息。</p>
+<h2 id="可用性和延迟的影响"><a href="#可用性和延迟的影响" class="headerlink" title="可用性和延迟的影响"></a>可用性和延迟的影响</h2><p>读取和更新状态对象可以与读取并行发生，因此可能没有可见的延迟影响。如果Pravega以包含ReaderGroup信息的段落下并且保持离线足够长时间以使读者耗尽其现有段中的所有事件的方式失败，则流将无法读取。当然，如果Pravega以这种方式失败，那么至少某些部分流也会受到直接影响，并且无法读取任何事件。这种故障模式将表现为读者的延迟，类似于他们到达流尾部时会发生的情况。</p>
+<p>这比使用外部系统来管理这种协调更为可取，因为这需要添加可能以不同方式失败的新组件，而不是进一步依赖我们需要高度可用的小组。在网络分区的情况下，这尤其值得注意。如果网络被分开，与Pravega服务器位于分区同一侧的任何reader都可以继续工作。如果我们要利用外部服务，那么该服务可能被切断，即使他们可以与Pravega交互，读者也可能无法取得进展。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/distributed-dht-update/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/16/distributed-dht-update/" itemprop="url">分布式系统中DHT算法改进</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T21:32:38+08:00">2018-09-16 21:32:38</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>通常，分布式存储系统以及分布式缓存系统习惯采用分布式哈希（DHT）算法来实现数据的分区分配（路由）以及负载均衡，普通的分布式hash算法通过增添虚拟节点，对物理的热点区间进行划分，将负载分配至其他节点，从而达到负载均衡的状态，但是这并不能保证集群的负载就一定很是的均衡。</p>
+<p>而一种改进过的一致性Hash算法，即带边界因子的一致性Hash算法，其严格控制每个节点的负载从而能获得更好的负载均衡效果[1][2]。</p>
+<h2 id="普通的DHT算法"><a href="#普通的DHT算法" class="headerlink" title="普通的DHT算法"></a>普通的DHT算法</h2><p>假设有8个Object，通过下图的DHT算法:</p>
+<ol>
+<li>object 0,1,2映射到了虚拟节点vNode0 ： object 0,1,2 –&gt; vNode0</li>
+<li>Object 3,4,5 映射到了vNode1：object 3,4,5 –&gt; vNode1</li>
+<li>Object 6映射到 vNode2：object 6 –&gt; vNode2</li>
+<li>Object 7映射到 vNodeN：object 7 –&gt; vNodeN</li>
+</ol>
+<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-1.png" alt="distributed-DHT-1"></p>
+<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-2.png" alt="distributed-DHT-2"></p>
+<p>很明显，Vnode0和vNode1 都落了三个 object，而 vNode2和vNodeN 都只落了 1个Object，这里的DHT算法负债均衡因子并不是很好。</p>
+<h2 id="带负载边界因子的DHT算法"><a href="#带负载边界因子的DHT算法" class="headerlink" title="带负载边界因子的DHT算法"></a>带负载边界因子的DHT算法</h2><p>假设有8个Object，通过如下图的DHT with bounded loads算法:</p>
+<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-3.png" alt="distributed-DHT-3"></p>
+<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-4.png" alt="distributed-DHT-4"></p>
+<p>第一轮映射：</p>
+<ol>
+<li>object 0,1,2 需要映射到了虚拟节点vNode0，但是vNode0的权重因子是 2，因此只完成了 object 0,1 –&gt; vNode0， object 2不能映射到节点 vNode0；</li>
+<li>Object 3,4,5 需要映射到了虚拟节点vNode1：但是vNode1的权重因子是 2，因此只完成了 object 3,4 –&gt; vNode1， object 5不能映射到节点 vNode1；</li>
+<li>Object 6映射到 vNode2：object 6 –&gt; vNode2</li>
+<li>Object 7映射到 vNodeN：object 7 –&gt; vNodeN</li>
+</ol>
+<p>第二轮映射：</p>
+<ol>
+<li>Object 2 映射到 vNode1，但是vNode1权重因子=0， 不能被接收，继续往下一个节点走，发现vNode2 权重因子是2,还剩权重因子1，可以被映射，因此 object 2–&gt;vNode2</li>
+<li>Object 5 映射到 vNode2，但是vNode2现在的权重因子=0， 不能被接收，继续往下一个节点走，发现vNodeN 权重因子是2,还剩权重因子1，可以被映射，因此 object 5–&gt;vNodeN</li>
+</ol>
+<p>最终的映射结果是:</p>
+<ol>
+<li>object 0,1映射到了虚拟节点vNode0 ： object 0,1 –&gt; vNode0</li>
+<li>Object 3,4 映射到了vNode1：object 3,4 –&gt; vNode1</li>
+<li>Object 2,6映射到 vNode2：object 2,6 –&gt; vNode2</li>
+<li>Object 5,7映射到 vNodeN：object 5,7 –&gt; vNodeN</li>
+</ol>
+<p>很明显，Vnode0，vNode1，vNode2, vNodeN 每个节点都分到2个 object，<br>显然带负载边界因子的DHT算法负债均衡比普通的DHT算法来的好。</p>
+<p>这些节点的负载因子可以从IO，CPU，MEM，Disk，Network等输入因子计算出来。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a>作者简介</h2><p>常平，毕业于中国科学技术大学，获硕士研究生学历学位，10年+ 存储、布式系统、云计算以及大数据经验，曾就职于Marvell、AMD等，现就职于EMC，资深首席工程师，主要负责流式大数据处理平台的架构设计、编码及产品交付等。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] <a href="https://research.googleblog.com/2017/04/consistent-hashing-with-bounded-loads.html" target="_blank" rel="noopener">https://research.googleblog.com/2017/04/consistent-hashing-with-bounded-loads.html</a></p>
+<p>[2] <a href="https://medium.com/vimeo-engineering-blog/improving-load-balancing-with-a-new-consistent-hashing-algorithm-9f1bd75709ed" target="_blank" rel="noopener">https://medium.com/vimeo-engineering-blog/improving-load-balancing-with-a-new-consistent-hashing-algorithm-9f1bd75709ed</a></p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/distributed-cap-pacelc/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -192,7 +385,7 @@
 <li><p>依据PACELC理论，我们可以在 consistency和Latency之间做个权衡，比如 slave 2 节点的时延超过 20ms了，就不等待slave 2 返回，master 和 slave 1 返回结果给client即可，如果 slave 2 出现 超时的 次数超过 5次那么就认为 这个节点可能出现故障，打个故障标签，进行后续的处理。</p>
 </li>
 </ol>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a>作者简介</h2><p>常平，毕业于中国科学技术大学，获硕士研究生学历学位，10年+ 布式系统、存储、云计算以及大数据经验，曾就职于Marvell、AMD等，现就职于EMC，资深首席工程师，主要负责流式大数据处理平台的架构设计、编码及产品交付等。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a>作者简介</h2><p>常平，毕业于中国科学技术大学，获硕士研究生学历学位，10年+ 存储、布式系统、云计算以及大数据经验，曾就职于Marvell、AMD等，现就职于EMC，资深首席工程师，主要负责流式大数据处理平台的架构设计、编码及产品交付等。</p>
 <h3 id="参考文献："><a href="#参考文献：" class="headerlink" title="参考文献："></a>参考文献：</h3><p>[1] <a href="https://en.wikipedia.org/wiki/PACELC_theorem" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/PACELC_theorem</a></p>
 <p>[2] CAP理论与分布式系统设计，S先生</p>
 
@@ -658,143 +851,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-concepts-4/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术网站">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravega-concepts-4/" itemprop="url">Pravega handbook - 基本概念四 - 架构，小结</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T13:30:30+08:00">2018-09-16 13:30:30</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h2><p>下图描述了Pravega的物理结构图：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fpravega.arch.new.png" alt="pravega.arch.new"></p>
-<p>Pravega的架构符合软件定义存储（SDS）的语义，其控制面与数据面是分开的，Pravega数据面的集合统称为Segment Store。</p>
-<p>controller实例组构成了Pravega的控制面，提供了创建、更新和删除Streams、检索有关Streams的信息、监控Pravega集群的健康状况、收集指标等的功能。为了实现高可用，通常有多个（建议至少3个）controller实例同时提供服务。 </p>
-<p>Segment store实现Pravega的数据面。PravegaServers提供了在Streams中读写数据的API。Pravega中的数据存储由两层组成：第1层存储，提供短期、低延迟的数据存储，保证写入Streams。第2层存储提供数据的持久性、流数据的长期存储。Pravega使用 Apache Bookkeeper  实施第1层存储，并且支持使用HDFS，戴尔EMC的Isilon或戴尔EMC的弹性云存储（ECS）来实施第2层存储。第1层存储通常在Pravega集群内运行。第2层存储通常部署在Pravega集群之外。</p>
-<p>分层存储对于提供快速访问Stream数据的组合非常重要，但也允许Streams存储大量数据。第1层存储会保留最近的Stream数据。随着第1层存储中的数据老化，它将进入第2层存储。</p>
-<p>Pravega使用Apache Zookeeper作为Pravega集群中组件的协调机制。 </p>
-<p>Pravega首先被构建为数据存储原语。Pravega经过精心设计，可充分利用软件定义存储，因此Pravega中存储的数据量仅受数据中心总存储容量的限制。就像您所期望的所有存储系统一样，一旦将数据写入Pravega，数据就会被持久存储。如果没有遇到连数据中心都被毁坏的灾难，Pravega中存储的数据永远不会丢失。</p>
-<p>Pravega提供了一个用Java编写的客户端库，用于构建客户端应用程序，例如使用Flink作为分析应用程序。Pravega Java客户端库通过自我定制的TCP协议管理应用程序与Pravega之间的交互。</p>
-<h2 id="概念小结"><a href="#概念小结" class="headerlink" title="概念小结"></a>概念小结</h2><p>Pravega中的概念总结如下：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fputting.all.together.new.png" alt="putting.all.together.new"></p>
-<p>Pravega的客户端是writer和reader。writer将事件写入流中。Reader读取Stream中的事件。Reader被分组到ReaderGroups中以并行读取Stream。</p>
-<p>Controller是服务端组件，用于管理Pravega的控制面。使用ControllerAPI创建、更新和列出流。</p>
-<p>Pravega Server是一个服务端组件，用于实现读、写和其他数据面操作。</p>
-<p>Streams是Pravega中的基本存储原语。Streams包含一组名为Events的数据元素。事件被writer附加到Stream的“尾部”。reader可以从Stream中的任何位置读取事件。</p>
-<p>Stream被划分为一组Stream Segments。流中的stream segments数可以随时间变化。事件基于路由码写入到一个stream segment中。对于读取Stream的任何ReaderGroup，每个Stream Segment都分配给该ReaderGroup中的一个Reader。</p>
-<p>每个流段都存储在Tier1和Tier2存储的组合中。Segment的尾部存储在Tier1中，提供低延迟的读写操作。Segment的其余部分存储在Tier2中，提供具有水平可扩展性和低成本的高吞吐量读取访问。</p>
-<h2 id="关于分层存储的注意事项"><a href="#关于分层存储的注意事项" class="headerlink" title="关于分层存储的注意事项"></a>关于分层存储的注意事项</h2><p>为了实现Streams的有效实现，Pravega基于分层存储模型。事件存储于低延迟/高IOPS存储（第1层存储）和更高吞吐量存储（第2层存储）中。从API的角度来看，writer和reader对分层存储模型无需知晓。</p>
-<p>Pravega基于仅附加日志数据结构。正如所观察到的，Log中实际上有三种数据访问机制：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fanatomy.of.log.png" alt="anatomy.of.log"></p>
-<p>所有写入活动以及大部分读取活动都发生在日志的尾部。写入被附加到日志中，并且许多客户端希望以到达日志的速度读取数据。这两种数据访问机制主要是需要低延迟 - 写入器的低延迟写入和读者对发布数据的近实时访问。</p>
-<p>并非所有Reader都从日志的尾部读取; 一些reader想要从日志中的任意位置开始阅读。这些读取称为追赶读取。传统上访问历史数据是通过批量分析作业完成的，通常使用HDFS和Map / Reduce。但是，对于新的流应用程序，您只需访问日志即可访问历史数据和当前数据。一种方法是将所有历史数据存储在SSD中，就像我们使用尾部数据一样，但这可能会成本较高并迫使客户通过删除历史数据来节省成本。Pravega提供了一种机制，允许客户在日志的历史部分使用经济高效，高度可扩展的高吞吐量存储，这样他们就不必决定何时删除历史数据。基本上，如果存储足够便宜，为什么不保留所有的历史数据？</p>
-<p>第1层存储用于快速持久地写入Streams，并确保从Stream的尾部读取尽可能快。第1层存储基于开源Apache BookKeeper。虽然不是必需的，但通常我们假设第1层存储通常在更快的SSD或甚至非易失性RAM上实现。</p>
-<p>第2层存储提供高度可扩展，高吞吐量的经济高效存储。我们希望此层通常部署在机械磁盘上。Pravega异步迁移事件从第1层到第2层，以反映Stream数据的不同访问模式。第2层存储基于HDFS模型。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-concepts-3/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术网站">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravega-concepts-3/" itemprop="url">Pravega handbook - 基本概念三 - ReaderGroup，Transactions，State Synchronizers</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T13:21:24+08:00">2018-09-16 13:21:24</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="ReaderGroup以及Checkpoint"><a href="#ReaderGroup以及Checkpoint" class="headerlink" title="ReaderGroup以及Checkpoint"></a>ReaderGroup以及Checkpoint</h2><p>Pravega为应用提供了在ReaderGroup上初始化Checkpoint的功能。使用Checkpoint的意图是通过使用一种特殊事件（检查点事件）来确保每个Reader能保存原来的使用状态，ReaderGroup中的每个Reader都可以创建一个“时间点”，借助这个“时间点“可以为reader提供状态的持久化以及保证这个状态一致性的功能。检查点完成后，应用可以通过恢复checkpoint(检查点)将ReaderGroup中的所有Reader恢复成这个检查点所代表的一致状态。</p>
-<h2 id="Transactions（事务）"><a href="#Transactions（事务）" class="headerlink" title="Transactions（事务）"></a>Transactions（事务）</h2><p>Pravega支持事务。事务的想法是，Writer可以“批处理”一堆event并将它们作为一个处理单元提交到Stream中。这在某些场景是很有用的，例如，使用Pravega作为Flink作业的接收器。Flink作业可以不断产生一些数据的处理结果，并使用事务功能来持久化累积的处理结果。当在某个时间窗口（例如）的末尾时，Flink作业可以提交事务，因此使的处理结果可用于数据的下游处理，或者在出现错误的场景下，退出事务并且放弃整个处理结果。</p>
-<p>Pravega的事务和类似方法（例如Kafka的生产者方式批处理）之间的关键区别在于能否持久化。当事件回到Writer时，添加到事务的事件是持久的。但是，在Writer提交Transaction之前，Reader不会看到事务中的事件。事务很像流; 事务与多个流段相关联。将事件发布到事务中时，事件本身将附加到事务的流段。假设Stream有5个段，当在该流上创建事务时，那么表示该事务也有5个段。当事件发布到事务中时，它被路由到相同编号的段，就像它被发布到Stream本身一样（如果事件将被放置在“真实”流中的段3中，那么它将出现在事务的段3中）。提交事务时，每个事务的段将自动附加到实际流中的相应段。如果流被中止，则事务其所有段以及发布到事务中的所有事件都将被从Pravega中删除。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Ftrx.commit.new.png" alt="trx.commit.new"></p>
-<p>在提交事务之前，发布到事务中的事件永远不会被Reader看到。有关使用事务的更多详细信息，请参阅  使用Pravega：事务。</p>
-<h2 id="State-Synchronizers（状态同步器）"><a href="#State-Synchronizers（状态同步器）" class="headerlink" title="State Synchronizers（状态同步器）"></a>State Synchronizers（状态同步器）</h2><p>Pravega是一个流存储; 但是Pravega也提供了在分布式计算环境中作为协调器的功能（类似zookeeper,etcd）。Pravega的State Synchronizer功能属于后一种。</p>
-<p>状态同步器使用Pravega Stream为在集群中运行的多个进程之间共享的状态提供同步机制，从而使得更加的容易构建分布式应用。使用State Synchronizer，开发人员可以使用Pravega来读取状态，并且借助一致性和乐观锁功能对这些共享状态进行更改。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fstate.synchronizer.png" alt="state.synchronizer"></p>
-<p>状态同步器可用于维护和保存应用的配置副本，状态同步器还可用于存储一个数据或具有数千个不同键值对的映射数据。实际上，Pravega本身就在内部使用State Synchronizer来管理分布在整个网络中的ReaderGroups和Readers的状态。</p>
-<p>应用开发人员以类似于创建Writer的方式在Stream上创建State Synchronizer。状态同步器保留共享状态的本地副本，以便为应用提供快速访问数据的功能。对共享状态的任何修改都将通过StateSynchronizer写入Stream，以便跟踪对共享状态的所有更改。每个应用实例都使用状态同步器通过将更新提取到共享状态并修改数据的本地副本来保持最新的更改。通过状态同步器对共享状态的追加样式进行维护，保持一致性，确保仅对共享状态的最新版本进行更新。</p>
-<p>状态同步器还支持可以“压缩”，压缩和删除旧的状态更新，以便只有最新版本的状态保留在后备流中。此功能可帮助应用开发人员确保共享状态不会未经检查。</p>
-<p>在存储的总数据大小比较小时，状态同步器对共享状态的更新可以工作得最好，允许将这些数据写为小的增量。与任何乐观并发系统一样，当许多进程都试图同时更新同一条数据时，状态同步器并不是最佳状态。</p>
-<p>更多有关使用状态同步器的详细信息，请参阅  使用Pravega：状态同步器。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/4/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/6/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -820,7 +876,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">45</a></div>
+      <div><a href="/archives">47</a></div>
     </div>
     
     

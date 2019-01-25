@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#1D2D2D">
+    <meta name="msapplication-TileColor" content="#1D2D2D">
+    
+    
+    
+    <meta name="keywords" content="flink, pravega, kubernetes, docker, streaming, storage">
+    
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicons/android-chrome-192x192.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+    
+    
+    <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#1D2D2D">
+    
+    
+    <link rel="manifest" href="/favicons/site.webmanifest">
+    
+    
+    <meta name="msapplication-config" content="/favicons/browserconfig.xml">
+    
+    
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/favicons/favicon.ico">
+    
+    
+    <link rel="stylesheet" type="text/css" href="/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="/css/index.css">
+    
+    <link rel="stylesheet" type="text/css" href="/css/sidebar.css">
+    
+    
+<link rel="stylesheet" type="text/css" href="/css/page.css">
+<link rel="stylesheet" type="text/css" href="/css/post.css">
+
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link rel="stylesheet" type="text/css" href="/css/atom-one-dark.css">
+    <link rel="stylesheet" type="text/css" href="/css/lightgallery.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script defer type="text/javascript" src="/js/util.js"></script>
+    <script defer type="text/javascript" src="/js/scrollspy.js"></script>
+    <script defer type="text/javascript" src="/js/fontawesome-all.min.js"></script>
+    <script defer type="text/javascript" src="/js/lightgallery.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-fullscreen.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-hash.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-pager.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-thumbnail.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-zoom.min.js"></script>
+    
+    <script defer src="/js/busuanzi.pure.mini.js"></script>
+    
+    
+    
+    <script defer type="text/javascript" src="/js/index.js"></script>
+    
+    <script defer type="text/javascript" src="/js/custom.js"></script>
+    <title>分布式流存储 - 架构、自动缩放、IO隔离与事务 | 常平的技术网站 - 流处理,流计算,分布式系统,微服务</title>
+  </head>
+  <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
+    
+<header id="header" class="header" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="header-container">
+      <div class="header-title">
+        <h1 class="title"><a href="/">常平的技术网站</a></h1>
+        <h2 class="subtitle">www.changping.me</h2>
+      </div>
+      
+      <div class="logo">
+        <img src="/images/logo.png" alt="logo">
+      </div>
+      
+    </div>
+    <nav id="nav" class="nav">
+      <a id="nav-toggle" class="nav-toggle" aria-hidden="true"><i class="fas fa-bars" aria-label="切换导航栏"></i></a>
+      <ul id="menu" role="menubar" aria-hidden="false">
+        
+        <li role="menuitem"><a href="/">首页</a></li>
+        
+        <li role="menuitem"><a href="/archives">全部</a></li>
+        
+        <li role="menuitem"><a href="/categories">分类</a></li>
+        
+        <li role="menuitem"><a href="/tags">标签</a></li>
+        
+        <li role="menuitem"><a href="/about">关于</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+    <main id="main" class="main">
+      <div class="container">
+        <div class="main-container">
+          <div class="content">
+            
+<div id="post" class="page">
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/01/25/pravega-arch-IO-transaction-autoscaling/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+       <meta itemprop="name" content="常平">
+       <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+       <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+       <meta itemprop="name" content="常平的技术网站">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">分布式流存储 - 架构、自动缩放、IO隔离与事务</h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-01-25T21:23:39+08:00">2019-01-25 21:23:39</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      <h2 id="Pravega架构"><a href="#Pravega架构" class="headerlink" title=" Pravega架构  "></a><font color="#FF8C00"> Pravega架构  </font></h2><blockquote>
+<p> ”技术在某种程度上一定是来自此前已有技术的新的组合“  – 《技术的本质》，布莱恩·阿瑟</p>
+</blockquote>
+<p>Pravega为连续而又无限的数据提供了一种新的存储原语 - 流存储，然而Pravega也并不是凭空发明出来的，它是以前成熟技术与新技术的组合，例如Pravega的 范围、流、段、事件就跟Kafka的主题、分区、段、消息对应，而一层存储又用了Bookkeeper，协调器用了Zookeeper等。</p>
+<h3 id="设计原则与目标"><a href="#设计原则与目标" class="headerlink" title=" 设计原则与目标"></a><font color="#00CED1"> 设计原则与目标</font></h3><ul>
+<li><p>持久化：在客户端确认写入前，数据被复制并且写入磁盘；</p>
+</li>
+<li><p>保序：段内严格保序；</p>
+</li>
+<li><p>恰好一次：支持恰好一次语义；</p>
+</li>
+<li><p>轻量级：一个流就如同一个文件，可以在单集群里创建千万量级起的流；</p>
+</li>
+<li><p>可弹性：可基于负载和吞吐量智能地动态扩展或者收缩流；</p>
+</li>
+<li><p>无限性：存储空间大小不受单个节点的容量限制；</p>
+</li>
+<li><p>高性能：写入延迟低于10ms，吞吐量仅受网络带宽限制，读模式（例如：追赶读）不影响写性能;</p>
+</li>
+</ul>
+<h3 id="Pravega设计创新"><a href="#Pravega设计创新" class="headerlink" title="Pravega设计创新"></a><font color="#00CED1">Pravega设计创新</font></h3><ol>
+<li><p>支持“无限流”分层</p>
+</li>
+<li><p>零接触动态缩放</p>
+<ul>
+<li><p>根据负载和SLO自动调整读/写并行度</p>
+</li>
+<li><p>没有服务中断</p>
+</li>
+<li>无需手动重新配置客户端</li>
+<li>无需手动重新配置服务资源</li>
+</ul>
+</li>
+<li><p>智能工作负载分配</p>
+<ul>
+<li>无需为峰值负载过度配置服务器</li>
+</ul>
+</li>
+<li><p>I / O路径隔离</p>
+<ul>
+<li>支持尾部写入</li>
+<li>支持尾部读</li>
+<li>支持追赶读</li>
+</ul>
+</li>
+<li><p>支持“恰好一次”事务</p>
+</li>
+</ol>
+<h3 id="逻辑架构"><a href="#逻辑架构" class="headerlink" title="  逻辑架构"></a><font color="#00CED1">  逻辑架构</font></h3><p>下图为Pravega的逻辑架构图：</p>
+<p><div align="center"><br><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch.png" alt="逻辑架构图"></div></p>
+<div align="left"> 
+
+<ol>
+<li>首先，Pravega提供了一个用Java编写的客户端库，抽象出了流协议层接口，用于支持客户端应用，例如Flink、Spark以及一些检索系统等；</li>
+<li>其次，Pravega实现了一个流数据抽象层，用于事件流和字节流的抽象；</li>
+<li>再者，从整体架构上来讲Pravega符合软件定义存储的设计规则，其控制面与数据面分离，数据面的集合统称为段存储层，控制实例组成控制面，实现了检索流信息、监控集群、收集相关指标等功能，同时为了实现高可用，通常有多个（建议至少3个）控制实例同时对外提供服务。 </li>
+<li>Pravega采用Zookeeper作为集群中的协调组件。 </li>
+<li>Pravega的存储系统由两部分组成：第1层为短期存储层，主要关注性能，用于存储热点数据，由bookkeeper实现，保证了存储系统的低时延、高性能。第2层为长期存储层，主要关注成本，提供数据的持久性以及长期存储，由开源的或者商业的存储产品组成。第1层保留热点数据，随着第1层中数据的老化，数据将自动分层流入第2层。</li>
+</ol>
+<h3 id="数据架构"><a href="#数据架构" class="headerlink" title=" 数据架构"></a><font color="#00CED1"> 数据架构</font></h3><p>下图展示了Pravega的数据架构图以及数据流分层：</p>
+<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-data-path.png" alt="数据架构图"></p>
+<ol>
+<li>Pravega客户端可以通过调用控制器接口管理流的创建、删除和缩放以及进行事务管理：启动事务、创建事务、跟踪事务状态；</li>
+<li>所有的数据对读来说都是透明的，客户端的读写操作直接与段存储（数据面）进行交互，而不通过控制器；</li>
+<li>段存储里有缓存组件保证了读写的高性能，热点数据放在bookkeeper里作为一层存储；</li>
+<li>数据老化后会自动流转到长期存储（例如：对象存储系统，文件存储系统，HDFS等）里以便降低存储成本；</li>
+</ol>
+<h3 id="关键子功能-零接触缩放"><a href="#关键子功能-零接触缩放" class="headerlink" title="关键子功能 - 零接触缩放"></a><font color="#00CED1">关键子功能 - 零接触缩放</font></h3><h4 id="零接触缩放：段的动态拆分与合并"><a href="#零接触缩放：段的动态拆分与合并" class="headerlink" title="零接触缩放：段的动态拆分与合并"></a>零接触缩放：段的动态拆分与合并</h4><p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-2.png" alt="段的拆分与合并"></p>
+<p>如上图所示，1）拆分：在t1时刻系统负载加大，段0被拆分成段1和段2，同时段0封装不再写入；t2时刻系统负载继续加大，段2被拆分成段3与段4，同时段2被封装不再写入；t3时刻系统负载又继续加大，段1被拆分成段5和段6，同时段1被封装不再写入；2）合并：t4时刻系统负载降低，段6与段3被合并成段7，同时段6与段3被封装不再写入。而且所有的这些行为都是Pravega里自动完成的无需人工干预。</p>
+<h4 id="零接触缩放：写并行-与Kafka比较"><a href="#零接触缩放：写并行-与Kafka比较" class="headerlink" title="零接触缩放：写并行 - 与Kafka比较"></a>零接触缩放：写并行 - 与Kafka比较</h4><p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-3.png" alt="写并行"></p>
+<p>当并行写入的时候：</p>
+<ol>
+<li><p>在Pravega里流段的数量会根据负载和服务质量目标而动态变化，并且段的拆分与合并都是自动进行的无需人工干预，同时拆分或合并流段是，写客户端的配置是静态不变的；</p>
+</li>
+<li><p>在Kafka里主题分区数（写并行性）是静态的，添加或删除分区时需要手动配置服务并且当分区数更改时，必须手动更新生产者配置。</p>
+</li>
+</ol>
+<h4 id="零接触缩放：读并行-与Kafka比较"><a href="#零接触缩放：读并行-与Kafka比较" class="headerlink" title="零接触缩放：读并行 - 与Kafka比较"></a>零接触缩放：读并行 - 与Kafka比较</h4><p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-4.png" alt="读并行"></p>
+<p>并行读取时：</p>
+<ol>
+<li>在Pravega里，当拆分或者合并流段时，读客户端通过流协议获得通知从而使得读并行与流段缩放保持同步；</li>
+<li>在Kafka里，当分区数更改时，必须手动更改使用者配置。</li>
+</ol>
+<h4 id="关键子功能-智能工作负载分配"><a href="#关键子功能-智能工作负载分配" class="headerlink" title="关键子功能 - 智能工作负载分配 "></a><font color="#00CED1">关键子功能 - 智能工作负载分配 </font></h4><h4 id="智能工作负载分配-与Kafka比较"><a href="#智能工作负载分配-与Kafka比较" class="headerlink" title="智能工作负载分配 - 与Kafka比较"></a>智能工作负载分配 - 与Kafka比较</h4><p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-5.png" alt="智能工作负载分配"></p>
+<p>在Pravega里，热点段会自动拆分，子段在整个集群中重新分配缓解热点，同时最大限度地利用集群的可用IOPS能力；而在Kafka里没有减轻“热点”分区的机制，其强制部署并且过度配置资源以获得处理其“峰值负载”的能力。</p>
+<h3 id="关键子功能-I-O路径隔离"><a href="#关键子功能-I-O路径隔离" class="headerlink" title="关键子功能 - I/O路径隔离"></a><font color="#00CED1">关键子功能 - I/O路径隔离</font></h3><p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-6.png" alt="I/O路径隔离"></p>
+<p>流存储的基础数据结构为仅附加写入的日志结构。考虑到高吞吐量，Pravega支持追赶读，同时为了保证低时延，Pravega还支持尾部读取以及尾部写入，从而进行了IO路径的隔离。</p>
+<h3 id="关键子功能-事务"><a href="#关键子功能-事务" class="headerlink" title="关键子功能 - 事务"></a><font color="#00CED1">关键子功能 - 事务</font></h3><p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-7.png" alt="智能工作负载分配"></p>
+<p>Pravega提供了事务功能，事务是写客户端可以“批处理”一堆事件并将它们作为一个处理单元原子性地提交到流中。这一堆事件要么所有都处理成功，要么所有都处理失败。在提交事务之前，发布到事务中的事件永远不会被读客户端看到。如上图所示，第一步，先将一堆事件封装在一个事务里；第二步，提交这个事务。这个事务里所有的事件要么全部都处理成功要么全部都处理失败。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a><font color="#FF8C00">总结</font></h2><p>本文分析了物联网场景下的数据存储商业现状以及技术现状，为平衡商业成本与技术成本推出了分布式流存储系统Pravega，同时本文还介绍了流存储的特殊需求点以及与Kafka做了简要对比，此外还介绍了一些Pravega的关键架构以及一些关键特性。有关Pravega的更多详细信息，请参阅官方网站。另作者能力有限，如有不足之处欢迎留言批评指正。</p>
+</div>
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  
+  <nav class="page-nav">
+    <div class="page-nav-next page-nav-item">
+      
+      <a href="/2018/11/25/pravega-blog-i-have-a-stream/" rel="next" title="pravega blog - 原生的流存储解决方案"><i class="fas fa-angle-left"></i><span class="nav-title">pravega blog - 原生的流存储解决方案</span></a>
+      
+    </div>
+    <div class="page-nav-prev page-nav-item">
+      
+      <a href="/2019/01/25/pravega-arch-refactor-bigdata-storage-stack/" rel="prev" title="重构大数据平台的存储栈"><span class="nav-title">重构大数据平台的存储栈</span><i class="fas fa-angle-right"></i></a>
+      
+    </div>
+  </nav>
+  
+  
+</div>
+
+          </div>
+          
+          
+          
+<aside class="sidebar" id="sidebar" >
+  
+  
+<div class="info sidebar-item" id="info">
+  
+  <img class="author-avatar" src="/images/avatar.jpg" alt="常平">
+  
+  <h1 class="author-name">常平</h1>
+  <h2 class="author-description">“技术是有生命的,因为它可以进化”</h2>
+  <div class="site-count">
+    
+    <div class="archives-count">
+      <div class="site-count-title">全部</div>
+      <div><a href="/archives">47</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="categories-count">
+      <div class="site-count-title">分类</div>
+      <div><a href="/categories">5</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="tags-count">
+      <div class="site-count-title">标签</div>
+      <div><a href="/tags">5</a></div>
+    </div>
+    
+  </div>
+  
+</div>
+
+
+  <div class="sidebar-sticky">
+    
+    
+    
+    
+    
+    <hr>
+    <div class="post-toc sidebar-item" id="toc-div">
+      <div><i class="fas fa-list-ol"></i>文章目录</div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#Pravega架构"><span class="toc-text"> Pravega架构  </span></a><ol class="list-group toc-child"><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#设计原则与目标"><span class="toc-text"> 设计原则与目标</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#Pravega设计创新"><span class="toc-text">Pravega设计创新</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#逻辑架构"><span class="toc-text">  逻辑架构</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#数据架构"><span class="toc-text"> 数据架构</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#关键子功能-零接触缩放"><span class="toc-text">关键子功能 - 零接触缩放</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#零接触缩放：段的动态拆分与合并"><span class="toc-text">零接触缩放：段的动态拆分与合并</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#零接触缩放：写并行-与Kafka比较"><span class="toc-text">零接触缩放：写并行 - 与Kafka比较</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#零接触缩放：读并行-与Kafka比较"><span class="toc-text">零接触缩放：读并行 - 与Kafka比较</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#关键子功能-智能工作负载分配"><span class="toc-text">关键子功能 - 智能工作负载分配 </span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#智能工作负载分配-与Kafka比较"><span class="toc-text">智能工作负载分配 - 与Kafka比较</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#关键子功能-I-O路径隔离"><span class="toc-text">关键子功能 - I/O路径隔离</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#关键子功能-事务"><span class="toc-text">关键子功能 - 事务</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#总结"><span class="toc-text">总结</span></a></li></ol></div>
+    </div>
+    
+    
+    
+    <hr>
+    <div class="social-link sidebar-item">
+      <div><i class="far fa-address-card"></i>链接</p></div>
+      <ul>
+        
+        <li><i class="fab fa-github"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a></li>
+        
+      </ul>
+    </div>
+    
+    
+  </div>
+</aside>
+
+
+          
+        </div>
+      </div>
+    </main>
+    
+<footer id="footer" class="footer" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="back-to-top">
+      <button id="back-to-top"><i class="fas fa-angle-double-up" aria-label="回到顶部"></i></button>
+    </div>
+    <div class="footer-container">
+      <div class="footer-left">
+        <div class="copyright">
+          <span class="author">常平</span><span class="year"><i class="far fa-copyright"></i>2017 - 2019</span>
+        </div>
+        
+        <div class="busuanzi">
+          <span id="busuanzi_container_site_pv"><i class="fas fa-eye" aria-label="站点点击量" aria-hidden="false"></i><span id="busuanzi_value_site_pv"></span></span><span id="busuanzi_container_site_uv"><i class="fas fa-user" aria-label="站点用户数" aria-hidden="false"></i><span id="busuanzi_value_site_uv"></span></span><span id="busuanzi_container_page_pv"><i class="far fa-file-alt"></i><span id="busuanzi_value_page_pv" aria-label="页面点击量" aria-hidden="false"></span></span>
+        </div>
+        
+      </div>
+      <div class="footer-right">
+        <div class="custom-info">
+          
+          PoweredBy<i class="fab fa-github-alt"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a>
+          
+        </div>
+        <div class="powered-by">
+          由 <a href="https://hexo.io/" target="_blank">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/AlynxZhou/hexo-theme-aria/" target="_blank">ARIA</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>
