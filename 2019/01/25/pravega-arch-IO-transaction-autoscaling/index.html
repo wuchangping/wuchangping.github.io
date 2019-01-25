@@ -205,16 +205,16 @@
 <li>Pravega的存储系统由两部分组成：第1层为短期存储层，主要关注性能，用于存储热点数据，由bookkeeper实现，保证了存储系统的低时延、高性能。第2层为长期存储层，主要关注成本，提供数据的持久性以及长期存储，由开源的或者商业的存储产品组成。第1层保留热点数据，随着第1层中数据的老化，数据将自动分层流入第2层。</li>
 </ol>
 <h3 id="数据架构"><a href="#数据架构" class="headerlink" title=" 数据架构"></a><font color="#00CED1"> 数据架构</font></h3><p>下图展示了Pravega的数据架构图以及数据流分层：</p>
-<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-data-path.png" alt="数据架构图"></p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-data-path.png" alt="数据架构图"></p>
 <ol>
 <li>Pravega客户端可以通过调用控制器接口管理流的创建、删除和缩放以及进行事务管理：启动事务、创建事务、跟踪事务状态；</li>
 <li>所有的数据对读来说都是透明的，客户端的读写操作直接与段存储（数据面）进行交互，而不通过控制器；</li>
 <li>段存储里有缓存组件保证了读写的高性能，热点数据放在bookkeeper里作为一层存储；</li>
 <li>数据老化后会自动流转到长期存储（例如：对象存储系统，文件存储系统，HDFS等）里以便降低存储成本；</li>
 </ol>
-<h3 id="关键子功能-零接触缩放"><a href="#关键子功能-零接触缩放" class="headerlink" title="关键子功能 - 零接触缩放"></a><font color="#00CED1">关键子功能 - 零接触缩放</font></h3><h4 id="零接触缩放：段的动态拆分与合并"><a href="#零接触缩放：段的动态拆分与合并" class="headerlink" title="零接触缩放：段的动态拆分与合并"></a>零接触缩放：段的动态拆分与合并</h4><p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-2.png" alt="段的拆分与合并"></p>
+<h3 id="关键子功能-零接触缩放"><a href="#关键子功能-零接触缩放" class="headerlink" title="关键子功能 - 零接触缩放"></a><font color="#00CED1">关键子功能 - 零接触缩放</font></h3><h4 id="零接触缩放：段的动态拆分与合并"><a href="#零接触缩放：段的动态拆分与合并" class="headerlink" title="零接触缩放：段的动态拆分与合并"></a>零接触缩放：段的动态拆分与合并</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-2.png" alt="段的拆分与合并"></p>
 <p>如上图所示，1）拆分：在t1时刻系统负载加大，段0被拆分成段1和段2，同时段0封装不再写入；t2时刻系统负载继续加大，段2被拆分成段3与段4，同时段2被封装不再写入；t3时刻系统负载又继续加大，段1被拆分成段5和段6，同时段1被封装不再写入；2）合并：t4时刻系统负载降低，段6与段3被合并成段7，同时段6与段3被封装不再写入。而且所有的这些行为都是Pravega里自动完成的无需人工干预。</p>
-<h4 id="零接触缩放：写并行-与Kafka比较"><a href="#零接触缩放：写并行-与Kafka比较" class="headerlink" title="零接触缩放：写并行 - 与Kafka比较"></a>零接触缩放：写并行 - 与Kafka比较</h4><p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-3.png" alt="写并行"></p>
+<h4 id="零接触缩放：写并行-与Kafka比较"><a href="#零接触缩放：写并行-与Kafka比较" class="headerlink" title="零接触缩放：写并行 - 与Kafka比较"></a>零接触缩放：写并行 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-3.png" alt="写并行"></p>
 <p>当并行写入的时候：</p>
 <ol>
 <li><p>在Pravega里流段的数量会根据负载和服务质量目标而动态变化，并且段的拆分与合并都是自动进行的无需人工干预，同时拆分或合并流段是，写客户端的配置是静态不变的；</p>
@@ -222,17 +222,17 @@
 <li><p>在Kafka里主题分区数（写并行性）是静态的，添加或删除分区时需要手动配置服务并且当分区数更改时，必须手动更新生产者配置。</p>
 </li>
 </ol>
-<h4 id="零接触缩放：读并行-与Kafka比较"><a href="#零接触缩放：读并行-与Kafka比较" class="headerlink" title="零接触缩放：读并行 - 与Kafka比较"></a>零接触缩放：读并行 - 与Kafka比较</h4><p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-4.png" alt="读并行"></p>
+<h4 id="零接触缩放：读并行-与Kafka比较"><a href="#零接触缩放：读并行-与Kafka比较" class="headerlink" title="零接触缩放：读并行 - 与Kafka比较"></a>零接触缩放：读并行 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-4.png" alt="读并行"></p>
 <p>并行读取时：</p>
 <ol>
 <li>在Pravega里，当拆分或者合并流段时，读客户端通过流协议获得通知从而使得读并行与流段缩放保持同步；</li>
 <li>在Kafka里，当分区数更改时，必须手动更改使用者配置。</li>
 </ol>
-<h4 id="关键子功能-智能工作负载分配"><a href="#关键子功能-智能工作负载分配" class="headerlink" title="关键子功能 - 智能工作负载分配 "></a><font color="#00CED1">关键子功能 - 智能工作负载分配 </font></h4><h4 id="智能工作负载分配-与Kafka比较"><a href="#智能工作负载分配-与Kafka比较" class="headerlink" title="智能工作负载分配 - 与Kafka比较"></a>智能工作负载分配 - 与Kafka比较</h4><p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-5.png" alt="智能工作负载分配"></p>
+<h4 id="关键子功能-智能工作负载分配"><a href="#关键子功能-智能工作负载分配" class="headerlink" title="关键子功能 - 智能工作负载分配 "></a><font color="#00CED1">关键子功能 - 智能工作负载分配 </font></h4><h4 id="智能工作负载分配-与Kafka比较"><a href="#智能工作负载分配-与Kafka比较" class="headerlink" title="智能工作负载分配 - 与Kafka比较"></a>智能工作负载分配 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-5.png" alt="智能工作负载分配"></p>
 <p>在Pravega里，热点段会自动拆分，子段在整个集群中重新分配缓解热点，同时最大限度地利用集群的可用IOPS能力；而在Kafka里没有减轻“热点”分区的机制，其强制部署并且过度配置资源以获得处理其“峰值负载”的能力。</p>
-<h3 id="关键子功能-I-O路径隔离"><a href="#关键子功能-I-O路径隔离" class="headerlink" title="关键子功能 - I/O路径隔离"></a><font color="#00CED1">关键子功能 - I/O路径隔离</font></h3><p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-6.png" alt="I/O路径隔离"></p>
+<h3 id="关键子功能-I-O路径隔离"><a href="#关键子功能-I-O路径隔离" class="headerlink" title="关键子功能 - I/O路径隔离"></a><font color="#00CED1">关键子功能 - I/O路径隔离</font></h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-6.png" alt="I/O路径隔离"></p>
 <p>流存储的基础数据结构为仅附加写入的日志结构。考虑到高吞吐量，Pravega支持追赶读，同时为了保证低时延，Pravega还支持尾部读取以及尾部写入，从而进行了IO路径的隔离。</p>
-<h3 id="关键子功能-事务"><a href="#关键子功能-事务" class="headerlink" title="关键子功能 - 事务"></a><font color="#00CED1">关键子功能 - 事务</font></h3><p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-7.png" alt="智能工作负载分配"></p>
+<h3 id="关键子功能-事务"><a href="#关键子功能-事务" class="headerlink" title="关键子功能 - 事务"></a><font color="#00CED1">关键子功能 - 事务</font></h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-7.png" alt="智能工作负载分配"></p>
 <p>Pravega提供了事务功能，事务是写客户端可以“批处理”一堆事件并将它们作为一个处理单元原子性地提交到流中。这一堆事件要么所有都处理成功，要么所有都处理失败。在提交事务之前，发布到事务中的事件永远不会被读客户端看到。如上图所示，第一步，先将一堆事件封装在一个事务里；第二步，提交这个事务。这个事务里所有的事件要么全部都处理成功要么全部都处理失败。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a><font color="#FF8C00">总结</font></h2><p>本文分析了物联网场景下的数据存储商业现状以及技术现状，为平衡商业成本与技术成本推出了分布式流存储系统Pravega，同时本文还介绍了流存储的特殊需求点以及与Kafka做了简要对比，此外还介绍了一些Pravega的关键架构以及一些关键特性。有关Pravega的更多详细信息，请参阅官方网站。另作者能力有限，如有不足之处欢迎留言批评指正。</p>
 </div>
