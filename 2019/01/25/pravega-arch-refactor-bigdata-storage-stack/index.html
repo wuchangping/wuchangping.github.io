@@ -68,7 +68,7 @@
     <script defer type="text/javascript" src="/js/index.js"></script>
     
     <script defer type="text/javascript" src="/js/custom.js"></script>
-    <title>重构大数据平台的存储栈 | 常平的技术网站 - 流处理,流计算,分布式系统,微服务</title>
+    <title>重构大数据平台的存储栈 | 常平的技术分享网站 - 分布式系统架构设计师</title>
   </head>
   <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
     
@@ -76,7 +76,7 @@
   <div class="container">
     <div class="header-container">
       <div class="header-title">
-        <h1 class="title"><a href="/">常平的技术网站</a></h1>
+        <h1 class="title"><a href="/">常平的技术分享网站</a></h1>
         <h2 class="subtitle">www.changping.me</h2>
       </div>
       
@@ -117,11 +117,11 @@
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/01/25/pravega-arch-refactor-bigdata-storage-stack/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
        <meta itemprop="name" content="常平">
-       <meta itemprop="description" content="“技术是有生命的,因为它可以进化”">
+       <meta itemprop="description" content="“软件 = 代码 + 软件工程”">
        <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-       <meta itemprop="name" content="常平的技术网站">
+       <meta itemprop="name" content="常平的技术分享网站">
       </span>
     </div>
     <header class="post-header">
@@ -209,7 +209,6 @@
 <h3 id="资源自动缩放-减少运维成本"><a href="#资源自动缩放-减少运维成本" class="headerlink" title="资源自动缩放 - 减少运维成本"></a><font color="#00CED1">资源自动缩放 - 减少运维成本</font></h3><p>在Pravega里，当流中的负载上升或下降时，流中段的数量会随着负载自动增长或收缩，此特性被称之为“自动缩放”，该特性无需人工干预自动完成，有效减少了系统的运维成本。当创建流时，可以使用缩放策略配置流，该策略确定流如何响应其负载变化，目前支持三种策略：1）固定，流段的数量不随负载而变化；2）基于写入的字节数，当每秒写入流的数据字节数增量超过某个目标速率时，流段的数量增加，相应的如果它低于某个流速时，流段数量减少；3）基于事件的个数，与基于字节数的扩展策略类似，不同之处在于它使用事件的个数而不是字节数。</p>
 <h2 id="Pravega的一些关键概念与特性"><a href="#Pravega的一些关键概念与特性" class="headerlink" title="Pravega的一些关键概念与特性"></a><font color="#FF8C00">Pravega的一些关键概念与特性</font></h2><p>本章节将简要介绍一些Pravega的关键特性。</p>
 <font color="#00CED1"><strong>范围（scope）：</strong></font>在Pravega里，范围是流的命名空间，例如可以把一台机器命名为一个范围，也可以把一个无人车命名为一个范围，还可以把整个工厂命名为一个范围。<br><br><font color="#00CED1"><strong>流（stream）：</strong></font>在同一个范围内流具有命名唯一性，所有流的名称在同一个范围内都是唯一的。在pravega里数据被组织到流中的，流是一种可持久化、可伸缩、仅附加、字节大小无限制的序列，具有高性能和强一致性的特性。<br><br><font color="#00CED1"><strong>段（segment）：</strong></font>流由段组成，段是流的分片。<br><br><font color="#00CED1"><strong>事件（event）：</strong></font> 段由事件组成，事件存储在段里，事件是流中的可以表示为一组字节的任何事物。例如：来自温度传感器的读数，它包含少量的字节且由时间戳，度量标识符和温度值组成。另外事件也可以是与用户点击网站或APP相关联的日志数据等。<br><br><font color="#00CED1"><strong>写客户端（writers）：</strong></font>写客户端是一个可以创建事件并将事件写入流中的应用，所有的事件数据都可以通过附加到流的尾部来写入。<br><br><font color="#00CED1"><strong>读客户端（readers）：</strong></font>读客户端是一个可以从流中读取事件的应用，读客户端可以从流中的任何一点读取，比如头部、尾部、中间任何一点。<br><br><font color="#00CED1"><strong>读者组（readerGroups）：</strong></font>读者组由读客户端组成，读者组本质上是为了实现同一个组内读客户端的平衡以及不同组的扇出。同一个读者组内的读客户端可以一起并行读取给定的一组流段内的事件，比如一个读客户端对应一个段。不同的应用可以定义不同的读者组实现扇出，比如定义一个Flink读者组，再定义一个检索读者组，这样二者互不影响，互不干涉，可以优雅而又和谐地一起读取同一个流段内的事件。<br><br><font color="#00CED1"><strong>顺序保证：</strong></font>流是由段组成的，写入流的事件被写入单个段，在同一个段内的事件具有顺序性。对于读客户端来说，可以分配多个可并行读取的段，从多个段读取的也许是交错的事件，但在同一个段内读取的数据是有严格有序的。<br><br><font color="#00CED1"><strong>检查点：</strong></font>Pravega为应用提供了在读者组上初始化检查点的功能，使用检查点的意图是通过使用检查点事件来确保每个读客户端能保存原来的使用状态。<br><br><font color="#00CED1"><strong>事务：</strong></font> Pravega提供了事务功能，事务是写客户端可以“批处理”一堆事件并将它们作为一个处理单元原子性地提交到流中。这一堆事件要么所有都处理成功，要么所有都处理失败。在提交事务之前，发布到事务中的事件永远不会被读客户端看到。<br><br><font color="#00CED1"><strong>状态同步器：</strong></font> Pravega也提供了在分布式计算环境中作为协调器的功能，类似Zookeeper、ETCD这样的提供分布式共识和领导者选举能力。这样的组件在Pravega里被称作“状态同步器”。状态同步器为在集群中运行的多个进程之间的共享状态提供同步机制，使用户可以轻松地构建高级服务，从而使用户更加的容易构建分布式应用。<br><br><font color="#00CED1"><strong>恰好一次：</strong></font> Pravega确保每个事件只被处理一次，即使客户端、服务器或网络出现故障也能保证精确的处理顺序。<br><br><font color="#00CED1"><strong>性能：</strong></font> Pravega的延迟目标为毫秒级(&lt;10ms)；<br><br><font color="#00CED1"><strong>永久保留：</strong></font> Pravega将流的抽象与实际数据存储分离，这使得Pravega可以透明地将数据从低延迟、持久的存储层移到云存储服务层。<br><br><font color="#00CED1"><strong>高效存储：</strong></font> Pravega统一了流（有序）数据和批量（并行）数据的访问，可以将批量和实时应用程序结合起来而无需为流式计算流水线（比如Flink）的每个步骤复制数据从而有效的提高了数据的存储效率。<br><br><br><br>## <font color="#FF8C00">与kafka对比</font>
-
 
 <p>前面我们已经提到过Pravega是从<font color="#FF0000"> <strong>存储的视角</strong></font>来看待流数据，而Kafka本身的定位是消息系统而不是存储系统，它是从<font color="#FF0000"> <strong>消息的视角</strong></font>来看待流数据。消息系统与存储系统的定位是不同的，简单来说，消息系统是消息的传输系统，关注的是数据传输与生产消费的过程。而存储系统除了关注存储用的物理媒介，数据的持久化、安全、可靠性、一致性、隔离等都是它的原生属性，它关注数据的生产、传输、存放、访问等整个数据的生命周期。</p>
 <p>这里我们把Pravega与Kafka做了对比，大体在功能上的差异如下表所示。功能上的差异也只是说明各个产品针对的业务场景不同，看待数据的视角不同，并不是说明这个产品不好，另外每个产品自身也在演进，因此本对比仅供参考。</p>
@@ -323,6 +322,8 @@
     </div>
     <div class="page-nav-prev page-nav-item">
       
+      <a href="/2019/03/02/pravega-blog-exploring-state-synchronizer/" rel="prev" title="pravega blog - pravega状态同步器"><span class="nav-title">pravega blog - pravega状态同步器</span><i class="fas fa-angle-right"></i></a>
+      
     </div>
   </nav>
   
@@ -341,12 +342,12 @@
   <img class="author-avatar" src="/images/avatar.jpg" alt="常平">
   
   <h1 class="author-name">常平</h1>
-  <h2 class="author-description">“技术是有生命的,因为它可以进化”</h2>
+  <h2 class="author-description">“软件 = 代码 + 软件工程”</h2>
   <div class="site-count">
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">47</a></div>
+      <div><a href="/archives">48</a></div>
     </div>
     
     
