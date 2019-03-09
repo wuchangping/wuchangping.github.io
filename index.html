@@ -149,7 +149,7 @@
     </header>
     <main class="post-main" itemprop="articleBody">
       
-      <h2 id="ceph逻辑架构图"><a href="#ceph逻辑架构图" class="headerlink" title="ceph逻辑架构图"></a>ceph逻辑架构图</h2><p>ceph后端支持多种存储引擎，以插件化的形式来进行管理使用，目前支持filestore，kvstore，memstore以及bluestore，目前默认使用的是filestore，但是目前bluestore也可以上生产。下图是ceph的逻辑架构图：</p>
+      <h2 id="ceph逻辑架构图"><a href="#ceph逻辑架构图" class="headerlink" title=" ceph逻辑架构图  "></a><font color="#FF8C00"> ceph逻辑架构图  </font></h2><p>ceph后端支持多种存储引擎，以插件化的形式来进行管理使用，目前支持filestore，kvstore，memstore以及bluestore，目前默认使用的是filestore，但是目前bluestore也可以上生产。下图是ceph的逻辑架构图：</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ceph/distributed-ceph-blusetore-1.png" alt="ceph-bluestore"></p>
 <p><strong>Firestore存在的问题是：</strong></p>
 <ol>
@@ -170,7 +170,7 @@
 </li>
 </ol>
 <p>但是在机械盘场景Bluestore与firestore在性能上并没有太大的优势，bluestore的优势在于flash介质盘。</p>
-<h2 id="FileStore逻辑架构"><a href="#FileStore逻辑架构" class="headerlink" title="FileStore逻辑架构"></a>FileStore逻辑架构</h2><p>下图为ceph filestore逻辑架构图：</p>
+<h2 id="FileStore逻辑架构"><a href="#FileStore逻辑架构" class="headerlink" title=" FileStore逻辑架构 "></a><font color="#FF8C00"> FileStore逻辑架构 </font></h2><p>下图为ceph filestore逻辑架构图：</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ceph/distributed-ceph-blusetore-2.png" alt="ceph-bluestore"></p>
 <ol>
 <li><p>首先，为了提高写事务的性能，FileStore增加了fileJournal功能，所有的写事务在被FileJournal处理以后都会立即callback(上图中的第2步)。日志是按append only的方式处理的，每次都是被append到journal文件末尾，同时该事务会被塞到FileStore op queue；</p>
@@ -180,7 +180,7 @@
 <li><p>当FileStore完成一个op后，对应的Journal才可以丢弃这部分Journal。对于每一个副本都有这两步操作，先写journal，再写到disk，如果是3副本，就涉及到6次写操作，因此性能上体现不是很好。</p>
 </li>
 </ol>
-<h2 id="Bluestore逻辑架构"><a href="#Bluestore逻辑架构" class="headerlink" title="Bluestore逻辑架构"></a>Bluestore逻辑架构</h2><p>下图为ceph bluestore逻辑架构图：</p>
+<h2 id="Bluestore逻辑架构"><a href="#Bluestore逻辑架构" class="headerlink" title=" Bluestore逻辑架构 "></a><font color="#FF8C00"> Bluestore逻辑架构 </font></h2><p>下图为ceph bluestore逻辑架构图：</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ceph/distributed-ceph-blusetore-3.png" alt="ceph-bluestore"></p>
 <ol>
 <li><p>Bluestore实现了直接管理裸设备的方式，抛弃了本地文件系统，BlockDevice实现在用户态下使用linux aio直接对裸设备进行I/O操作，去除了本地文件系统的消耗，减少系统复杂度，更有利于Flash介质盘发挥性能优势；</p>
