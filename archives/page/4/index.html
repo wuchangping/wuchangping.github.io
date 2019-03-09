@@ -68,7 +68,7 @@
     <script defer type="text/javascript" src="/js/index.js"></script>
     
     <script defer type="text/javascript" src="/js/custom.js"></script>
-    <title>pravega handbook - stateSynchronizer | 正心 取势 明道 优术 合众 践行 - 常平的网站</title>
+    <title>全部 | 正心 取势 明道 优术 合众 践行 - 常平的网站</title>
   </head>
   <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
     
@@ -110,76 +110,36 @@
         <div class="main-container">
           <div class="content">
             
-<div id="post" class="page">
+<div id="archive" class="archive page">
+  <h1 class="page-title">全部</h1>
+  <h2 class="page-counter">
+    
+    你已经写了 49 篇文章！
+    
+  </h2>
+  
+  
+  
+  
+  <h2 class="page-title">2018</h1>
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-statesynchronizer/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-       <meta itemprop="name" content="常平">
-       <meta itemprop="description" content="“分布式系统架构设计师”">
-       <meta itemprop="image" content="/images/avatar.jpg">
+    <header id="post-header" class="post-header">
+      <h1 class="post-title-simple" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/13/hello-world/" itemprop="url">Hello World</a>
+      </h1>
+      
+      <span class="post-date">
+        <time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-13T11:30:35+08:00">09-13</time>
       </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-       <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">pravega handbook - stateSynchronizer</h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T19:04:36+08:00">2018-09-16 19:04:36</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
+      
     </header>
-    <main class="post-main" itemprop="articleBody">
-      <h2 id="StateSynchronizer的设计"><a href="#StateSynchronizer的设计" class="headerlink" title="StateSynchronizer的设计"></a>StateSynchronizer的设计</h2><p>StateSynchronizer提供了一种方法，通过这种方法可以支持多个进程同时对一份数据进行写入和读取，并且使用了一种乐观检查的方法来保证数据的一致性。</p>
-<p>这项工作保证每个进程都有一份数据的副本。所有的数据更新都是通过StateSynchronizer写入，它将这些数据附加到Pravega的段里。通过从段里消费数据来跟踪数据的最新变化，并且使用了有条件追加数据的方法提供了一致性保证。<br>这样可确保更新的过程只有在有最新数据时才可以继续执行更新。最后，为了防止段数据无节制地增长，我们使用了一种重写最新数据的简单方法，并截断旧数据，以便可以删除它。</p>
-<p>当大多数更新与存储的总数据大小相比较小时，此模型运行良好，因为它们可以写成小的增量。与任何乐观并发系统一样，当众多进程都试图同时尝试更新相同的信息时，工作状态最差。</p>
-<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><p>这里有一个同步集合内容的具体示例，此外我们还有一个示例，即同步一组主机的成员资格。</p>
-<p>想象一下，许多进程同时共享一个映射表的场景。这可以通过StateSynchronizer创建来完成，这将有助于协调对映射表的更改。每个客户端在内存中都有自己的一份映射表副本，可以通过将映射表生成器传递给StateSynchronizer来更新。每次尝试更新时，更新都会先记录到段中。除非传递给进程的映射表与已记录到段中的映射表一致，否则更新将失败。如果发生这种情况，则使用最新状态调用生成器以再次尝试。因此，更新的顺序由它们写入段的顺序定义。</p>
-<h2 id="如何实现"><a href="#如何实现" class="headerlink" title="如何实现"></a>如何实现</h2><p>为此，我们使用了Pravega Segment Store Service的两个功能。</p>
-<h3 id="条件追加"><a href="#条件追加" class="headerlink" title="条件追加"></a>条件追加</h3><p>附加方法可以指定追加期望的偏移量，如果追加数据失败，则不执行任何操作而是返回失败给客户端。</p>
-<h3 id="截断段"><a href="#截断段" class="headerlink" title="截断段"></a>截断段</h3><p>截断段删除给定偏移之前的所有数据（此操作不会影响现有偏移量），对于低于此值的偏移量的任何读取都将失败，并且在此偏移下的任何数据都可以删除。</p>
-
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
   </article>
   
   
-  <nav class="page-nav">
-    <div class="page-nav-next page-nav-item">
-      
-      <a href="/2018/09/16/pravega-faq/" rel="next" title="pravega handbook - 常见问题"><i class="fas fa-angle-left"></i><span class="nav-title">pravega handbook - 常见问题</span></a>
-      
-    </div>
-    <div class="page-nav-prev page-nav-item">
-      
-      <a href="/2018/09/16/distributed-cap-pacelc/" rel="prev" title="是时候把分布式系统的理论指导从CAP升级到PACELC"><span class="nav-title">是时候把分布式系统的理论指导从CAP升级到PACELC</span><i class="fas fa-angle-right"></i></a>
-      
-    </div>
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/archives/page/3/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/archives/">1</a><span class="space">&hellip;</span><a class="page-number" href="/archives/page/3/">3</a><span class="page-number current">4</span>
   </nav>
-  
   
 </div>
 
@@ -227,17 +187,6 @@
 
 
   <div class="sidebar-sticky">
-    
-    
-    
-    
-    
-    <hr>
-    <div class="post-toc sidebar-item" id="toc-div">
-      <div><i class="fas fa-list-ol"></i>文章目录</div>
-      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#StateSynchronizer的设计"><span class="toc-text">StateSynchronizer的设计</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#示例"><span class="toc-text">示例</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#如何实现"><span class="toc-text">如何实现</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#条件追加"><span class="toc-text">条件追加</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#截断段"><span class="toc-text">截断段</span></a></li></ol></li></ol></div>
-    </div>
-    
     
     
     <hr>

@@ -115,6 +115,101 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/09/distributed-ceph-bluestore-filestore/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/03/09/distributed-ceph-bluestore-filestore/" itemprop="url">ceph fileStore与blueStore架构简单对比</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-03-09T14:03:10+08:00">2019-03-09 14:03:10</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="ceph逻辑架构图"><a href="#ceph逻辑架构图" class="headerlink" title="ceph逻辑架构图"></a>ceph逻辑架构图</h2><p>ceph后端支持多种存储引擎，以插件化的形式来进行管理使用，目前支持filestore，kvstore，memstore以及bluestore，目前默认使用的是filestore，但是目前bluestore也可以上生产。下图是ceph的逻辑架构图：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ceph/distributed-ceph-blusetore-1.png" alt="ceph-bluestore"></p>
+<p><strong>Firestore存在的问题是：</strong></p>
+<ol>
+<li><p>在写数据前需要先写journal，会有一倍的写放大；</p>
+</li>
+<li><p>若是另外配备SSD盘给journal使用又增加额外的成本；</p>
+</li>
+<li><p>filestore一开始只是对于SATA/SAS这一类机械盘进行设计的，没有专门针对SSD这一类的Flash介质盘做考虑。</p>
+</li>
+</ol>
+<p><strong>而Bluestore的优势在于：</strong></p>
+<ol>
+<li><p>减少写放大；</p>
+</li>
+<li><p>针对FLASH介质盘做优化；</p>
+</li>
+<li><p>直接管理裸盘，进一步减少文件系统部分的开销。</p>
+</li>
+</ol>
+<p>但是在机械盘场景Bluestore与firestore在性能上并没有太大的优势，bluestore的优势在于flash介质盘。</p>
+<h2 id="FileStore逻辑架构"><a href="#FileStore逻辑架构" class="headerlink" title="FileStore逻辑架构"></a>FileStore逻辑架构</h2><p>下图为ceph filestore逻辑架构图：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ceph/distributed-ceph-blusetore-2.png" alt="ceph-bluestore"></p>
+<ol>
+<li><p>首先，为了提高写事务的性能，FileStore增加了fileJournal功能，所有的写事务在被FileJournal处理以后都会立即callback(上图中的第2步)。日志是按append only的方式处理的，每次都是被append到journal文件末尾，同时该事务会被塞到FileStore op queue；</p>
+</li>
+<li><p>接着，FileStore采用多个thread的方式从op queue 这个 thread pool里获取op，然后真正apply事务数据到disk（文件系统pagecache）。当FileStore将事务落到disk上之后，后续的读请求才会继续(上图中的第5步)。</p>
+</li>
+<li><p>当FileStore完成一个op后，对应的Journal才可以丢弃这部分Journal。对于每一个副本都有这两步操作，先写journal，再写到disk，如果是3副本，就涉及到6次写操作，因此性能上体现不是很好。</p>
+</li>
+</ol>
+<h2 id="Bluestore逻辑架构"><a href="#Bluestore逻辑架构" class="headerlink" title="Bluestore逻辑架构"></a>Bluestore逻辑架构</h2><p>下图为ceph bluestore逻辑架构图：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ceph/distributed-ceph-blusetore-3.png" alt="ceph-bluestore"></p>
+<ol>
+<li><p>Bluestore实现了直接管理裸设备的方式，抛弃了本地文件系统，BlockDevice实现在用户态下使用linux aio直接对裸设备进行I/O操作，去除了本地文件系统的消耗，减少系统复杂度，更有利于Flash介质盘发挥性能优势；</p>
+</li>
+<li><p>为了惯例裸设备就需要一个磁盘的空间管理系统，Bluestore采用Allocator进行裸设备的空间管理，目前支持StupidAllocator和BitmapAllocator两种方式；</p>
+</li>
+<li><p>Bluestore的元数据是以KEY-VALUE的形式保存到RockDB里的，而RockDB又不能直接操作裸盘，为此，bluestore实现了一个BlueRocksEnv，继承自EnvWrapper，来为RocksDB提供底层文件系统的抽象接口支持；</p>
+</li>
+<li><p>为了对接BlueRocksEnv，Bluestore自己实现了一个简洁的文件系统BlueFS，只实现RocksDB Env所需要的接口，在系统启动挂在这个文件系统的时候将所有的元数据都加载到内存中，BluesFS的数据和日志文件都通过BlockDevice保存到底层的裸设备上；</p>
+</li>
+<li><p>BlueFS和BlueStore可以共享裸设备，也可以分别指定不同的设备，比如为了获得更好的性能Bluestore可以采用 SATA SSD 盘，BlueFS采用 NVMe SSD 盘。</p>
+</li>
+</ol>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/02/pravega-blog-exploring-state-synchronizer/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -1065,75 +1160,9 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/09/pravega-pdp-design-proposals/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/10/09/pravega-pdp-design-proposals/" itemprop="url">pravega handbook - 设计提案</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-09T20:02:34+08:00">2018-10-09 20:02:34</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>本文档描述了开发Pravega新特性所遵循的流程。我们的想法是在开始实现这个特性之前先提出设计方案，并与社区讨论这个设计，避免由于方案的分歧而导致的长时间的检视。流程如下：</p>
-<h2 id="设计文档"><a href="#设计文档" class="headerlink" title="设计文档"></a>设计文档</h2><p>将设计文档编写为当前页面的子页面。页面标题应为：</p>
-<blockquote>
-<p>PDP-XX: 简要描述特性</p>
-</blockquote>
-<p>XX是我们通过递增先前提案的编号而生成的数字。第一个数字是01，希望在创建新PDP时不会有任何冲突。我们将使用PDP-XX作为标签来指代特定的设计。</p>
-<p>该文件应包含：</p>
-<ul>
-<li>功能和提案的摘要（摘要）</li>
-<li>API更改的说明（API更改）</li>
-<li>内部变更说明（内部变更）</li>
-<li>必要时有关向后兼容性和迁移计划的部分（兼容性和迁移）</li>
-<li>关于解决问题的废弃方法的章节（废弃方法）</li>
-<li>引用，例如，Github问题或pull请求（参考）</li>
-</ul>
-<p>如果某个部分不适用，请说“不适用”，但不要省略该部分。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
   </nav>
   
   
@@ -1156,7 +1185,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">48</a></div>
+      <div><a href="/archives">49</a></div>
     </div>
     
     
