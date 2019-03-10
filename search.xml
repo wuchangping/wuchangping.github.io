@@ -35,14 +35,14 @@
       
       <categories>
           
-          <category> 分布式系统 </category>
+          <category> distributed </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> 分布式系统 </tag>
+            <tag> distributed </tag>
             
         </tags>
       
@@ -487,22 +487,22 @@
     
     <entry>
       <title>微服务-微服务解惑</title>
-      <link href="/2018/09/23/microservice-weifuwunaxieshier/"/>
-      <url>/2018/09/23/microservice-weifuwunaxieshier/</url>
+      <link href="/2018/09/23/distributed-microservice-weifuwunaxieshier/"/>
+      <url>/2018/09/23/distributed-microservice-weifuwunaxieshier/</url>
       
         <content type="html"><![CDATA[<h2 id="微服务解惑"><a href="#微服务解惑" class="headerlink" title="微服务解惑"></a>微服务解惑</h2><h3 id="微服务与容器"><a href="#微服务与容器" class="headerlink" title="微服务与容器"></a>微服务与容器</h3><p>微服务又指的是在传统应用架构的基础上，按照业务能力将系统拆分成多个服务，每个服务都是一个独立的应用，对外提供一些列的公共服务API，服务之间以轻量的方式互相调用。<br>微服务里的每个服务都是一个组件，通过编排组合从而达到独立、解耦、组件化、易维护、可复用、可替换、高可用的设计原则。微服务后，自动化部署以及运维是比较头疼的事，容器技术解决了这个问题。</p><ul><li>好的架构需要考虑后面的扩展以及修改</li><li>好的架构是解耦的，需改一个地方不会影响另外一个地方</li><li>好的架构是轻便灵活的，一个应用最好只解决一个问题，而不是叠加功能</li></ul><h3 id="微服务的标签"><a href="#微服务的标签" class="headerlink" title="微服务的标签"></a>微服务的标签</h3><ul><li>单一职责</li><li>微</li><li>面向服务</li><li>自治</li><li>易扩展</li><li>流程化</li></ul><h3 id="微服务的不足"><a href="#微服务的不足" class="headerlink" title="微服务的不足"></a>微服务的不足</h3><ul><li>时效性·服务间的调用延时可能导致系统相应慢的问题</li><li>一致性·微服务在保证一致性上需要做更多的工作</li></ul><h3 id="微服务的价值"><a href="#微服务的价值" class="headerlink" title="微服务的价值"></a>微服务的价值</h3><ul><li>资源价值，资源不足是自动扩容，资源过量时自动缩容；</li><li>业务价值，工作量、人员数量、交付质量、交付周期；</li><li>技术价值，技术是为业务来服务的（个人标注：技术也是业务的一部分而不只是为业务而服务）</li><li>用户价值，用户体验好，服务上线快</li><li>未来价值，技术不成为业务的瓶颈</li></ul><h3 id="微服务的小目标"><a href="#微服务的小目标" class="headerlink" title="微服务的小目标"></a>微服务的小目标</h3><ul><li>持续交付</li><li>业务敏捷</li><li>独立演进</li><li>高可用</li><li>高性能</li></ul><h3 id="微服务的拆与不拆"><a href="#微服务的拆与不拆" class="headerlink" title="微服务的拆与不拆"></a>微服务的拆与不拆</h3><p>依据：数据模型、业务模型、关键指标，粒度平衡，边界合理</p><h3 id="DevOPS"><a href="#DevOPS" class="headerlink" title="DevOPS"></a>DevOPS</h3><p>开发与运维是一个整体，devops是一种思维方式，微服务与devops是天生一对</p><h3 id="SpringCloud特点"><a href="#SpringCloud特点" class="headerlink" title="SpringCloud特点"></a>SpringCloud特点</h3><ul><li>功能齐全</li><li>标准化</li><li>简单方便</li><li>按需取用</li><li>轻量</li><li>易扩展、易维护</li><li>可复用性</li></ul><h3 id="分布式系统组件及操作"><a href="#分布式系统组件及操作" class="headerlink" title="分布式系统组件及操作"></a>分布式系统组件及操作</h3><p>配置管理（Spring cloud config）、服务发现/调用(Feign)、断路器、智能路由（ZUUL）、微代理、控制总线、一次性Token、全局锁、决策竞选、分布式会话、集群状态。</p><p>注册中心(Eureka)、负载均衡(Ribbon)、断路器（Hystrix）、服务追踪（Sleuth，zipkin）、权限（string security）、接口可视化（Swagger）。</p><p>以上内容为《微服务那些事儿》读书笔记。</p><h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1]. 微服务那些事儿，纪晓峰著</p>]]></content>
       
       
       <categories>
           
-          <category> 分布式系统 </category>
+          <category> distributed </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> 分布式系统 </tag>
+            <tag> distributed </tag>
             
         </tags>
       
@@ -510,22 +510,22 @@
     
     <entry>
       <title>打造“流原生”式大数据处理平台</title>
-      <link href="/2018/09/22/streaming-native-platform/"/>
-      <url>/2018/09/22/streaming-native-platform/</url>
+      <link href="/2018/09/22/distributed-streaming-native-platform/"/>
+      <url>/2018/09/22/distributed-streaming-native-platform/</url>
       
         <content type="html"><![CDATA[<h1 id="开篇-马斯克们的Hyperloop"><a href="#开篇-马斯克们的Hyperloop" class="headerlink" title="开篇,马斯克们的Hyperloop"></a>开篇,马斯克们的Hyperloop</h1><p>我们先来看张图，下图上部分是现在的高铁，它是跑在露天的轨道上的，下图是Elon Musk’s 在正吹的<a href="https://hyperloop-one.com" target="_blank" rel="noopener">hyperloop</a>，类似于跑在真空管道里的未来高铁。相比跑在露天轨道里的高铁，跑真空管道里的高铁好处多了：快，节能，安全，比飞机便宜。。。<br>技术是可以自己进化的，相信类似hyperloop的”高铁+真空管道”的模式就是未来的一种交通出行方式。</p><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming%2Fstreaming-native-platform-0.jpg" alt="hyperloop"></p><p>那么HYPERLOOP跟本文又有什么关系呢？ 是不是有点扯远了？其实本文讲的就是类似给高铁加上真空管道的活，二者本质上是相同的。</p><h2 id="管道-Unix-Linux的设计哲学"><a href="#管道-Unix-Linux的设计哲学" class="headerlink" title="管道,Unix/Linux的设计哲学"></a>管道,Unix/Linux的设计哲学</h2><p>在Linux或者Unix系统里,有时候我们为了查询某个信息，会输入类似如下的命令行：</p><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">#cat *.log | grep –v ‘pipeline’ | sort –nr | head –n 10 | tail -5 | awk ‘&#123;print $2&#125;’ | wc –l  &gt; /dev/stdout<br></code></pre></td></tr></table></figure><p>这个命令行通过“|”来分隔多个命令，前面命令的输出是紧接着的后面命令的输入，命令之间通过“|”彼此相连，并且一个命令只做一件事情。这里的“|”就是管道，把一个程序的输出和另一个程序的输入连起来的一根管子。</p><p>在Unix/Linux里存在这样的管道命令设计哲学：</p><ul><li>程序是个过滤器</li><li>一个程序只做一件事并且做到最好</li><li>一个程序的输入是另外一个程序的输出</li></ul><p>下图体现了这样的管道设计哲学，应用之间通过管道相连相互作用：</p><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming%2Fstreaming-native-platform-1.PNG" alt="Uniux/linux pipeline"></p><p>管道所要解决的问题是：<code>高内聚，低耦合</code>。它以一种“链”的方式将这些程序组合起来，让这些程序组成一条工作流，而每个程序又只作一件事情，给定输入，经过各个程序的先后处理，最终得到输出结果，如下图所示：</p><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming%2Fstreaming-native-platform-2.PNG" alt="Uniux/linux pipeline"></p><p>Unix/Linux在<code>&quot;每个程序只做一件事并且做好，每个程序的输出是对另一个程序的输入，可组合性&quot;</code>方面是做的非常成功的。但是，UNIX/Linux也存在一些局限性，比如：<code>&quot;仅单机，只支持一对一通信，无容错，仅字节流,数据处理能力有限等&quot;</code>。意思是说 linux/unix的这些管道命令只能在一台机器上跑，没有分布式，并且只能支持一个命令和另外一个命令之间的一对一的输入输出，无法一对多或多对一；无容错，假如管道坏了数据就出错不能恢复；只支持字节流，不支持数据格式的多样性；处理的数据量有限。</p><p>因此，我们希望可以找到一个数据处理解决方案，这个方案在保留这些Unix/linux管道的设计哲学优点的同时还能克服其缺点。 幸运的是，我们通过Flink+Pravega打造的第三代“流原生”(stream native)式的大数据处理平台实现了这种设计思想。</p><h2 id="流原生-第三代大数据处理平台"><a href="#流原生-第三代大数据处理平台" class="headerlink" title="流原生,第三代大数据处理平台"></a>流原生,第三代大数据处理平台</h2><p>下图体现了“流原生”(stream native)式的设计哲学，Flink是“流原生”的计算，Pravega是“流原生”的存储管道，Flink + pravega 是“流原生”的大数据处理平台。数据从pravega管道输入经过map算子计算，输出中间计算结果到pravega的管道里，数据又从pravega的管道里读入到filter算子里，再经过计算，中间结果放到了pravega管道里，再最后的计算结果经过聚合算子的计算放到了目的地的pravega的管道里。这个过程体现了算子编排和管道式编程的设计哲学。在这里pravega起了大数据处理平台里的管道的作用。</p><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming%2Fstreaming-native-platform-3.PNG" alt="Stream processing pipeline"></p><p>在Unix/Linux中，系统提供管道和命令，用于从一个进程到另一个进程获取字节流。</p><p>在“流原生”处理平台上，Flink提供流处理服务，pravega提供流存储服务，数据源自pravega，被Flink算子们处理后输出到pravega，这是一种将事件从一个流处理作业转移到另一个流处理作业的机制。 Flink和Pravega 所遵循的流处理平台设计哲学是：</p><ul><li>每个算子都只做一件事，并且做到最好</li><li>每个算子的输出是另一个算子的输入</li><li>可组合</li><li>流式传输：数据是动态的，算子是静态的</li><li>算子可编排</li><li>Pravega是最好的Flink搭档</li><li>分布式，扩展到多台机器</li><li>可进化的编码/解码</li></ul><p>当前的流式处理平台一般是 Flink 加传统的存储类型，这种是”半流原生“式的大数据处理平台，计算是原生的流计算而存储却不是原生的流存储。<br>而Pravega就是专门给Flink们设计的原生流存储，它的数据传输方式类似于“管道”，不同于传统的块存储，文件存储以及对象存储，它是一个”管道式流存储“。</p><p>通过Flink + Pravega的组合可以实现 “流原生”(stream native)式的第三代大数据处理平台，未来已来。。。。。</p><h2 id="思考题"><a href="#思考题" class="headerlink" title="思考题"></a>思考题</h2><p>最后给大家留个思考题，“流原生”(stream native)的概念有了，Flink + Pravega 也有了，而且二者的代码都是开源的（flink.apache.org, pravega.io），那么怎么把这些开源的东西产品化？ 或者这个问题太伤脑筋，我们换个简单的问题：“今天中午吃什么？”</p><h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a>作者简介</h2><p>常平，毕业于中国科学技术大学，获硕士研究生学历学位，10年+ 存储、布式系统、云计算以及大数据经验，曾就职于Marvell、AMD等，现就职于EMC，资深首席工程师，主要负责流式大数据处理平台的架构设计、编码及产品交付等。</p>]]></content>
       
       
       <categories>
           
-          <category> 分布式系统 </category>
+          <category> distributed </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> 分布式系统 </tag>
+            <tag> distributed </tag>
             
         </tags>
       
@@ -541,14 +541,14 @@
       
       <categories>
           
-          <category> 分布式系统 </category>
+          <category> distributed </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> 分布式系统 </tag>
+            <tag> distributed </tag>
             
         </tags>
       
@@ -556,8 +556,8 @@
     
     <entry>
       <title>应该在同一个Kafka主题中放入几种事件类型吗？</title>
-      <link href="/2018/09/21/streaming-put-several-event-types-kafka-topic/"/>
-      <url>/2018/09/21/streaming-put-several-event-types-kafka-topic/</url>
+      <link href="/2018/09/21/pravega-streaming-put-several-event-types-kafka-topic/"/>
+      <url>/2018/09/21/pravega-streaming-put-several-event-types-kafka-topic/</url>
       
         <content type="html"><![CDATA[<p>如果您采用Apache Kafka等流平台，有个很重要的问题是：将使用哪些主题？特别是，如果要将一堆不同的事件作为消息发布到Kafka，是将它们放在同一主题中，还是将它们拆分为不同的主题？</p><p>主题最重要的功能是允许使用者指定它想要使用的消息子集。在一个极端情况下，所有数据都放在一个主题中可不是一个好主意，因为这意味着消费者无法选择感兴趣的事件 - 给他们的只会是所有的内容。在另一个极端，拥有数百万个不同的主题也不是一个好事，因为Kafka中的每个主题都会消耗资源消耗，因此拥有大量的主题就会对性能不利。</p><p>实际上，从性能的角度来看，重要的是分区数量。但由于Kafka中的每个主题至少有一个分区，如果你有n个主题，那么就不可避免地至少有n个分区。不久之前，[Jun Rao撰写了一篇博文]，解释了拥有多个分区的成本（端到端延迟，文件描述符，内存开销，故障后的恢复时间）。根据经验，如果您关注延迟问题，您应该关注每个代理节点上的（数量级）数百个主题分区。如果每个节点有数万个甚至数千个分区，则延迟会受到影响。</p><p>该性能参数给设计主题的结构提供了一些指导：如果您发现自己有数千个主题，那么将一些细粒度，低吞吐量的主题合并到粗粒度主题中是明智之举，从而减少分区的扩散。</p><p>然而，性能问题并不是结束。在我看来，更重要的是您的主题结构的数据完整性和数据建模方面。我们将在本文的其余部分讨论这些内容。</p><h2 id="主题-相同类型的事件的集合？"><a href="#主题-相同类型的事件的集合？" class="headerlink" title="主题=相同类型的事件的集合？"></a>主题=相同类型的事件的集合？</h2><p>常见的想法（根据我所拥有的几个对话，并根据邮件列表）似乎是：将同类型的所有事件放在同一主题中，并针对不同的事件类型使用不同的主题。这种思路让人联想到关系数据库，其中表是具有相同类型（即同一组列）的记录的集合，因此我们在关系表和Kafka主题之间进行类比。</p><p>该<a href="https://www.confluent.io/confluent-schema-registry/" target="_blank" rel="noopener">融合模式的注册表</a>本质上强化了这种模式，因为它鼓励你在主题中的所有消息使用相同的Avro模式。该模式可以在保持兼容性的同时进化（例如，通过添加可选字段），但最终所有消息都必须符合某种记录类型。在我们介绍了更多背景之后，我们将在后面的帖子中再次讨论这个问题。</p><p>对于某些类型的流数据（例如记录的活动事件），要求同一主题中的所有消息都符合相同的模式是有意义的。但是，有些人正在使用Kafka来实现更多类似数据库的目的，例如事件溯源，或者在微服务之间交换数据。在这种情况下，我相信，它定义一个主题为一组具有相同模式的消息并不重要。更重要的是Kafka维护主题分区内的消息排序。</p><p>想象一下，您有一些事物（比如客户），并且该事物可能发生许多不同的事情：创建客户，客户更改地址，客户向其帐户添加新信用卡，客户进行客户支持查询，客户支付发票，客户关闭其帐户。</p><p>这些事件的顺序很重要。例如，我们期望在客户做任何动作之前创建客户，并且我们也期望在客户关闭其帐户之后不再发生任何其他事情。使用Kafka时，您可以通过将它们全部放在同一个分区中来保留这些事件的顺序。在此示例中，您将使用客户ID作为分区键，然后将所有这些不同的事件放在同一主题中。它们必须位于同一主题中，因为不同的主题意味着不同的分区，并且不会跨分区保留排序。</p><h2 id="排序问题"><a href="#排序问题" class="headerlink" title="排序问题"></a>排序问题</h2><p>如果你没有使用（比方说）不同的主题<code>customerCreated</code>，<code>customerAddressChanged</code>和<code>customerInvoicePaid</code>事件，然后这些议题的消费者可能会看到荒谬的事件顺序。例如，消费者可能会看到不存在的客户的地址更改（因为尚未创建，因为相应的<code>customerCreate</code>事件已被延迟）。</p><p>如果消费者暂停一段时间（可能是维护或部署新版本），则重新排序的风险尤其高。当消费者停止时，事件将继续发布，并且这些事件将存储在Kafka代理的选定主题分区中。当消费者再次启动时，它会消耗来自其所有输入分区的积压事件。如果消费者只有一个输入，那就没问题了：挂起的事件只是按照它们存储的顺序依次处理。但是，如果消费者有几个输入主题，它将选择输入主题以按任意顺序读取。它可以在读取另一个输入主题上的积压之前从一个输入主题读取所有挂起事件，或者它可以以某种方式交错输入。</p><p>因此，如果你把<code>customerCreated</code>，<code>customerAddressChanged</code>以及<code>customerInvoicePaid</code>事件在三个独立的主题，消费者可能会看到所有的<code>customerAddressChanged</code>事件，它看到任何之前<code>customerCreated</code>的事件。因此，消费者可能会看到一个<code>customerAddressChanged</code>客户的事件，根据其对世界的看法，尚未创建。</p><p>您可能想要为每条消息附加时间戳，并将其用于事件排序。如果要将事件导入数据仓库，您可以在事后对事件进行排序，这可能就可以了。但是在流进程中，时间戳是不够的：如果你得到一个具有特定时间戳的事件，你不知道你是否仍然需要等待一个时间戳较低的先前事件，或者所有之前的事件是否已到达而你是’准备好处理这个事件。依靠时钟同步通常会导致噩梦;</p><h2 id="何时分割主题，何时结合？"><a href="#何时分割主题，何时结合？" class="headerlink" title="何时分割主题，何时结合？"></a>何时分割主题，何时结合？</h2><p>鉴于这种背景，我将提出一些经验法则来帮助您确定在同一主题中放入哪些内容，以及将哪些内容拆分为单独的主题：</p><ol><li><p>最重要的规则是，  任何需要保持固定顺序的事件必须放在同一主题中（并且它们也必须使用相同的分区键）。最常见的是，如果事件的顺序与同一事物有关，则事件的顺序很重要。因此，根据经验，我们可以说关于同一事物的所有事件都需要在同一主题中。如果您使用事件排序方法进行数据建模，事件的排序尤为重要。这里，聚合对象的状态是通过以特定顺序重放它们来从事件日志中导出的。因此，即使可能存在许多不同的事件类型，定义聚合的所有事件也必须在同一主题中。</p></li><li><p>当您有关于不同事物的事件时，它们应该是相同的主题还是不同的主题？我想说，如果一个事物依赖于另一个事物（例如，一个地址属于一个客户），或者如果它们经常需要在一起，那么它们也可能会出现在同一个主题中。另一方面，如果它们不相关并由不同的团队管理，则最好将它们放在单独的主题中。它还取决于事件的吞吐量：如果一个事物类型具有比另一个事物类型高得多的事件，它们是更好地分成单独的主题，以避免压倒性的消费者只想要具有低写入吞吐量的事物（参见第4点）。但是，几个都具有低事件率的事物可以很容易地合并。</p></li><li><p>如果一个事件涉及多个事物怎么办？例如，购买涉及产品和客户，并且从一个帐户到另一个帐户的转移涉及至少那两个帐户。我建议最初将事件记录为单个原子消息，而不是将其分成几个消息。主题，最好以完全按照您收到的方式记录事件，并尽可能采用原始形式。您可以随后使用流处理器拆分复合事件 - 但如果您过早地将其拆分，则重建原始事件要困难得多。更好的是，您可以为初始事件提供唯一ID（例如UUID）; 以后，当您将原始事件拆分为每个涉及的事物的一个事件时，您可以将该ID转发，从而使每个事件的起源都可追溯。</p></li><li><p>查看消费者需要订阅的主题数量。如果几个消费者都阅读了一组特定的主题，这表明可能应该将这些主题组合在一起。如果将细粒度的主题组合成粗粒度的主题，一些消费者可能会收到他们需要忽略的不需要的事件。这不是什么大问题：消费来自Kafka的消息非常便宜，所以即使消费者最终忽略了一半的事件，这种过度消费的成本可能也不大。只有当消费者需要忽略绝大多数消息（例如99.9％是不需要的）时，我才建议从高容量流中分割低容量事件流。</p></li><li><p>Kafka Streams状态存储（KTable）的更改日志主题应与所有其他主题分开。在这种情况下，主题由Kafka Streams流程管理，不应与其他任何内容共享。</p></li><li><p>最后，如果上述规则都没有告诉您是否将某些事件放在同一主题或不同主题中，该怎么办？然后，通过将相同类型的事件放在同一主题中，通过所有方法将它们按事件类型分组。但是，我认为这条规则是最不重要的。</p></li></ol><h2 id="模式管理"><a href="#模式管理" class="headerlink" title="模式管理"></a>模式管理</h2><p>如果您使用的是数据编码（如JSON），而没有静态定义的模式，则可以轻松地将许多不同的事件类型放在同一主题中。但是，如果您使用的是基于模式的编码（如Avro），则需要更多地考虑在单个主题中处理多个事件类型。</p><p>如上所述，基于Avro的<code>Kafka Confluent Schema Registry</code>目前依赖于每个主题都有一个模式的假设（或者更确切地说，一个模式用于密钥，一个模式用于消息的值）。您可以注册新版本的模式，注册表会检查模式更改是向前还是向后兼容。这个设计的一个好处是，您可以让不同的生产者和消费者同时使用不同的模式版本，并且它们仍然保持彼此兼容。</p><p>更确切地说，当Confluent的Avro序列化程序在注册表中注册模式时，它会在主题名称下注册。默认情况下，该主题<code>&lt;topic&gt;-key</code>用于消息键和<code>&lt;topic&gt;-value</code>消息值。然后，模式注册表检查在特定主题下注册的所有模式的相互兼容性。</p><p>我最近对<a href="https://github.com/confluentinc/schema-registry/pull/680" target="_blank" rel="noopener">Avro序列化程序进行了修补</a>，使兼容性检查更加灵活。该补丁添加了两个新的配置选项:(<code>key.subject.name.strategy</code>定义如何构造消息键的主题名称），以及<code>value.subject.name.strategy</code>（如何构造消息值的主题名称）。选项可以采用以下值之一：</p><ul><li><p><code>io.confluent.kafka.serializers.subject.TopicNameStrategy</code>（默认值）：消息键的主题名称是<code>&lt;topic&gt;-key</code>，<code>&lt;topic&gt;-value</code>对于消息值。这意味着主题中所有消息的模式必须相互兼容。</p></li><li><p><code>io.confluent.kafka.serializers.subject.RecordNameStrategy</code>：主题名称是邮件的Avro记录类型的完全限定名称。因此，模式注册表会检查特定记录类型的兼容性，而不考虑主题。此设置允许同一主题中的任意数量的不同事件类型。</p></li><li><p><code>io.confluent.kafka.serializers.subject.TopicRecordNameStrategy</code>：主题名称是<code>&lt;topic&gt;-&lt;type&gt;</code>，<code>&lt;topic&gt;Kafka</code>主题名称在哪里，并且<type>是邮件的Avro记录类型的完全限定名称。此设置还允许同一主题中的任意数量的事件类型，并进一步将兼容性检查限制为仅当前主题。</type></p></li></ul><p>使用此新功能，可以轻松，干净地将特定事物的所有不同事件放在同一主题中。现在，可以根据上述条件自由选择主题的粒度，而不仅限于每个主题的单个事件类型。</p><h2 id="原文："><a href="#原文：" class="headerlink" title="原文："></a>原文：</h2><p>[1] <a href="https://www.confluent.io/blog/put-several-event-types-kafka-topic/" target="_blank" rel="noopener">https://www.confluent.io/blog/put-several-event-types-kafka-topic/</a>, Martin KleppmannMartin Kleppmann</p>]]></content>
       
@@ -840,14 +840,14 @@
       
       <categories>
           
-          <category> 分布式系统 </category>
+          <category> distributed </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> 分布式系统 </tag>
+            <tag> distributed </tag>
             
         </tags>
       
@@ -863,14 +863,14 @@
       
       <categories>
           
-          <category> 分布式系统 </category>
+          <category> distributed </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> 分布式系统 </tag>
+            <tag> distributed </tag>
             
         </tags>
       
@@ -1171,18 +1171,18 @@
     </entry>
     
     <entry>
-      <title>categories</title>
-      <link href="/categories/index.html"/>
-      <url>/categories/index.html</url>
+      <title>tags</title>
+      <link href="/tags/index.html"/>
+      <url>/tags/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       
     </entry>
     
     <entry>
-      <title>tags</title>
-      <link href="/tags/index.html"/>
-      <url>/tags/index.html</url>
+      <title>categories</title>
+      <link href="/categories/index.html"/>
+      <url>/categories/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       
