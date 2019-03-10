@@ -12,14 +12,14 @@
       
       <categories>
           
-          <category> distributed </category>
+          <category> 分布式系统 </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> distributed </tag>
+            <tag> 分布式系统 </tag>
             
         </tags>
       
@@ -35,14 +35,14 @@
       
       <categories>
           
-          <category> distributed </category>
+          <category> 分布式系统 </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> distributed </tag>
+            <tag> 分布式系统 </tag>
             
         </tags>
       
@@ -495,21 +495,21 @@
       
       <categories>
           
-          <category> microservice </category>
+          <category> 分布式系统 </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> microservice </tag>
+            <tag> 分布式系统 </tag>
             
         </tags>
       
     </entry>
     
     <entry>
-      <title>从马斯克们的Hyperloop到用Flink加Pravega打造的“流原生”式大数据处理平台</title>
+      <title>打造“流原生”式大数据处理平台</title>
       <link href="/2018/09/22/streaming-native-platform/"/>
       <url>/2018/09/22/streaming-native-platform/</url>
       
@@ -518,14 +518,14 @@
       
       <categories>
           
-          <category> streaming </category>
+          <category> 分布式系统 </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> streaming </tag>
+            <tag> 分布式系统 </tag>
             
         </tags>
       
@@ -541,14 +541,14 @@
       
       <categories>
           
-          <category> distributed </category>
+          <category> 分布式系统 </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> distributed </tag>
+            <tag> 分布式系统 </tag>
             
         </tags>
       
@@ -564,14 +564,14 @@
       
       <categories>
           
-          <category> streaming </category>
+          <category> pravega </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> streaming </tag>
+            <tag> pravega </tag>
             
         </tags>
       
@@ -840,14 +840,14 @@
       
       <categories>
           
-          <category> distributed </category>
+          <category> 分布式系统 </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> distributed </tag>
+            <tag> 分布式系统 </tag>
             
         </tags>
       
@@ -863,14 +863,14 @@
       
       <categories>
           
-          <category> distributed </category>
+          <category> 分布式系统 </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> distributed </tag>
+            <tag> 分布式系统 </tag>
             
         </tags>
       
@@ -1162,18 +1162,18 @@
     </entry>
     
     <entry>
-      <title>categories</title>
-      <link href="/categories/index.html"/>
-      <url>/categories/index.html</url>
+      <title>archives</title>
+      <link href="/archives/index.html"/>
+      <url>/archives/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       
     </entry>
     
     <entry>
-      <title>archives</title>
-      <link href="/archives/index.html"/>
-      <url>/archives/index.html</url>
+      <title>categories</title>
+      <link href="/categories/index.html"/>
+      <url>/categories/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       
