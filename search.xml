@@ -1176,11 +1176,11 @@
     </entry>
     
     <entry>
-      <title>about</title>
-      <link href="/about/index.html"/>
-      <url>/about/index.html</url>
+      <title>archives</title>
+      <link href="/archives/index.html"/>
+      <url>/archives/index.html</url>
       
-        <content type="html"><![CDATA[<h2 id="关于作者"><a href="#关于作者" class="headerlink" title="关于作者"></a>关于作者</h2><ul><li>毕业于中国科学技术大学，获硕士研究生学历学位</li><li>主要工作背景：分布式系统、存储、缓存、云计算以及大数据</li><li>曾就职于Marvell、AMD等，现就职于EMC，资深首席工程师，主要负责流式大数据处理平台的架构设计、编码及产品交付</li></ul><h2 id="联系方式"><a href="#联系方式" class="headerlink" title="联系方式"></a>联系方式</h2><ul><li>Email : <a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a></li><li>Blog : <a href="https://www.changping.me">https://www.changping.me</a></li><li>Github : <a href="https://github.com/wuchangping" target="_blank" rel="noopener">https://github.com/wuchangping</a></li></ul><h2 id="网站声明"><a href="#网站声明" class="headerlink" title="网站声明"></a>网站声明</h2><p>文章内容仅为作者愚见，与任何组织机构无关，如有错误及不足之处欢迎发信批评指正。</p><h2 id="版权声明"><a href="#版权声明" class="headerlink" title="版权声明"></a>版权声明</h2><p>非商业用途在注明作者及本网站前提下无需授权即可转载。</p><h2 id="免责声明"><a href="#免责声明" class="headerlink" title="免责声明"></a>免责声明</h2><p>文章坚持原创，且仅供技术交流及研究使用，如有不小心侵犯您的版权， 请联系：<a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a>，会尽快删除。</p><p>–</p>]]></content>
+        <content type="html"><![CDATA[]]></content>
       
     </entry>
     
@@ -1194,20 +1194,20 @@
     </entry>
     
     <entry>
-      <title>archives</title>
-      <link href="/archives/index.html"/>
-      <url>/archives/index.html</url>
+      <title>tags</title>
+      <link href="/tags/index.html"/>
+      <url>/tags/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       
     </entry>
     
     <entry>
-      <title>tags</title>
-      <link href="/tags/index.html"/>
-      <url>/tags/index.html</url>
+      <title>about</title>
+      <link href="/about/index.html"/>
+      <url>/about/index.html</url>
       
-        <content type="html"><![CDATA[]]></content>
+        <content type="html"><![CDATA[<h2 id="关于作者"><a href="#关于作者" class="headerlink" title="关于作者"></a>关于作者</h2><ul><li>毕业于中国科学技术大学，获硕士研究生学历学位</li><li>主要工作背景：分布式系统、存储、缓存、云计算以及大数据</li><li>曾就职于Marvell、AMD等，现就职于EMC，资深首席工程师，主要负责流式大数据处理平台的架构设计、编码及产品交付</li></ul><h2 id="联系方式"><a href="#联系方式" class="headerlink" title="联系方式"></a>联系方式</h2><ul><li>Email : <a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a></li><li>Blog : <a href="https://www.changping.me">https://www.changping.me</a></li><li>Github : <a href="https://github.com/wuchangping" target="_blank" rel="noopener">https://github.com/wuchangping</a></li></ul><h2 id="网站声明"><a href="#网站声明" class="headerlink" title="网站声明"></a>网站声明</h2><p>文章内容仅为作者愚见，与任何组织机构无关，如有错误及不足之处欢迎发信批评指正。</p><h2 id="版权声明"><a href="#版权声明" class="headerlink" title="版权声明"></a>版权声明</h2><p>非商业用途在注明作者及本网站前提下无需授权即可转载。</p><h2 id="免责声明"><a href="#免责声明" class="headerlink" title="免责声明"></a>免责声明</h2><p>文章坚持原创，且仅供技术交流及研究使用，如有不小心侵犯您的版权， 请联系：<a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a>，会尽快删除。</p><p>–</p>]]></content>
       
     </entry>
     
