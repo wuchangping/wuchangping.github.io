@@ -115,6 +115,66 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/19/pravega-segment-containers/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/19/pravega-segment-containers/" itemprop="url">pravega handbook - 段容器</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-19T20:59:45+08:00">2018-09-19 20:59:45</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="Pravega集群中的段容器"><a href="#Pravega集群中的段容器" class="headerlink" title="Pravega集群中的段容器"></a>Pravega集群中的段容器</h2><p>本文档描述了我们如何管理Pravega集群中Segment Containers生命周期的高级设计。</p>
+<h2 id="平衡段容器"><a href="#平衡段容器" class="headerlink" title="平衡段容器"></a>平衡段容器</h2><h2 id="段容器"><a href="#段容器" class="headerlink" title="段容器"></a>段容器</h2><p>在本文档中，我们将段容器称为容器。对于给定的部署，容器的总数是固定的。每个容器只能由一个Pravega主机拥有，并且群集中的所有容器都应该在任何时刻都是运行着的。</p>
+<h2 id="Pravega主机"><a href="#Pravega主机" class="headerlink" title="Pravega主机"></a>Pravega主机</h2><p>pravega主机是pravega服务的一个实例，它拥有并执行一组容器。</p>
+<h2 id="检测活动的Pravega主机"><a href="#检测活动的Pravega主机" class="headerlink" title="检测活动的Pravega主机"></a>检测活动的Pravega主机</h2><p>启动时每个pravega主机都会使用临时节点向Zookeeper注册。只要zookeeper从Pravega主机接收到适当的心跳，临时的节点就会出现在zookeeper中。我们依靠这些临时的节点来检测哪些pravega主机当前在群集中是活动的。</p>
+<h2 id="监控Pravega集群"><a href="#监控Pravega集群" class="headerlink" title="监控Pravega集群"></a>监控Pravega集群</h2><p>每个Pravega Controller都运行一项服务，监控zookeeper上的临时节点并检测集群中所有活动的pravega主机。在检测到对集群成员资格的任何更改时，我们会验证所有容器并将其重新映射到可用的pravega主机集。此信息以原子方式保存在HostStore中。它存储为单个blob，并包含主机拥有的主机到容器集的映射。</p>
+<p>我们使用zookeeper来确保只有一个pravega控制器监视集群，以避免多个同时写入HostStore的写入器。这将避免竞争条件，并允许状态更快地收敛。</p>
+<h2 id="再平衡频率"><a href="#再平衡频率" class="headerlink" title="再平衡频率"></a>再平衡频率</h2><p>当从群集中添加或删除pravega主机时，会发生容器所有权的重新平衡。由于这是一项代价高昂的操作，我们需要防止经常这样做。目前，我们确保在任何2次重新平衡操作之间保持配置的最小时间间隔。在最坏的情况下，这将按比例增加在集群中执行所有权更改所花费的时间。</p>
+<h2 id="所有权变更通知"><a href="#所有权变更通知" class="headerlink" title="所有权变更通知"></a>所有权变更通知</h2><p>每个pravega主机都有一个长期运行的Segment Manager服务。这会不断轮询/监视HostStore，以便对容器所有权进行任何更改。在检测到自身的所有权变更（由map中的主机密钥标识）时，段管理器会相应地触发添加和删除容器。</p>
+<h2 id="确保容器在另一台主机上启动之前在一台主机上停止"><a href="#确保容器在另一台主机上启动之前在一台主机上停止" class="headerlink" title="确保容器在另一台主机上启动之前在一台主机上停止"></a>确保容器在另一台主机上启动之前在一台主机上停止</h2><p>我们目前计划在Pravega主机上使用保守超时，以确保容器在另一个节点上停止之前不会启动。这需要进一步检阅/讨论。</p>
+<h2 id="检测和处理容器启动-停止故障"><a href="#检测和处理容器启动-停止故障" class="headerlink" title="检测和处理容器启动/停止故障"></a>检测和处理容器启动/停止故障</h2><p>任何容器启动/停止故障都被视为本地故障，我们希望Pravega主机尽可能在本地处理这些情况。Pravega Controller控制器不需要通过在不同主机上运行来纠正这一点。这需要进一步检阅/讨论。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/19/pravega-wire-protocol/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -905,64 +965,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-statesynchronizer/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravega-statesynchronizer/" itemprop="url">pravega handbook - stateSynchronizer</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T19:04:36+08:00">2018-09-16 19:04:36</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="StateSynchronizer的设计"><a href="#StateSynchronizer的设计" class="headerlink" title="StateSynchronizer的设计"></a>StateSynchronizer的设计</h2><p>StateSynchronizer提供了一种方法，通过这种方法可以支持多个进程同时对一份数据进行写入和读取，并且使用了一种乐观检查的方法来保证数据的一致性。</p>
-<p>这项工作保证每个进程都有一份数据的副本。所有的数据更新都是通过StateSynchronizer写入，它将这些数据附加到Pravega的段里。通过从段里消费数据来跟踪数据的最新变化，并且使用了有条件追加数据的方法提供了一致性保证。<br>这样可确保更新的过程只有在有最新数据时才可以继续执行更新。最后，为了防止段数据无节制地增长，我们使用了一种重写最新数据的简单方法，并截断旧数据，以便可以删除它。</p>
-<p>当大多数更新与存储的总数据大小相比较小时，此模型运行良好，因为它们可以写成小的增量。与任何乐观并发系统一样，当众多进程都试图同时尝试更新相同的信息时，工作状态最差。</p>
-<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><p>这里有一个同步集合内容的具体示例，此外我们还有一个示例，即同步一组主机的成员资格。</p>
-<p>想象一下，许多进程同时共享一个映射表的场景。这可以通过StateSynchronizer创建来完成，这将有助于协调对映射表的更改。每个客户端在内存中都有自己的一份映射表副本，可以通过将映射表生成器传递给StateSynchronizer来更新。每次尝试更新时，更新都会先记录到段中。除非传递给进程的映射表与已记录到段中的映射表一致，否则更新将失败。如果发生这种情况，则使用最新状态调用生成器以再次尝试。因此，更新的顺序由它们写入段的顺序定义。</p>
-<h2 id="如何实现"><a href="#如何实现" class="headerlink" title="如何实现"></a>如何实现</h2><p>为此，我们使用了Pravega Segment Store Service的两个功能。</p>
-<h3 id="条件追加"><a href="#条件追加" class="headerlink" title="条件追加"></a>条件追加</h3><p>附加方法可以指定追加期望的偏移量，如果追加数据失败，则不执行任何操作而是返回失败给客户端。</p>
-<h3 id="截断段"><a href="#截断段" class="headerlink" title="截断段"></a>截断段</h3><p>截断段删除给定偏移之前的所有数据（此操作不会影响现有偏移量），对于低于此值的偏移量的任何读取都将失败，并且在此偏移下的任何数据都可以删除。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/4/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/6/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -988,7 +990,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">51</a></div>
+      <div><a href="/archives">52</a></div>
     </div>
     
     

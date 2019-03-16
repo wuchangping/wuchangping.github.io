@@ -68,7 +68,7 @@
     <script defer type="text/javascript" src="/js/index.js"></script>
     
     <script defer type="text/javascript" src="/js/custom.js"></script>
-    <title>分布式系统的资源隔离设计-隔板模式 | 正心 取势 明道 优术 合众 践行 - 常平的网站</title>
+    <title>分布式系统架构设计三十六式之服务治理-隔板模式 | 正心 取势 明道 优术 合众 践行 - 常平的网站</title>
   </head>
   <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
     
@@ -114,7 +114,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/10/distributed-bulkhead-model/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/10/distributed-servicegovernance-bulkhead-pattern/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
        <meta itemprop="name" content="常平">
        <meta itemprop="description" content="“分布式系统架构设计师”">
@@ -125,7 +125,7 @@
       </span>
     </div>
     <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">分布式系统的资源隔离设计-隔板模式</h1>
+      <h1 class="post-title" itemprop="name headline">分布式系统架构设计三十六式之服务治理-隔板模式</h1>
       <div class="post-meta">
         
         <span class="post-date">
@@ -145,7 +145,9 @@
       </div>
     </header>
     <main class="post-main" itemprop="articleBody">
-      <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>在分布式系统里通常将进程容器化以进行资源隔离，然后在同一个进程里的各种业务都共享线程池对外提供服务，这就经常会遇到这样的问题：</p>
+      <h2 id="导读"><a href="#导读" class="headerlink" title="导读"></a><font color="#FF8C00">导读</font></h2><p>分享是最好的学习，一个知识领域里的 <font color="#00CED1"><strong>“道 法 术 器”</strong></font> 这四个境界需要从 <font color="#00CED1"><strong>微观、中观以及宏观</strong></font>三个角度来把握。微观靠实践，中观是套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计三十六式》，讲诉分布式系统里最重要的三十六个虚数的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
+<p>在前一篇《分布式系统架构设计三十六式之服务治理-隔板模式》里讲诉了 分布式系统资源隔离设计模式-隔板模式，本文将讲诉服务治理里的“熔断降级”模式。另作者能力与认知都有限，欢迎大家拍砖留念。</p>
+<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>在分布式系统里通常将进程容器化以进行资源隔离，然后在同一个进程里的各种业务都共享线程池对外提供服务，这就经常会遇到这样的问题：</p>
 <ol>
 <li>业务A负载较高，抢占了线程池里的大部分线程资源，从而造成其他业务的服务质量下降；</li>
 <li>同一个进程内新加入一个业务，这个业务会抢占其他业务的资源，从而造成系统的不稳定，比如业务性能抖动；</li>
@@ -200,6 +202,8 @@
     </div>
     <div class="page-nav-prev page-nav-item">
       
+      <a href="/2019/03/16/distributed-servicegovernance-circuitbreaker-and-degraded-patterns/" rel="prev" title="分布式系统架构设计三十六式之服务治理 – 熔断降级模式"><span class="nav-title">分布式系统架构设计三十六式之服务治理 – 熔断降级模式</span><i class="fas fa-angle-right"></i></a>
+      
     </div>
   </nav>
   
@@ -223,7 +227,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">51</a></div>
+      <div><a href="/archives">52</a></div>
     </div>
     
     
@@ -258,7 +262,7 @@
     <hr>
     <div class="post-toc sidebar-item" id="toc-div">
       <div><i class="fas fa-list-ol"></i>文章目录</div>
-      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#动机"><span class="toc-text">动机</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#隔板模式"><span class="toc-text">隔板模式</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#线程池的开销分析"><span class="toc-text">线程池的开销分析</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#作者简介"><span class="toc-text">作者简介</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#参考资料"><span class="toc-text">参考资料</span></a></li></ol></div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#导读"><span class="toc-text">导读</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#动机"><span class="toc-text">动机</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#隔板模式"><span class="toc-text">隔板模式</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#线程池的开销分析"><span class="toc-text">线程池的开销分析</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#作者简介"><span class="toc-text">作者简介</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#参考资料"><span class="toc-text">参考资料</span></a></li></ol></div>
     </div>
     
     
