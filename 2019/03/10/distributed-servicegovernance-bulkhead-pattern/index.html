@@ -145,8 +145,8 @@
       </div>
     </header>
     <main class="post-main" itemprop="articleBody">
-      <h2 id="导读"><a href="#导读" class="headerlink" title="导读"></a><font color="#FF8C00">导读</font></h2><p>分享是最好的学习，一个知识领域里的 <font color="#00CED1"> <strong>“道 法 术 器”</strong> </font> 这四个境界需要从 <font color="#00CED1"> <strong>微观、中观以及宏观</strong> </font>三个角度来把握。微观靠实践，中观是套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计三十六式》，讲诉分布式系统里最重要的三十六个中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
-<p>实现一个分布式系统通常会面临三大难题： <font color="#00CED1"> <strong>业务拆分与聚合，分布式事务以及故障传播性</strong> </font>。本系列中的服务治理章节主要是为了解决故障传播性的难题，它包括： <font color="#00CED1"> <strong>隔离、熔断、降级、限流、容错以及资源管控</strong> </font>，本文将讲诉服务治理里的 <font color="#00CED1"> <strong>“隔板”</strong> </font>模式。</p>
+      <h2 id="导读"><a href="#导读" class="headerlink" title="导读"></a><font color="#FF8C00">导读</font></h2><p>日拱一卒，功不唐捐，分享是最好的学习，一个知识领域里的 <font color="#00CED1"> <strong>“道 法 术 器”</strong> </font> 这四个境界需要从 <font color="#00CED1"> <strong>微观、中观以及宏观</strong> </font>三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计三十六式》，讲诉分布式系统里最重要的三十六个虚数的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
+<p>实现一个分布式系统通常会面临三大难题： <font color="#00CED1"> <strong>故障传播性、业务拆分与聚合以及分布式事务</strong> </font>。本系列中的服务治理章节主要是为了解决故障传播性的难题，它包括： <font color="#00CED1"> <strong>隔离、熔断、降级、限流、容错以及资源管控</strong> </font>，本文将讲诉服务治理里的 <font color="#00CED1"> <strong>“隔板”</strong> </font>模式。</p>
 <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>在分布式系统里通常将进程容器化以进行资源隔离，然后在同一个进程里的各种业务都共享线程池对外提供服务，这就经常会遇到这样的问题：</p>
 <ol>
 <li>业务A负载较高，抢占了线程池里的大部分线程资源，从而造成其他业务的服务质量下降；</li>
@@ -155,7 +155,7 @@
 </ol>
 <p>因此，我们希望找出一个机制解决这样的问题。</p>
 <h2 id="隔板模式"><a href="#隔板模式" class="headerlink" title="隔板模式"></a><font color="#FF8C00">隔板模式</font></h2><p>首先我来看一个英文单词“Bulkhead”，翻译成中文就是“舱壁”‘或“隔板”，在分布式系统里有个资源隔离的设计模式叫做”舱壁模式”或者“隔板模式”。</p>
-<font color="#00CED1"><strong>模式来源:</strong></font> 通过万能的Wiki百科我们可以了解到轮船里的两个舱位之间的挡板就是隔板/舱壁（Bulkhead），如下图：<br><div align="center"><br><br><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/distributed-resource-isolation-1.jpg" alt="bulkhead"><br><br>图片来源于引文[1]，版权归原作者所有<br><br><div align="left"><br><br><br>在造船的时候，<font color="#FF0000">”船农们“（对应码农）</font>通常会把一个大的船舱用隔板分成N个小的空间，以便万一船体破裂或着火的时候，只有这个被分割开的小船舱受到影响，而其他的船舱是被隔离而不受影响的，从而提高整个船只的安全度。<br><br>同样这种隔板模式可以应用在分布式系统的资源隔离设计里，在分布式系统里，资源隔离通常按业务分为进程级别的隔离和线程级别的隔离，某些简单的服务质量要求不高的业务场景下实现进程级别的隔离就够了，但是在某些对服务质量要求较高的分布式场景下需要线程级别的细粒度隔离。<br><br>###  <font color="#00CED1">进程隔离</font>
+<font color="#00CED1"><strong>模式来源:</strong></font> 通过万能的Wiki百科我们可以了解到轮船里的两个舱位之间的挡板就是隔板/舱壁（Bulkhead），如下图：<br><div align="center"><br><br><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/distributed-resource-isolation-1.jpg" alt="bulkhead"><br><br>图片来源于引文[1]，版权归原作者所有<br><br><div align="left"><br><br><br>在造船的时候，<font color="#FF0000">”船农们“（对应码农）</font>通常会把一个大的船舱用隔板分成N个小的空间，以便万一船体破裂或着火的时候，只有这个被分割开的小船舱受到影响，而其他的船舱是被隔离而不受影响的，从而提高整个船只的安全度。<br><br>同样这种隔板模式可以应用在分布式系统的资源隔离设计里，在分布式系统里，资源隔离通常按业务分为进程级别的隔离和线程级别的隔离，某些简单的服务质量要求不高的业务场景下实现进程级别的隔离就够了，但是在某些对服务质量要求较高的分布式场景下需要线程级别的细粒度隔离。<br><br><br>###  <font color="#00CED1">进程隔离</font>
 
 
 <p>进程级别隔离通常指的是容器化隔离，比如通过使用docker实现业务进程之间的资源隔离。</p>
@@ -191,6 +191,7 @@
 <p>但是在某些场景这样的开销可能过高，比如缓存场景，在这种情况下，可以选用信号量来进行隔离，缺点是信号量不允许设置超时，难以实现熔断、降级之类的服务治理行为。</p>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲诉了服务治理里的 <font color="#00CED1"><strong>“隔板”</strong></font>模式，在下一篇将讲诉分布式系统服务治理的熔断模式。另作者能力与认知都有限，欢迎大家拍砖留念。</p>
 <h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及大数据，现就职于DELL EMC。</p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：[<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh]，" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh]，</a><br>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1] <a href="https://en.wikipedia.org/wiki/Bulkhead_(partition)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Bulkhead_(partition)</a></p>
 <p>[2] <a href="http://writing.engr.psu.edu/uer/bassett.html" target="_blank" rel="noopener">http://writing.engr.psu.edu/uer/bassett.html</a></p>
 <p>[3] <a href="https://github.com/Netflix/Hystrix/wiki/FAQ%20:%20General" target="_blank" rel="noopener">https://github.com/Netflix/Hystrix/wiki/FAQ%20:%20General</a></p>
@@ -276,7 +277,7 @@
     <hr>
     <div class="post-toc sidebar-item" id="toc-div">
       <div><i class="fas fa-list-ol"></i>文章目录</div>
-      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#导读"><span class="toc-text">导读</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#动机"><span class="toc-text">动机</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#隔板模式"><span class="toc-text">隔板模式</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#线程隔离"><span class="toc-text">线程隔离</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#线程池的开销分析"><span class="toc-text">线程池的开销分析</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#小结"><span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#作者简介"><span class="toc-text">作者简介</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#参考资料"><span class="toc-text">参考资料</span></a></li></ol></div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#导读"><span class="toc-text">导读</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#动机"><span class="toc-text">动机</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#隔板模式"><span class="toc-text">隔板模式</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#线程隔离"><span class="toc-text">线程隔离</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#线程池的开销分析"><span class="toc-text">线程池的开销分析</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#小结"><span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#作者简介"><span class="toc-text">作者简介</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#版权申明"><span class="toc-text">版权申明</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#参考资料"><span class="toc-text">参考资料</span></a></li></ol></div>
     </div>
     
     
