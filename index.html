@@ -170,7 +170,7 @@
 <li><p>匀速排队：匀速排队的方式也就是控制请求以均匀的速率通过，对应的是漏桶算法。</p>
 </li>
 </ul>
-<h2 id="限流算法"><a href="#限流算法" class="headerlink" title="限流算法"></a><font color="#FF8C00">限流算法</font></h2><p>如下图所示，在分布式系统里，限流通常可以按空间维度划分为纵向限流以及横向限流，本文讲述纵向限流，下一篇将讲诉 横向限流。</p>
+<h2 id="限流模式设计思路"><a href="#限流模式设计思路" class="headerlink" title="限流模式设计思路"></a><font color="#FF8C00">限流模式设计思路</font></h2><p>如下图所示，在分布式系统里，限流通常可以按空间维度划分为纵向限流以及横向限流，本文讲述纵向限流，下一篇将讲诉 横向限流。</p>
 <div align="center"> 
 
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control.png" alt="流量控制"></p>
@@ -179,7 +179,7 @@
 <p>常用的纵向限流算法有两窗算法：固定窗口、滑动窗口以及两桶算法：令牌桶算法、漏桶算法，按其工作原理又可以划分为 保险丝模式以及变压器模式。</p>
 <h2 id="保险丝模式"><a href="#保险丝模式" class="headerlink" title="保险丝模式"></a><font color="#FF8C00">保险丝模式</font></h2><p>在电路中保险丝主要是起电流过载保护作用，当电路中的电流过载时，保险丝自身就会烧坏从而切断电流，保护后续电路的安全运行，但是保险丝有个问题就是在切断电流后，需要人工或者自动更换保险丝后，电路才能继续运行。</p>
 <p>限流算法里的固定窗口算法以及滑动窗口算法应用原理与此类似，在拒绝请求后，需要重新设置计数，因此我定义它们为限流保险丝模式。</p>
-<h2 id="固定窗口"><a href="#固定窗口" class="headerlink" title="固定窗口"></a><font color="#FF8C00">固定窗口</font></h2><p>固定窗口算法类似人工保险丝模式，在切断流量后需要等很久才能重新工作。固定窗口算法将时间线划分成一个个固定大小的时间窗口，并且每个窗口都有一个计数器用于统计这一时间窗口内的访问次数，如果访问的次数超过了一个预先定义的阈值，则拒绝接下来的请求直到下一个时间窗口开始重新计数，又超过则继续拒绝，再在下一个时间窗口重新设置计数器继续计数，依次类推。</p>
+<h3 id="固定窗口"><a href="#固定窗口" class="headerlink" title="固定窗口"></a><font color="#00CED1">固定窗口</font></h3><p>固定窗口算法类似人工保险丝模式，在切断流量后需要等很久才能重新工作。固定窗口算法将时间线划分成一个个固定大小的时间窗口，并且每个窗口都有一个计数器用于统计这一时间窗口内的访问次数，如果访问的次数超过了一个预先定义的阈值，则拒绝接下来的请求直到下一个时间窗口开始重新计数，又超过则继续拒绝，再在下一个时间窗口重新设置计数器继续计数，依次类推。</p>
 <div align="center"> 
 
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control-fixedwindow.png" alt="固定窗口"></p>
@@ -195,7 +195,7 @@
 <li><p>跨窗口场景，当在第一个时间窗口的 [4,5]计数器的计数是300，没有超过阈值，然后第二个时间窗口的[5,6]计数器是320，也没超过阈值，但是 在 [4,6]的时间窗口内计数器的计数是 300+320=620,很明显超过阈值，因此，固定窗口的缺陷也很明显。</p>
 </li>
 </ol>
-<h2 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a><font color="#FF8C00">滑动窗口</font></h2><p>滑动窗口算法类似自动保险丝模式，在切断流量不像固定窗口那样需要等较长的时间才能重新工作。滑动窗口的计数器也类似固定窗口的计数器，但是将时间线做了进一步的细分，每次往后移动一个细分单元，再每一次都对一个小的窗口进行计数统计实现流量控制，这种方法可以很好的解决之前的固定窗口的跨窗口问题。</p>
+<h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a><font color="#00CED1">滑动窗口</font></h3><p>滑动窗口算法类似自动保险丝模式，在切断流量不像固定窗口那样需要等较长的时间才能重新工作。滑动窗口的计数器也类似固定窗口的计数器，但是将时间线做了进一步的细分，每次往后移动一个细分单元，再每一次都对一个小的窗口进行计数统计实现流量控制，这种方法可以很好的解决之前的固定窗口的跨窗口问题。</p>
 <div align="center"> 
 
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control-slidewindow.png" alt="滑动窗口"></p>
@@ -206,8 +206,7 @@
 <p>如上图所示，还是定义请求的阈值为500，我们将[0,5]划分为5个窗口，则每个窗口对应1s。假设还是在[4,5]有300个请求和下一秒的[5,6]有320个突发请求，按照滑动窗口的原理，此时统计的将是[1,6]窗口，很明显 300+320=620 &gt; 500，超出了阈值，从而触发拒绝服务，避免了固定窗口算法的请求量突增的问题。</p>
 <p>但是对于边界场景，例如[0,5]秒的窗口内，因为是按1s的时间单元进行窗口划分的，假设在第1ms的时间内，请求就超过500，然后就拒绝服务，然后需要等到下一个1s才可以继续出发服务，这很明显有59ms的时间窗式不能提供服务的，因此体现出来请求的指标也不大平滑。</p>
 <h2 id="变压器模式"><a href="#变压器模式" class="headerlink" title="变压器模式"></a><font color="#FF8C00">变压器模式</font></h2><p>因为保险丝模式都不能解决请求的边界问题，因此引出变压器模式，变压器是电路中将某一等级的电压或电流转换成另外一种同频率的电压或电流的设备，有利于稳流稳压。限流算法里的漏桶算法以及令牌桶算法工作原理与此类似，因此我定义它们为变压器模式。</p>
-<h2 id="漏桶"><a href="#漏桶" class="headerlink" title="漏桶"></a><font color="#FF8C00">漏桶</font></h2><p>漏桶模式：</p>
-<div align="center"> 
+<h3 id="漏桶"><a href="#漏桶" class="headerlink" title="漏桶"></a><font color="#00CED1">漏桶</font></h3><div align="center"> 
 
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control-leakybucket-1.png" alt="漏桶算法"></p>
 <div align="left"> 
@@ -240,7 +239,7 @@
 </li>
 </ul>
 <p>如上图所示，如果服务2变慢，就会一直占用线程资源不释放，从而导致无法响应服务1的请求，而服务1还是以恒定的速率处理漏桶的请求，而其下游资源不够，因此也会引起级联故障。</p>
-<h2 id="令牌桶"><a href="#令牌桶" class="headerlink" title="令牌桶"></a><font color="#FF8C00">令牌桶</font></h2><p>下图显示了令牌桶的主要工作步骤：</p>
+<h3 id="令牌桶"><a href="#令牌桶" class="headerlink" title="令牌桶"></a><font color="#00CED1">令牌桶</font></h3><p>下图显示了令牌桶的主要工作步骤：</p>
 <div align="center"> 
 
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control-tockenbucket.png" alt="令牌桶算法"></p>
@@ -264,7 +263,7 @@
 <li>令牌被耗光后需要等下一次令牌填充，这意味着需要等待一段时间令牌填充后后续请求才可以使用。</li>
 <li>对请求的处理速率没做限制，这意味着输入的请求处理速率有可能高过设置的阈值从而引发故障。</li>
 </ul>
-<h2 id="漏桶VS令牌桶-3"><a href="#漏桶VS令牌桶-3" class="headerlink" title="漏桶VS令牌桶[3]"></a><font color="#FF8C00">漏桶VS令牌桶[3]</font></h2><ul>
+<h3 id="漏桶VS令牌桶-3"><a href="#漏桶VS令牌桶-3" class="headerlink" title="漏桶VS令牌桶[3]"></a><font color="#00CED1">漏桶VS令牌桶[3]</font></h3><ul>
 <li><p>漏桶算法控制输出的请求量，输入的请求量可以变化，但输出的请求量保持恒定不变。令牌桶算法控制输入的令牌量，但不限制输出的请求量，输出的请求量可以根据突发的大小而变化。</p>
 </li>
 <li><p>漏桶算法不依赖令牌。令牌桶算法是令牌依赖的。</p>
