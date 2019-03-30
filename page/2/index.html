@@ -115,6 +115,211 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/01/25/pravega-arch-refactor-bigdata-storage-stack/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/01/25/pravega-arch-refactor-bigdata-storage-stack/" itemprop="url">重构大数据平台的存储栈</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-01-25T22:03:37+08:00">2019-01-25 22:03:37</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="当前大数据处理平台存在的问题"><a href="#当前大数据处理平台存在的问题" class="headerlink" title="当前大数据处理平台存在的问题"></a><font color="#FF8C00">当前大数据处理平台存在的问题</font></h2><p>如图1是目前大数据处理平台最常见的Lambda架构，它的优势在于实时处理与批处理统一，但是它的缺点也很明显：</p>
+<ol>
+<li>实时处理一条路径，批处理另外一条路径，不同的路径采用了不同的计算组件，这就增加了系统的复杂度；</li>
+<li>数据存储多组件化、多份化，如下图，同样的数据会被存储在ElasticSearch 里、S3对象存储系统里、Kafka里、HDFS里以及Cassandra里，而且考虑到数据的可靠性，数据还都是多份冗余的，这就极大的增加了用户的存储成本；</li>
+<li>系统里组件太多太复杂，也增加了用户的运维成本。</li>
+</ol>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-lambda.png" alt="lambda架构"></p>
+<p>​图1.  Lambda架构</p>
+<div align="left"> 
+
+<p>因此，为了解决Lambda架构的以上三大缺点，流式架构被提出。在流式架构里，流计算一般选用<strong>Flink</strong>作为计算组件，那么对于存储来说又意味着什么呢？为了<strong>降低系统复杂度、减少用户的存储成本与运维成本</strong>，我们推出了<font color="#FF0000"> <strong>流存储</strong></font>，目的之一就是为了重构Lambda架构里的存储栈，这样流式架构就可以由<font color="#FF0000"><strong>”流计算+流存储“</strong></font>组成。</p>
+<h2 id="第4种存储类型-流存储"><a href="#第4种存储类型-流存储" class="headerlink" title="第4种存储类型 - 流存储 "></a><font color="#FF8C00">第4种存储类型 - 流存储 </font></h2><p>首先，流式大数据处理平台里的数据一般被称之为“流数据”，流数据在百度百科里是这样被定义的：</p>
+<blockquote>
+<p>流数据是一组顺序、大量、快速、连续到达的数据序列，一般情况下，数据流可被视为一个随时间延续而无限增长的动态数据集合。应用于网络监控、传感器网络、航空航天、气象测控和金融服务等领域。</p>
+</blockquote>
+<p>那么目前又有哪种存储系统最适合用于<strong>“流数据”</strong>呢？正如当前技术条件下最适合“流数据”计算的是类似Flink这样的流计算应用，最适合“流数据”存储的应当是流存储系统。</p>
+<p>如图2所示，从<font color="#FF0000"> <strong>存储的视角</strong></font>来说，每种类型的数据都有其原生的属性和需求，对应有最佳的适用场景以及最合适的存储系统。</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-storage-type.png" alt="存储类型"></p>
+<p>​                                                                       图2.  4大存储类型</p>
+<div align="left"> 
+
+<p>简单来说就是传统数据库这类对于IOPS要求高的业务需要块存储系统。文件共享场景下需要在用户间共享文件进行读写操作，因此适合采用分布式文件存储系统。而互联网业务文件以及图片、视频等适合采用对象存储系统。</p>
+<p>流数据存储具有性能要求高、严格次序保证、连续而又无限、大规模租户隔离等特点，而目前市面上又没有这样一个专门针对流数据进行设计的存储系统。因此，为了满足业务需求、平衡商业成本与技术成本，也为了给流数据提供最佳最合适的存储系统，分布式流存储Pravega被推出。</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-6.png" alt="I/O路径隔离"></p>
+<p>​                                                                       图3.  日志结构</p>
+<div align="left"> 
+
+<p>如图3所示：在Pravega里，日志是作为共享存储原语而存在的。Pravega被推出的目的之一就是为了<font color="#FF0000"> <strong>重构Lambda架构里的存储栈：流批统一、降低存储成本以及运维成本。</strong></font> 一般数据的批处理对应于处理历史数据，因此Pravega支持高吞吐量的追赶读；数据的流处理对应于处理实时数据，因此Pravega又支持低时延的尾部读取以及写入；同时Pravega通过分层存储以及资源自动伸缩降低了用户的存储成本以及运维成本。</p>
+<h2 id="Pravega关键架构"><a href="#Pravega关键架构" class="headerlink" title="Pravega关键架构"></a><font color="#FF8C00">Pravega关键架构</font></h2><h3 id="架构目标"><a href="#架构目标" class="headerlink" title="架构目标"></a><font color="#00CED1">架构目标</font></h3><ul>
+<li>持久化：在客户端确认写入前，数据被复制并且写入磁盘；</li>
+<li>严格的顺序保证以及恰好一次语义：支持追赶读、尾部读以及从中间任意位置读，支持事务</li>
+<li>轻量级：一个流就如同一个文件，可以在单集群里创建千万量级起的流；</li>
+<li>可弹性：可基于负载和吞吐量智能地动态扩展或者收缩流；</li>
+<li>无限性：存储空间大小不受单个节点的容量限制；</li>
+<li>高性能：写入延迟低于10ms，吞吐量仅受网络带宽限制，读模式（例如：追赶读）不影响写性能;</li>
+</ul>
+<h3 id="逻辑架构"><a href="#逻辑架构" class="headerlink" title=" 逻辑架构"></a><font color="#00CED1"> 逻辑架构</font></h3><blockquote>
+<p>”技术在某种程度上一定是来自此前已有技术的新的组合“  – 《技术的本质》，布莱恩·阿瑟</p>
+</blockquote>
+<p>Pravega为连续而又无限的数据提供了一种新的存储原语 - 流存储，然而Pravega也并不是凭空发明出来的，它是以前成熟技术与新技术的组合，例如Pravega的 范围、流、段、事件就跟Kafka的主题、分区、段、消息对应，而一层存储又用了Bookkeeper，协调器用了Zookeeper等，如图4 ：Pravega的逻辑架构。</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch.png" alt="逻辑架构图"></p>
+<p>​                                                                       图4.  逻辑架构</p>
+<div align="left"> 
+
+<ol>
+<li>Pravega提供了一个用Java编写的客户端库，抽象出了流协议层接口，用于支持客户端应用，例如Flink、Spark以及一些检索系统等；</li>
+<li>Pravega实现了一个流数据抽象层，用于事件流和字节流的抽象；</li>
+<li>Pravega遵循软件定义存储的设计规则，其控制面与数据面分离，控制实例组成控制面，实现了检索流信息、监控集群、收集相关指标等功能，同时为了实现高可用，通常有多个（建议至少3个）控制实例同时对外提供服务；</li>
+<li>Pravega采用Zookeeper作为集群中的协调组件；</li>
+<li>Pravega的第1层存储系统由bookkeeper实现，第2层存储系统由开源的HDFS、Ceph、GlusterFS、Swift或者商业存储产品组成。</li>
+</ol>
+<h3 id="流批统一-降低系统复杂度"><a href="#流批统一-降低系统复杂度" class="headerlink" title="流批统一 - 降低系统复杂度"></a><font color="#00CED1">流批统一 - 降低系统复杂度</font></h3><p>通过使用Pravega，实现了流批统一的大数据处理架构，重构了大数据处理平台的存储栈，有效降低了系统复杂度.</p>
+<h3 id="存储分层-降低存储成本"><a href="#存储分层-降低存储成本" class="headerlink" title="存储分层 - 降低存储成本"></a><font color="#00CED1">存储分层 - 降低存储成本</font></h3><p>如图4所示，在Pravega里，底层存储系统由两部分组成：第1层为低时延存储层，主要关注性能，用于存储热点数据，由bookkeeper实现，保证了存储系统的低时延、高性能。第2层为长期存储层，主要关注低成本、高吞吐量以及高可扩展性，提供数据的长期存储，由开源的或者商业的存储产品组成。随着数据的老化，第1层中的数据将自动分层流入第2层。通过这种方式，冷热数据分离有效降低了数据存储成本。</p>
+<h3 id="资源自动缩放-减少运维成本"><a href="#资源自动缩放-减少运维成本" class="headerlink" title="资源自动缩放 - 减少运维成本"></a><font color="#00CED1">资源自动缩放 - 减少运维成本</font></h3><p>在Pravega里，当流中的负载上升或下降时，流中段的数量会随着负载自动增长或收缩，此特性被称之为“自动缩放”，该特性无需人工干预自动完成，有效减少了系统的运维成本。当创建流时，可以使用缩放策略配置流，该策略确定流如何响应其负载变化，目前支持三种策略：1）固定，流段的数量不随负载而变化；2）基于写入的字节数，当每秒写入流的数据字节数增量超过某个目标速率时，流段的数量增加，相应的如果它低于某个流速时，流段数量减少；3）基于事件的个数，与基于字节数的扩展策略类似，不同之处在于它使用事件的个数而不是字节数。</p>
+<h2 id="Pravega的一些关键概念与特性"><a href="#Pravega的一些关键概念与特性" class="headerlink" title="Pravega的一些关键概念与特性"></a><font color="#FF8C00">Pravega的一些关键概念与特性</font></h2><p>本章节将简要介绍一些Pravega的关键特性。</p>
+<font color="#00CED1"><strong>范围（scope）：</strong></font>在Pravega里，范围是流的命名空间，例如可以把一台机器命名为一个范围，也可以把一个无人车命名为一个范围，还可以把整个工厂命名为一个范围。<br><br><font color="#00CED1"><strong>流（stream）：</strong></font>在同一个范围内流具有命名唯一性，所有流的名称在同一个范围内都是唯一的。在pravega里数据被组织到流中的，流是一种可持久化、可伸缩、仅附加、字节大小无限制的序列，具有高性能和强一致性的特性。<br><br><font color="#00CED1"><strong>段（segment）：</strong></font>流由段组成，段是流的分片。<br><br><font color="#00CED1"><strong>事件（event）：</strong></font> 段由事件组成，事件存储在段里，事件是流中的可以表示为一组字节的任何事物。例如：来自温度传感器的读数，它包含少量的字节且由时间戳，度量标识符和温度值组成。另外事件也可以是与用户点击网站或APP相关联的日志数据等。<br><br><font color="#00CED1"><strong>写客户端（writers）：</strong></font>写客户端是一个可以创建事件并将事件写入流中的应用，所有的事件数据都可以通过附加到流的尾部来写入。<br><br><font color="#00CED1"><strong>读客户端（readers）：</strong></font>读客户端是一个可以从流中读取事件的应用，读客户端可以从流中的任何一点读取，比如头部、尾部、中间任何一点。<br><br><font color="#00CED1"><strong>读者组（readerGroups）：</strong></font>读者组由读客户端组成，读者组本质上是为了实现同一个组内读客户端的平衡以及不同组的扇出。同一个读者组内的读客户端可以一起并行读取给定的一组流段内的事件，比如一个读客户端对应一个段。不同的应用可以定义不同的读者组实现扇出，比如定义一个Flink读者组，再定义一个检索读者组，这样二者互不影响，互不干涉，可以优雅而又和谐地一起读取同一个流段内的事件。<br><br><font color="#00CED1"><strong>顺序保证：</strong></font>流是由段组成的，写入流的事件被写入单个段，在同一个段内的事件具有顺序性。对于读客户端来说，可以分配多个可并行读取的段，从多个段读取的也许是交错的事件，但在同一个段内读取的数据是有严格有序的。<br><br><font color="#00CED1"><strong>检查点：</strong></font>Pravega为应用提供了在读者组上初始化检查点的功能，使用检查点的意图是通过使用检查点事件来确保每个读客户端能保存原来的使用状态。<br><br><font color="#00CED1"><strong>事务：</strong></font> Pravega提供了事务功能，事务是写客户端可以“批处理”一堆事件并将它们作为一个处理单元原子性地提交到流中。这一堆事件要么所有都处理成功，要么所有都处理失败。在提交事务之前，发布到事务中的事件永远不会被读客户端看到。<br><br><font color="#00CED1"><strong>状态同步器：</strong></font> Pravega也提供了在分布式计算环境中作为协调器的功能，类似Zookeeper、ETCD这样的提供分布式共识和领导者选举能力。这样的组件在Pravega里被称作“状态同步器”。状态同步器为在集群中运行的多个进程之间的共享状态提供同步机制，使用户可以轻松地构建高级服务，从而使用户更加的容易构建分布式应用。<br><br><font color="#00CED1"><strong>恰好一次：</strong></font> Pravega确保每个事件只被处理一次，即使客户端、服务器或网络出现故障也能保证精确的处理顺序。<br><br><font color="#00CED1"><strong>性能：</strong></font> Pravega的延迟目标为毫秒级(&lt;10ms)；<br><br><font color="#00CED1"><strong>永久保留：</strong></font> Pravega将流的抽象与实际数据存储分离，这使得Pravega可以透明地将数据从低延迟、持久的存储层移到云存储服务层。<br><br><font color="#00CED1"><strong>高效存储：</strong></font> Pravega统一了流（有序）数据和批量（并行）数据的访问，可以将批量和实时应用程序结合起来而无需为流式计算流水线（比如Flink）的每个步骤复制数据从而有效的提高了数据的存储效率。<br><br><br><br>## <font color="#FF8C00">与kafka对比</font>
+
+<p>前面我们已经提到过Pravega是从<font color="#FF0000"> <strong>存储的视角</strong></font>来看待流数据，而Kafka本身的定位是消息系统而不是存储系统，它是从<font color="#FF0000"> <strong>消息的视角</strong></font>来看待流数据。消息系统与存储系统的定位是不同的，简单来说，消息系统是消息的传输系统，关注的是数据传输与生产消费的过程。而存储系统除了关注存储用的物理媒介，数据的持久化、安全、可靠性、一致性、隔离等都是它的原生属性，它关注数据的生产、传输、存放、访问等整个数据的生命周期。</p>
+<p>这里我们把Pravega与Kafka做了对比，大体在功能上的差异如下表所示。功能上的差异也只是说明各个产品针对的业务场景不同，看待数据的视角不同，并不是说明这个产品不好，另外每个产品自身也在演进，因此本对比仅供参考。</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th style="text-align:center">Kafka 2.1.0</th>
+<th style="text-align:right">Pravega GA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>自动扩容缩容</td>
+<td style="text-align:center">部分支持</td>
+<td style="text-align:right">支持</td>
+</tr>
+<tr>
+<td>完全不丢数据</td>
+<td style="text-align:center">不支持</td>
+<td style="text-align:right">支持</td>
+</tr>
+<tr>
+<td>多协议可入</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:right">支持</td>
+</tr>
+<tr>
+<td>无限个流</td>
+<td style="text-align:center">不支持</td>
+<td style="text-align:right">支持</td>
+</tr>
+<tr>
+<td>事务</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:right">支持</td>
+</tr>
+<tr>
+<td>恰好一次</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:right">支持</td>
+</tr>
+<tr>
+<td>顺序保证</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:right">支持</td>
+</tr>
+<tr>
+<td>兼容Kafka API</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:right">支持</td>
+</tr>
+<tr>
+<td>数据链接与汇聚</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:right">部分支持</td>
+</tr>
+<tr>
+<td>多种二层存储支持（ECS,HDFS,S3,etc）</td>
+<td style="text-align:center">不支持</td>
+<td style="text-align:right">支持</td>
+</tr>
+<tr>
+<td>安全与加密</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:right">支持</td>
+</tr>
+<tr>
+<td>无限多租户</td>
+<td style="text-align:center">不支持</td>
+<td style="text-align:right">部分支持</td>
+</tr>
+<tr>
+<td>服务质量保证</td>
+<td style="text-align:center">部分支持</td>
+<td style="text-align:right">部分支持</td>
+</tr>
+<tr>
+<td>流计算应用集成</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:right">支持</td>
+</tr>
+<tr>
+<td>数据治理</td>
+<td style="text-align:center">不支持</td>
+<td style="text-align:right">支持</td>
+</tr>
+</tbody>
+</table>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a><font color="#FF8C00">总结</font></h2><p>本文讲述了推出分布式流存储Pravega的原因，介绍了一些Pravega的关键架构以及关键特性，另外还与Kafka做了简要对比。有关Pravega的更多详细信息，请参阅官方网站以及关注我们的后续文章。另作者能力有限，如有不足之处欢迎留言批评指正。</p>
+<h2 id="问题思考"><a href="#问题思考" class="headerlink" title="问题思考"></a><font color="#FF8C00">问题思考</font></h2><p>最后给大家留一个问题：<font color="#00CED1"><strong>一般来说从开源项目到商业产品还是有一段距离的（注意这里的用词：开源的“项目”，商业的“产品”），那么对于设计开发人员来说应该如何弥补这段距离，从而使得开源项目产品化？</strong></font> </p>
+</div></div></div></div></div></div></div></div>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/01/25/pravega-arch-IO-transaction-autoscaling/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -850,69 +1055,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/01/pravega-working-with-streamcuts/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/10/01/pravega-working-with-streamcuts/" itemprop="url">pravega handbook - 开发pravega应用 - streamcuts</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-01T09:16:31+08:00">2018-10-01 09:16:31</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>本节介绍StreamCuts以及如何将它们与流客户端和批处理客户端一起使用。先决条件：您应该熟悉Pravega Concepts。</p>
-<h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>Pravega流由一个或多个并行段形成，用于存储/读取事件。Pravega流是弹性的，这意味着并行段的数量可能随时间变化以适应波动的工作负载。也就是说，StreamCut表示流中的一致位置。它包含一组用于单个流的段和偏移对，它表示给定时间点的完整键空间。偏移量始终指向事件边界，因此没有指向不完整事件的偏移量。</p>
-<p>表示流尾部的StreamCut（带有最新事件）是一个不断变化的流，因为事件可被连续地加入到流中，并且指向具有更新事件流的尾部的streamCuts将具有不同的值。类似地，StreamCut表示流的头部（具有最旧的事件）是不断变化的，因为流保留策略可以截断流并且StreamCut指向截断的流的头部将具有不同的值。 StreamCut.UNBOUNDED用于表示流中的这种位置，用户可以使用它来指定这个不断变化的流位置（流的头部和尾部）。</p>
-<p>应当注意，StreamCut使用流客户端和批量客户端获得的流可以互换使用。</p>
-<h2 id="StreamCut-with-reader"><a href="#StreamCut-with-reader" class="headerlink" title="StreamCut with reader"></a>StreamCut with reader</h2><p>ReaderGroup是一组命名的读者集合，它们并行地从给定的Stream中读取的事件。每个Reader始终与ReaderGroup相关联。StreamCut（s）可以使用以下api从ReaderGroup获得io.pravega.client.stream.ReaderGroup.getStreamCuts。此api返回一个 Map&lt;Stream, StreamCut&gt;表示ReaderGroup管理的所有流的reader的最后已知位置。</p>
-<p>StreamCut可用于配置ReaderGroup以允许对Stream进行有界处理。StreamCutStream 的开始和/或结束可以作为ReaderGroup配置的一部分传递。以下示例显示了将StreamCuts用作</p>
-<p>ReaderGroup配置的一部分的不同方法。</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/*<br> * The below ReaderGroup configuration ensures that the readers belonging to<br> * the ReaderGroup read events from<br> *   - Stream &quot;s1&quot; from startStreamCut1 (representing the oldest event) upto<br>          endStreamCut1 (representing the newest event)<br> *   - Stream &quot;s2&quot; from startStreamCut2 upto the tail of the stream, this is similar to using StreamCut.UNBOUNDED<br> *        for endStreamCut.<br> *   - Stream &quot;s3&quot; from the current head of the stream upto endStreamCut2<br> *   - Stream &quot;s4&quot; from the current head of the stream upto the tail of the stream.<br> */<br>ReaderGroupConfig.builder()<br>                .stream(&quot;scope/s1&quot;, startStreamCut1, endStreamCut1)<br>                .stream(&quot;scope/s2&quot;, startStreamCut2)<br>                .stream(&quot;scope/s3&quot;, StreamCut.UNBOUNDED, endStreamCut2)<br>                .stream(&quot;scope/s4&quot;)<br>                .build();<br></code></pre></td></tr></table></figure>
-<p>以下API可用于使用新的ReaderGroup配置重置现有ReaderGroup，而不是创建ReaderGroup。</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/*<br> * ReaderGroup api used to reset a ReaderGroup to a newer ReaderGroup configuration.<br> */<br>io.pravega.client.stream.ReaderGroup.resetReaderGroup(ReaderGroupConfig config)<br></code></pre></td></tr></table></figure>
-<h2 id="StreamCut-with-BatchClient"><a href="#StreamCut-with-BatchClient" class="headerlink" title="StreamCut with BatchClient"></a>StreamCut with BatchClient</h2><p>StreamCut 表示流的当前头部和当前尾部可以使用以下BatchClient API获得。</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/*<br> * The API io.pravega.client.batch.BatchClient.getStreamInfo(Stream stream) fetches the StreamCut representing the<br> * current head and tail of the stream. StreamInfo.getHeadStreamCut() and StreamInfo.getTailStreamCut() can be<br> * used to fetch the StreamCuts.<br> */<br>CompletableFuture&lt;StreamInfo&gt; getStreamInfo(Stream stream);<br></code></pre></td></tr></table></figure>
-<p>BatchClient可用于在给定开始和结束StreamCuts的情况下执行流的有界处理。BatchClient api io.pravega.client.batch.BatchClient.getSegments(stream, startStreamCut, endStreamCut)用于获取位于给定startStreamCut和endStreamCut之间的段。利用检索到的段信息，用户可以并行地消耗所有事件而不必遵守事件的时间排序。<br>必须注意的是，传递StreamCut.UNBOUNDED给startStreamCut和endStreamCut将分别导致使用流的当前头部和流的当前尾部。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/3/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -938,7 +1080,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">54</a></div>
+      <div><a href="/archives">55</a></div>
     </div>
     
     
