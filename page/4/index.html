@@ -115,6 +115,71 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/24/flink-faq/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/24/flink-faq/" itemprop="url">Flink handbook - flink常见问题</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-24T07:43:34+08:00">2018-09-24 07:43:34</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>关于Flink项目，一般会经常被问到以下问题。</p>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h2 id="Apache-Flink仅用于（近）实时处理用例吗？"><a href="#Apache-Flink仅用于（近）实时处理用例吗？" class="headerlink" title="Apache Flink仅用于（近）实时处理用例吗？"></a>Apache Flink仅用于（近）实时处理用例吗？</h2><p>Flink是一个非常通用的系统，用于数据处理和数据驱动的应用程序，数据流作为核心构建块。这些数据流可以是实时数据流,也可以是存储的历史数据流。例如，在Flink的视图中，文件是存储的字节流。因此，Flink支持实时数据处理和应用，以及批处理应用。</p>
+<p>流可以是无界的（没有结束，事件不断发生）或受限制（流有开始和结束）。例如，来自消息队列的Twitter馈送或事件流通常是无界流，而来自文件的字节流是有界流。</p>
+<h2 id="如果一切都是流，为什么Flink中有DataStream和DataSet-API？"><a href="#如果一切都是流，为什么Flink中有DataStream和DataSet-API？" class="headerlink" title="如果一切都是流，为什么Flink中有DataStream和DataSet API？"></a>如果一切都是流，为什么Flink中有DataStream和DataSet API？</h2><p>有界流通常比无界流更有效。在（近）实时处理无限事件流需要系统能够立即对事件起作用并产生中间结果（通常具有低延迟）。处理有界流通常不需要产生低延迟结果，因为无论如何数据都是旧的（相对而言）。这允许Flink以简单且更有效的方式处理数据。</p>
+<p>DataStream API通过支持低延时的结果和对事件和时间（包括事件时间）灵活反应的模型捕获无界流和有界流的连续处理，</p>
+<p>DataSet API具有加快有界数据流的处理的技术。将来，社区计划将这些优化与DataStream API中的技术相结合。</p>
+<h2 id="Flink如何与Hadoop堆栈相关？"><a href="#Flink如何与Hadoop堆栈相关？" class="headerlink" title="Flink如何与Hadoop堆栈相关？"></a>Flink如何与Hadoop堆栈相关？</h2><p>Flink独立于Apache Hadoop，并且在没有任何Hadoop依赖性的情况下运行。</p>
+<p>但是，Flink与许多Hadoop组件集成得非常好，例如HDFS，YARN或HBase。与这些组件一起运行时，Flink可以使用HDFS读取数据，或写入结果和检查点/快照。Flink可以通过YARN轻松部署，并与YARN和HDFS Kerberos安全模块集成。</p>
+<h2 id="Flink运行的其他堆栈是什么？"><a href="#Flink运行的其他堆栈是什么？" class="headerlink" title="Flink运行的其他堆栈是什么？"></a>Flink运行的其他堆栈是什么？</h2><p>Flink可以在Kubernetes，Mesos， Docker上运行 ，甚至作为独立服务运行。</p>
+<h2 id="使用Flink有哪些先决条件？"><a href="#使用Flink有哪些先决条件？" class="headerlink" title="使用Flink有哪些先决条件？"></a>使用Flink有哪些先决条件？</h2><p>您需要Java 8来运行Flink作业/应用。<br>Scala API（可选）依赖于Scala 2.11。<br>Apache ZooKeeper需要高度可用且没有单点故障的设置。<br>对于可以从故障中恢复的高可用流处理设置，Flink需要某种形式的分布式存储用于检查点（HDFS / S3 / NFS / SAN / GFS / Kosmos / Ceph / …）。</p>
+<h2 id="Flink支持多大的规模？"><a href="#Flink支持多大的规模？" class="headerlink" title="Flink支持多大的规模？"></a>Flink支持多大的规模？</h2><p>用户在非常小的设置（少于5个节点）和1000个节点以及状态的TB上运行Flink作业。</p>
+<h2 id="Flink是否仅限于内存数据集？"><a href="#Flink是否仅限于内存数据集？" class="headerlink" title="Flink是否仅限于内存数据集？"></a>Flink是否仅限于内存数据集？</h2><p>对于DataStream API，Flink支持大于内存的状态来配置RocksDB状态后端。</p>
+<p>对于DataSet API，所有操作（delta迭代除外）都可以扩展到主内存之外。</p>
+<h2 id="常见错误消息"><a href="#常见错误消息" class="headerlink" title="常见错误消息"></a>常见错误消息</h2><p>“ 获得帮助”页面上列出了常见错误消息。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1].<a href="https://flink.apache.org/faq.html" target="_blank" rel="noopener">https://flink.apache.org/faq.html</a></p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/flink-use-cases/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -735,96 +800,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/pravega-controller-service-2/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/20/pravega-controller-service-2/" itemprop="url">Pravega handbook - 控制器服务之二</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T21:39:45+08:00">2018-09-20 21:39:45</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="流元数据"><a href="#流元数据" class="headerlink" title="流元数据"></a>流元数据</h2><p>客户端需要有关哪些段构成流的信息以开始其处理，并且他们从控制器存储在流存储中的时期信息中获取它。读取器客户端通常从流的头部开始，但它也可以选择从任意有趣的位置开始访问流。另一方面，writer总是附加到流的尾部。<br>客户端需要能够有效地查询和查找在以下三种场景中的任何一个段。为了启用这些查询，流存储提供API调用来获取这些段的初始集合、在特定时间获取段以及获取段的当前集合。</p>
-<p>如前所述，流可以从一组段（epoch）转换到构成流的另一组段。如果至少一个段被密封，并且被一个或多个精确覆盖密封段的密钥空间的段替换，则流从一个时期移动到另一个时期。当客户在流上工作时，他们可能会遇到密封段的末端，因此需要找到新的段才能继续前进。为了使客户端能够查询下一个段，流存储库通过控制器服务公开有效查询，以查找任意段的直接后继和前驱。</p>
-<p>为了启用上述服务查询，我们需要有效地存储这些段转换的时间序列，并将它们与时间进行索引。我们在一组表中存储有关流段的当前和历史状态的信息，这些表被设计为旨在针对上述查询进行优化。除了特定于段的元数据记录之外，流的当前状态包括此后描述的其他元数据类型。</p>
-<h2 id="表"><a href="#表" class="headerlink" title="表"></a>表</h2><p>为了有效地存储和查询段信息，我们将段数据拆分为三个仅附加表，即段表，历史表和索引表。</p>
-<ul>
-<li><p>段表<br>segment-info：segmentid，time，keySpace-start，keySpace-end<br>控制器将段表存储在仅附加表中，第 i 行对应于段id i的元数据。值得注意的是，段表中的每一行都是固定大小的。当添加新的段时，它们将按严格增加的顺序分配新的段ID。因此，该表非常有效地创建新段并使用O（1）处理来查询段信息响应方面非常有效。</p>
-</li>
-<li><p>历史表<br>epoch：时间，历史中的片段列表<br>历史表在从一个时期过渡到另一个时期时存储一系列活动段。历史表中的每一行都存储一个epoch，该epoch捕获一组逻辑上一致的（如前面定义的）段，这些段组成流，并且在该epoch的生命周期内是有效的。此表旨在优化查询以查找在任意时间形成流的段集。有三种最常用的场景，我们希望有效地知道形成流的段集 - 初始的段集，当前的段和段的任意时间段。前两个查询在O（1）时间内非常有效地回答，因为它们对应于表中的第一行和最后一行。由于表中的行是按时间的增加顺序排序的，并且捕获了流段集变化的时间序列，因此我们可以很容易地执行二进制搜索来查找在任何任意时间对应于段集的行。</p>
-</li>
-</ul>
-<ul>
-<li>索引表<br>index：⟨time，offset-in-history-table⟩<br>由于历史行的长度是可变的，因此我们为索引表中的时间戳索引历史记录行。这使我们能够浏览历史表并执行二分查找以有效地回答查询以在任意时间获得段集。我们还对历史表执行二分查找以确定任何给定段的后继。</li>
-</ul>
-<h2 id="流配置"><a href="#流配置" class="headerlink" title="流配置"></a>流配置</h2><p>Znode，其中流配置被序列化并持久化。流配置包含需要强制实施的流策略。缩放策略和保留策略由应用程序在创建流时提供，并由控制器通过监视流中数据的速率和大小来强制执行。缩放策略描述了是否以及何时根据流中的传入流量条件自动缩放。该策略支持两种风格 -每秒事件的速率的流量和每秒的字节速率的流量。应用程序通过缩放策略将它们所需的流量指定到每个段，并选择所提供的值来计算确定何时缩放给定流的阈值。保留策略描述了需要保留到此流的pravega集群中的数据量。我们支持基于时间和基于大小的保留策略，其中应用程序可以选择是否希望通过选择适当的策略并提供其所需值来按大小或时间保留流中的数据。</p>
-<h2 id="流状态"><a href="#流状态" class="headerlink" title="流状态"></a>流状态</h2><p>Znode捕获流的状态。它是一个枚举，包含来自创建，活动，更新，缩放，截断，密封和密封流的值。一旦激活，流在执行特定操作和活动之间转换，直到它被密封。转换映射在State 类中定义 ，允许和禁止各种状态转换。流状态描述了流的当前状态。它基于在流上执行的动作从ACTIVE转换到相应的动作。例如，在缩放期间，流的状态从ACTIVE转换为SCALING一旦缩放完成，它就会转换回ACTIVE。流状态用作屏障，以确保在任何时间点仅对给定流执行一种类型的操作。仅允许某些状态转换，并在状态转换对象中进行描述。只允许合法的状态转换，任何不允许转换的尝试都会导致适当的异常。</p>
-<h2 id="截断记录"><a href="#截断记录" class="headerlink" title="截断记录"></a>截断记录</h2><p>这对应于最后用于截断给定流的流截断。所有流段查询都会叠加截断记录并返回严格大于或等于截断记录中的流截断的段。</p>
-<h2 id="密封段记录"><a href="#密封段记录" class="headerlink" title="密封段记录"></a>密封段记录</h2><p>由于段表仅附加，因此在密封段时我们需要保留的任何其他信息都存储在密封段记录中。目前，它简单地包含了段号到其密封大小的映射。</p>
-<h2 id="与事务相关的元数据记录："><a href="#与事务相关的元数据记录：" class="headerlink" title="与事务相关的元数据记录："></a>与事务相关的元数据记录：</h2><h3 id="活动事务"><a href="#活动事务" class="headerlink" title="活动事务"></a>活动事务</h3><p>每个新事务都是在此Znode下创建的。这将与每个事务相对应的元数据存储为ActiveTransactionRecord。事务完成后，将在全局完成事务znode节点下创建一个新节点，并从流特定活动事务节点下删除该节点。</p>
-<h3 id="完成事务"><a href="#完成事务" class="headerlink" title="完成事务"></a>完成事务</h3><p>完成后，所有流的所有已完成事务都将在此单个znode下移动（通过提交或中止路径）。随后，我们可以根据我们认为合适的任何收集方案定期回收这些值。不过在这一点上，我们此时尚未实施任何计划。</p>
-<h2 id="流存储缓存"><a href="#流存储缓存" class="headerlink" title="流存储缓存"></a>流存储缓存</h2><p>由于同一个控制器实例可以处理给定流的多个并发请求，因此每次通过查询zookeeper来读取该值是不合理的。因此，我们引入了每个流存储维护的内存缓存。它缓存每个流的检索元数据，使得缓存中每个流最多有一个数据副本。我们有两个内存缓存 - a）存储中多个流对象的缓存，b）流对象中流的缓存属性。</p>
-<p>我们引入了操作上下文的概念，并且在任何新操作开始时创建了新的操作上下文。新操作上下文的创建使流的高速缓存实体无效，并且每当请求时都从存储中懒惰地检索每个实体。如果在操作过程中更新了值，则该值在缓存中再次无效，以便流上的其他并发读取/更新操作获取其后续步骤的新值。<br>流桶</p>
-<p>为了启用某些场景，我们可能需要我们的后台工作人员定期处理群集中的每个流，以对它们执行某些特定操作。我们引入了一个桶的概念，以便在所有可用的控制器实例中分发此定期后台工作。为此，我们将每个流散列到一个预定义的存储桶中，然后在可用的控制器实例之间分配存储桶。<br>群集的桶数是群集生命周期的固定（可配置）值。<br>控制器实例将系统中的所有可用流映射到桶中，并在它们之间分配桶，以便所有长时间运行的后台工作可以在多个控制器实例之间均匀分布。每个桶对应于zookeeper中的唯一Znode。完全限定范围流名称用于计算散列以将流分配给桶。所有控制器实例在启动时都会尝试获取存储桶的所有权。在故障转移时，所有权都会转移，因为幸存的节点竞争以获取孤立桶的所有权。拥有存储桶的控制器实例负责与存储桶下所有节点相对应的所有长时间运行的调度后台工作。目前，这需要运行周期性工作流来捕获每个流的流截断（称为保留集）。</p>
-<h2 id="保留集"><a href="#保留集" class="headerlink" title="保留集"></a>保留集</h2><p>每个流的一个保留集存储在相应的桶/流Znode下。当我们定期计算流截断时，我们会在此Znode下保留它们。在执行某些自动截断时，将从此集中清除不再有效的流截断。</p>
-<h2 id="控制器群集Listener"><a href="#控制器群集Listener" class="headerlink" title="控制器群集Listener"></a>控制器群集Listener</h2><p>Pravega 集群中的每个节点都在集群Znode下作为短暂节点注册。这包括控制器和段存储节点。每个控制器实例在集群Znode上注册监视，以侦听集群更改通知。这些通知是关于节点添加和删除的。</p>
-<p>一个控制器实例承担所有控制器实例的领导。此领导者控制器实例负责处理段存储节点更改通知。根据拓扑结构的变化，控制器实例会定期将段容器重新平衡为段存储节点映射。</p>
-<p>所有控制器实例都侦听控制器节点更改通知。每个控制器实例都有多个子组件，用于实现故障转移 - 清除程序接口。目前有三个组件实现故障转移清除程序接口，即 TaskSweeper，EventProcessors和TransactionSweeper。每当识别出控制器实例已从群集中删除时，群集侦听器将调用所有已注册的故障转移清除程序，以便乐观地尝试清除先前由故障控制器主机拥有的所有孤儿工作。</p>
-<h3 id="主机存储"><a href="#主机存储" class="headerlink" title="主机存储"></a>主机存储</h3><p>主机存储接口用于将Segment Container存储到Segment Store节点映射。它公开了像getHostForSegment这样的API，它计算了段ID的一致哈希值来计算所有者Segment Container。然后基于容器 - 主机映射，它将适当的URL返回给调用者。</p>
-<h2 id="后台工作者"><a href="#后台工作者" class="headerlink" title="后台工作者"></a>后台工作者</h2><p>控制器进程有两种不同的机制/框架来处理后台工作。这些后台工作通常需要多个步骤和更新特定元数据根实体下的元数据，以及与一个或多个段存储的潜在交互。</p>
-<p>首先，我们从一个简单的任务框架开始，该框架允许运行对给定资源（通常是流）拥有独占权的任务，并允许任务从一个控制器实例故障转移到另一个控制器实例。然而，这个模型限制了它的范围和锁定语义，并且没有固有的任务排序概念，因为多个任务可以竞争地同时获取资源上的工作权限（锁定），并且其中任何一个都可以成功。</p>
-<p>为了克服这个限制，我们提出了一种新基础架构，称为Event Processor。事件处理器是经典的自己的狗食自己吃。它使用pravega流建造。这为我们提供了一个简洁的机制，以确保互斥和有序的处理。</p>
-<h3 id="任务框架"><a href="#任务框架" class="headerlink" title="任务框架"></a>任务框架</h3><p>任务框架被设计为在每个资源上运行独占的后台处理， 以便在控制器实例失败的情况下，工作可以轻松地转移到另一个控制器实例并完成。框架本身并不保证幂等处理，并且如果需要，任务的作者必须处理它。任务模型被定义为只在给定资源上专门工作，这意味着没有其他任务可以在同一资源上并发运行。这是通过在zookeeper上实现的持久分布式锁实现的。任务的故障转移是通过遵循索引给定进程正在执行的工作的索引方案来实现的。因此，如果一个流程失败，另一个流程将扫描所有未完成的工作并尝试将所有权转移给自己。注意：控制器进程失败时，多个幸存的控制器进程可以同时尝试扫描孤立的任务。它们中的每一个都将在其主机索引中索引任务，但只有其中一个能够成功获取对资源的锁定，从而获得处理任务的权限。执行任务的参数被序列化并存储在资源下。</p>
-<p>目前，我们仅将任务框架用于创建流任务。所有其他后台处理都是使用事件处理器框架完成的。</p>
-<h2 id="事件处理器框架"><a href="#事件处理器框架" class="headerlink" title="事件处理器框架"></a>事件处理器框架</h2><p>事件处理器框架是后台工作子系统，它从内部流中读取事件并对其进行处理，因此称为事件处理器。我们系统中的所有事件处理器至少 提供一次 处理保证。并且在其基本风格方面，该框架还提供强大的顺序保证。但我们也有不同的事件处理器子类型，允许并发处理。</p>
-<p>我们为不同类型的工作创建不同的事件处理器。目前，我们的系统中有三个不同的事件处理器，用于提交事务，中止事务和处理流特定请求，如扩展更新密封等。每个控制器实例都有一个每种类型的事件处理器。事件处理器框架允许为每个事件处理器创建多个读取器。跨控制器实例的特定事件处理器的所有读者共享相同的读取器组，这保证了跨控制器实例的互斥分配工作。每个读者都获得一个专用线程，在该线程中，它读取事件，调用其处理并在完成处理后更新其检查点。事件被发布在事件处理器特定的流中，并且基于使用作用域流名称作为路由密钥被路由到特定的段。</p>
-<p>我们有两种类型的事件处理器，一种执行串行处理，这基本上意味着它会读取一个事件并启动它的处理，并等待它完成后再继续进行下一个事件。这为处理过程提供了强有力的顺序保证。处理完每个事件后的检查点。提交事务是使用事件处理器的这种基本风格实现的。处理这些事件的并行度上限为内容流中段数，下限为读者取器数量的限制。来自不同流的多个事件可以在同一段中出现，并且由于我们执行串行处理，串行处理的缺点是处理停顿或来自一个流的事件泛滥会对不相关流的延迟产生不利影响。</p>
-<p>为了克服这些缺点，我们设计了Concurrent Event Processor作为串行事件处理器的叠加。顾名思义，并发事件处理器允许我们同时处理多个事件。这里读者线程读取一个事件，调度它的异步处理并返回读取下一个事件。在任何时间点同时处理的事件数量都有上限，并且当某个事件的处理完成时，允许获取更新的事件。这里的检查点方案变得更加复杂，因为我们希望保证至少一次处理。</p>
-<p>但是，随着并发处理，顺序保证会被破坏。但是，重要的是要注意，我们只需要顺序保证来处理来自流而不是跨流的事件提供顺序保证。为了满足排序保证，我们将Concurrent Event Processor与Serialized Request Handler重叠，后者将来自内存队列中相同流的事件排队并按顺序处理它们。</p>
-<p>提交事务处理是在专用串行事件处理器上实现的，因为我们需要提交顺序的强力保证，同时确保提交不会干扰流上其他类型请求的处理。</p>
-<p>中止事务处理是在专用并发事件处理器上实现的，该处理器同时对来自跨流的事务执行中止处理。</p>
-<p>对流的所有其他请求都在序列化请求处理程序上实现，该处理程序确保在任何给定时间正在处理每个流的一个请求，并且在请求处理期间存在排序保证。但是，它允许来自跨流的并发请求同时进行。实现缩放，截断，密封，更新和删除流等工作流程，以便在请求事件处理器上进行处理。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/3/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/5/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -850,7 +825,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">55</a></div>
+      <div><a href="/archives">56</a></div>
     </div>
     
     
