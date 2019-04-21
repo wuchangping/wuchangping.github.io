@@ -115,6 +115,113 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/18/pravega-segment-store-service-2/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/18/pravega-segment-store-service-2/" itemprop="url">pravega handbook - 数据面段存储服务之二</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-18T21:42:28+08:00">2018-09-18 21:42:28</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="日志操作"><a href="#日志操作" class="headerlink" title="日志操作"></a>日志操作</h2><p>一个日志操作是在可持久化的日志里序列化的基本单元。它本身并不代表一个动作，而是几个可序列化操作的基础（我们可以序列化多种类型的操作，而不仅仅是Appends）。每个操作都是外部操作（表示更改段）或内部触发（如元数据维护操作）的结果。<br>每个日志操作都具有以下元素： <code>- SequenceNumber</code>：分配给此条目的唯一序列号（请参阅容器元数据下的更多信息）。</p>
+<p>这些是各种类型的日志操作：</p>
+<ul>
+<li>存储操作表示需要应用于底下第2层存储的操作：</li>
+<li>StreamSegmentAppendOperation：表示对特定段的附加。</li>
+<li>CachedStreamSegmentAppendOperation：与StreamSegmentAppendOperation相同，但这是供内部使用的（它不是具有实际的数据有效负载，而是指向缓存中可以从中检索数据的位置）。</li>
+<li>StreamSegmentSealOperation：处理后，它会在内存中的元数据中设置一个标记，以便不再接收附加内容。当Storage Writer处理它时，它会在第2层存储中将Segment标记为只读。</li>
+<li>StreamSegmentTruncateOperation：截断特定偏移处的段。这会导致segment的StartOffset发生变化。</li>
+<li>MergeTransactionOperation：表示要将事务合并到其父段中。</li>
+<li>元数据操作是指示容器元数据更改的辅助操作。它们可能是外部操作的结果（我们之前收到了一个我们从未知道的段的请求，因此我们必须为其分配一个唯一的ID）或者对整个元数据进行快照（这有助于恢复和清理第1层）存储）。元数据操作的目的是减少故障转移恢复所需的时间（如果需要）：</li>
+<li>StreamSegmentMapOperation：将Id映射到段名称。</li>
+<li>TransactionMapOperation：将Id映射到事务及其父段。</li>
+<li>UpdateAttributesOperation：更新segment上的任何属性。</li>
+<li>MetadataCheckpoint包括元数据的整个快照。这在恢复期间非常有用 - 它包含到目前为止的所有元数据，这是之后所有操作的基础。</li>
+</ul>
+<h2 id="可持久化日志"><a href="#可持久化日志" class="headerlink" title="可持久化日志"></a>可持久化日志</h2><p>该可持久化日志是处理所有操作日志的核心组成部分。所有操作（由Container创建）都会添加到持久日志中，该日志按照接收顺序处理它们。它由一些其他组件组成，在不影响数据完整性的情况下，所有这些组件的唯一目标都是致力于尽快处理所有输入操作。</p>
+<p>可持久化日志中的信息流:</p>
+<ol>
+<li>所有收到的操作都被添加到操作队列中 （调用方接收一个当操作持久地完成时将完成的未来）</li>
+<li>该运算处理器选取目前在队列中可用的所有操作（如果队列为空，则等到至少一个操作被添加）。</li>
+<li><p>所述操作处理器运行作为一个连续的环（在后台线程中），并且具有四个主要阶段。</p>
+<ul>
+<li>从操作队列中出列所有未完成的操作（如上所述）</li>
+<li>预处理操作（验证它们是否正确并且不会导致意外行为，分配偏移量（如果需要），分配序列号等）</li>
+<li>写操作的数据帧生成器，其序列化和包装的操作数据帧。数据框完成后（完整或不再需要添加操作），数据框构建器将数据框发送到_可持久化的数据日志。请注意，操作可能跨越多个DataFrame - 目标是通过尽可能大的写入（但也考虑到每次写入可能有最大大小限制）来充分利用持久数据日志吞吐量容量。</li>
+</ul>
+</li>
+</ol>
+<ol start="4">
+<li><p>当持久数据日志中的DataFrame持久存在时，操作处理器会对迄今为止完全写入的所有操作进行后处理（将它们添加到内存中结构，更新索引等）并完成与它们相关的未来。</p>
+</li>
+<li><p>Operation Processor异步工作，因为它在开始另一个数据帧并将其发送到持久数据日志之前不等待写入特定的数据帧。因此，多个DataFrame可能正在运行（但是以特定的顺序），并且操作处理器依赖于持久数据日志中的某些排序保证（如果特定DataFrame被攻击，那么在此之前的所有DataFrame也以正确的顺序被成功提交）。</p>
+<ul>
+<li>操作处理器不执行任何写入限制（将其留给持久数据日志实现），但它控制发送给它的数据帧的大小。</li>
+</ul>
+</li>
+</ol>
+<h2 id="截断"><a href="#截断" class="headerlink" title="截断"></a>截断</h2><p>根据提供的配置，Durable Log会自动添加一种特殊的操作，命名为MetadataCheckpointOperation。此操作在由操作处理器处理时，收集整个Container Metadata的快照，并将其序列化为Durable Data Log。此特殊操作标记一个截断点 - 日志操作流中的一个位置，我们可以在其中发出截断操作。非常重要的是，在每次截断之后，在日志中找到的第一个操作是一个 MetadataCheckpointOperation，因为没有先前的操作来重建元数据，这是能够处理后续操作的唯一方法。</p>
+<p>注意：不应将持久数据日志（第1层）截断与段截断相混淆。它们用于不同的目的，适用于不同的目标。</p>
+<h2 id="操作处理器"><a href="#操作处理器" class="headerlink" title="操作处理器"></a>操作处理器</h2><p>操作处理器是处理日志输入操作的可持久化的日志的子组件。其目的是基于每个操作的内容来验证、持久化和更新元数据和其他内部结构。<br>操作元数据更新器</p>
+<p>操作元数据更新器是持久日志的子组件，负责基于元数据的当前状态验证操作，以及在成功提交操作之后更新元数据。在内部，它有各种机制来应对失败，并且它可以回滚失败情况下的某些变化。</p>
+<h2 id="持久数据日志"><a href="#持久数据日志" class="headerlink" title="持久数据日志"></a>持久数据日志</h2><p>持久数据日志是一个外部组件的抽象层，提供仅附加语义。它是一个向日志提供非常快速附加的系统，它保证了写入数据的持久性和一致性。读取性能不是一个很重要的因素，因为我们不直接从该组件读取数据 - 我们只在需要恢复持久日志的内容时才从该组件读取日志数据。</p>
+<p>如上所述，日志操作被序列化为数据框架（如果需要的话，单个操作能够跨越多个这样的框架），然后这些数据框架被序列化为持久数据日志的条目。这仅用作故障安全，并且我们只需要在需要执行恢复时才需要读回这些框架（在这种情况下，我们需要按照接收它们的相同顺序反序列化它们中包含的所有日志操作）。</p>
+<h2 id="内存操作日志"><a href="#内存操作日志" class="headerlink" title="内存操作日志"></a>内存操作日志</h2><p>内存中操作日志包含提交（和复制）的日志操作，其顺序与添加到持久数据日志的顺序完全相同。虽然持久数据日志包含一系列数据帧（其中包含操作的序列化），但是内存日志包含实际的操作，这些操作可以在整个持久日志（以及存储写入器）中使用。</p>
+<p>内存日志本质上是在接收操作时命令的日志操作链。我们总是在一端添加，然后从另一端移除。当我们截断持久数据日志时，内存日志也被截断在同一位置。</p>
+<h2 id="读取索引"><a href="#读取索引" class="headerlink" title="读取索引"></a>读取索引</h2><p>读取索引有助于段容器在任意偏移量下执行从流读取。虽然耐用日志按照接收的顺序记录（并且只能重放）数据，但是Read Index可以以随机方式访问数据。读取索引由多个片段读取索引（每个活片段之一）构成。</p>
+<p>段读取索引是一种数据结构，用于提供从内存的读取，以及从第2层存储中提取数据，并在数据尚未可用时提供未来读取（尾部读取）。当接收到读取请求时，段读取索引返回一个读取迭代器，只要读取请求参数尚未满足，该迭代器将返回数据。迭代器要么从存储器中取出立即可用的数据，要么从第2层存储器中请求数据（并将其带到存储器中），要么如果到达段当前末端，返回Future并在添加新数据时完成（从而提供尾随或未来读取）。</p>
+<p>段读索引的核心是条目的排序索引（由它们的起始偏移量索引），用于在需要时定位所请求的数据。索引本身由定制的平衡二进制搜索树（更确切地说，是AVL树）实现，其目标是最小化内存使用而不牺牲插入或访问性能。条目本身不包含数据，而是一些少量的元数据，这些元数据用于定位缓存中的数据并确定使用模式（对缓存撤出很有好处）。</p>
+<h2 id="高速缓存"><a href="#高速缓存" class="headerlink" title="高速缓存"></a>高速缓存</h2><p>缓存是一个组件，其中所有数据（无论是从新添加的还是从第二存储中提取的）都被存储。它是一个完全由读取索引管理的密钥值存储。</p>
+<p>缓存被定义为抽象层，并且有两个实现：</p>
+<ul>
+<li>内存实现（通过哈希图）。目前只用于单元测试。</li>
+<li>内存与磁盘混合，由ROCKSDB提供支持。这是首选的（默认的）实现，因为它不受可用堆空间或机器RAM的限制，其性能与内存大小成正比。</li>
+</ul>
+<h2 id="存储写入"><a href="#存储写入" class="headerlink" title="存储写入"></a>存储写入</h2><p>Pravega绝不是数据的最终安放位置，也不是存储服务。Tier-2 Storage是我们希望数据长期存在的地方而Pravega仅用于存储非常短的尾部（使用第1层存储），足够快速追加并将它们聚合成更大的块以便提交给第2层存储。为了执行此操作，它需要另一个组件（存储写入），该组件按照接收顺序从持久日志中读取数据，对其进行聚合，并将其发送到第2层存储。</p>
+<p>就像持久日志一样，每个段容器都有一个存储写入器。每个写入器从内存操作日志中读取日志操作（通过持久日志中的read()方法公开），按照它们被处理的顺序。它通过它的序列号来跟踪最后一个读项目。此状态不被持久化，并且在恢复时，它可以从可用的持久日志的开始开始。</p>
+<p>Storage Writer可以处理任何存储操作（附加，密封，合并），并且由于Pravega是在第2层中修改此类数据的唯一参与者，因此它可以不受约束地应用它们。它有几种机制可以检测和恢复可能的数据丢失或外部参与者同时修改数据。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/18/pravega-segment-store-service-1/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -727,80 +834,9 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-key-features-1/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravega-key-features-1/" itemprop="url">Pravega handbook - 关键特性一</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T15:50:25+08:00">2018-09-16 15:50:25</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>本系列介绍了Pravega的一些关键特性。如果您已经熟悉Pravega的核心概念，那么这些概念对于理解本文会有所帮助。</p>
-<h2 id="Pravega设计原则"><a href="#Pravega设计原则" class="headerlink" title="Pravega设计原则"></a>Pravega设计原则</h2><p>Pravega旨在支持新一代流式应用：这些应用处理大量的连续到达的数据，并且这些应用还对迟到的数据、无序到达的数据和发生故障时生成的数据进行准确的分析。有几个开源工具可以让开发人员构建这样的应用场景，例如Apache Flink，Apache Beam，Spark Streaming等。迄今为止，这些流式应用使用Apache Kafka，Apache ActiveMQ，RabbitMQ，Apache Cassandra和Apache HDFS等系统来摄取和存储数据。在pravega里，我们设想将摄取和存储这两个概念统一起来，因而pravega的工作重点是摄取和存储流数据。</p>
-<p>Pravega从存储的角度处理流应用。它使这些流式应用能够连续不断的摄取流数据并永久地保存下来。作为分析历史数据的一部分，可以以低延迟（毫秒级）的方式访问这样的流数据，也可以提前几个月，甚至几年分析这样的历史数据。</p>
-<p>Pravega的设计结合了使用Lambda架构构建流应用时的经验教训，也参考了大规模部署流应用时的挑战，这些应用始终以容错方式提供准确的结果。Pravega架构提供强大的持久化和一致性保证，为构建流式应用提供坚实的基础。</p>
-<p>在Lambda架构里，开发人员使用复杂的中间件组合，其中包括批处理中间件以及Storm，Samza，Kafka等连续处理中间件。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Flambda.png" alt="lambda"></p>
-<p>在lambda体系结构中，批处理用于提供准确但可能过时的数据分析，第二条路径在摄取数据时处理数据，原则上结果是无效的，这证明了第一条路径的合理性。使用此方法，应用程序逻辑上有两个副本，因为速度层的编程模型与批处理层中使用的编程模型不同。Lambda架构很难在生产中维护和管理。因此，这种大数据处理架构一直在对用户失去吸引力。最近，一种不同类型的大数据体系结构越来越受到关注，此架构不依赖于批处理数据路径。这种架构称为Kappa架构。</p>
-<p>Kappa架构风格是针对Lambda架构太过于复杂的一种改进，依赖于专为流式传输而设计的组件，支持更强大的语义并提供快速准确的数据分析能力，Kappa架构是一种更简单的方法：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fkappa.png" alt="kappa"></p>
-<p>在Kappa架构里只有一个数据路径要执行，而应用程序逻辑的实现只需要维护一个，而不是两个。借助适当的工具，为需要快速而准确地处理流数据的需求而构建，使得物联网，联网汽车，金融，风险管理，在线服务等领域设计和运行大数据应用变得更加简单。通过合适的工具，可以构建这样的流水线并为需要高容量和低延迟的大数据应用提供服务。</p>
-<p>Kappa架构里流式应用通常需要处理多个阶段，任何实用的流分析系统都必须能够以数据流水线的形式适应各阶段的组合：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fpipeline.png" alt="pipeline"></p>
-<p>对于数据管道，重要的是要考虑端到端的保证而不是每个组件的保证。例如，一个阶段保证exactly once语义而另一个阶段又不保证，这样是不行的。Pravega的目标是实现数据管道的设计和实现，并提供端到端的强一致保证。</p>
-<p>Pravega - 为流世界重新设想的存储</p>
-<p>Pravega引入了一个新的存储原语，即流，可以匹配无限数据的连续处理。在Pravega中，流是一个命名的，持久的，仅附加的和无限制的字节序列。有了这个原语，以及本文档中讨论的关键特性，Pravega是Flink等流处理引擎的最佳拍档。基于Pravega的关键特性，我们认为它将成为新一代面向流的中间件的基础存储原语。</p>
-<h1 id="让我们来看看Pravega的主要特色。"><a href="#让我们来看看Pravega的主要特色。" class="headerlink" title="让我们来看看Pravega的主要特色。"></a>让我们来看看Pravega的主要特色。</h1><h2 id="Exactly-once语义"><a href="#Exactly-once语义" class="headerlink" title="Exactly once语义"></a>Exactly once语义</h2><p>恰好一次语义，我们的意思是Pravega确保数据不会重复，并且尽管失败也不会丢失任何事件。当然，这个声明附带了许多警告，就像任何其他承诺完全一次语义的系统一样，但是我们不要在这里深挖细节。一个重要的考虑因素是，一次性语义是Pravega的自然组成部分，是pravega从零开始设计时就考虑的首要目标之一。</p>
-<p>为了实现一次性语义，Pravega Streams具有持久性，有序性，一致性和事务性。我们在下面的单独部分讨论持久性和事务性。</p>
-<p>通过排序，我们的意思是Reader按照写入的顺序观测数据。在Pravega中，数据是与应用定义的路由密钥一起写入的，Pravega根据路由密钥提供顺序保证。两个具有相同密钥的数据总是被Reader按照它们写入的顺序读取。Pravega的排序保证允许数据被重放（例如，当应用程序崩溃时）并且重放的结果是相同的。</p>
-<p>通过一致性，我们的意思是所有的reader都可以看到给定路由密钥的相同有序数据视图，即使失败也是如此。“大多数一致”的系统不足以构建准确的数据处理。</p>
-<p>提供“至少一次”语义的系统可能会出现重复。在这样的系统中，数据生产者可能在某些情况下两次写入相同的数据。在Pravega中，写入是幂等的，由于重新连接而导致的重写不会造成数据重复。请注意，我们不保证来自源的数据是否已包含重复项。源数据对Pravega是不透明，pravega不会尝试删除源数据里的重复项。</p>
-<p>然而，我们并没有将我们的注意力限制在写的完全一次语义上。我们还提供并正在积极致力于扩展功能，这些功能可实现数据管道的端到端的一次性。强一致性保证了Praveg的数据分析引擎的语义，如Flink实现了这种端到端的保证。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/5/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/7/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/5/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/7/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
   </nav>
   
   
@@ -823,7 +859,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">56</a></div>
+      <div><a href="/archives">57</a></div>
     </div>
     
     

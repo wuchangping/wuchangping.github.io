@@ -115,6 +115,79 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/04/21/distributed-servicegovernance-systemadaptive/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/04/21/distributed-servicegovernance-systemadaptive/" itemprop="url">分布式系统架构设计三十六式之服务治理 – 系统自适应模式</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-04-21T19:33:30+08:00">2019-04-21 19:33:30</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="导读"><a href="#导读" class="headerlink" title="导读"></a><font color="#FF8C00">导读</font></h2><p>日拱一卒，功不唐捐，分享是最好的学习，一个知识领域里的 <font color="#00CED1"> <strong>“道 法 术 器”</strong> </font> 这四个境界需要从 <font color="#00CED1"> <strong>微观、中观以及宏观</strong> </font>三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计三十六式》，讲诉分布式系统里最重要的三十六个虚数的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
+<p>实现一个分布式系统通常会面临三大难题： <font color="#00CED1"> <strong>故障传播性、业务拆分与聚合以及分布式事务</strong> </font>。本系列中的服务治理章节主要是为了解决故障传播性的难题，它包括： <font color="#00CED1"> <strong>隔离、熔断、降级、限流、容错以及资源管控-系统自适应算法</strong> </font>，本文将讲诉服务治理里的 <font color="#00CED1"> <strong>“系统自适应模式”</strong> </font>模式。</p>
+<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><font color="#00CED1"> <strong>分布式系统的灵魂</strong>  </font>：从产品思维的角度来看，好的产品都是有自己灵魂的。比如有的产品灵魂是“善良”，善有大善、上善、小善。《道德经》有言：“上善若水，水善利万物而不争，处众人之所恶（wù），故几于道。”，水善利万物而不与万物争，水无处不在万物感觉不到水的存在又离不开水，不争故天下莫能与之争。每种好的产品背后都隐藏着自己的设计哲学，有自己的灵魂。而一个分布式系统的灵魂又应该怎么定义呢？认知层次不同，对分布式系统的理解也不同，度量一个分布式系统的灵魂，在我看来可以采用分布式系统的SLO图形指标来表达。好的分布式系统SLO指标也是很有规律很漂亮的，如下图所示，左图波形上跳下串，很明显不如右边波形来的漂亮。<br><br><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/systemadaptive/system-jitter.PNG" alt="系统抖动"><br><br>波形上跳下串带来的后果是什么呢？想象一下在高速路开车的场景，如果一辆车一会快，一会慢，后面的车会发生什么事？这样开车是很容易出事故的，而开得很稳的车出故障的概率就较小。波形上跳下串，说明该系统里头没有解决好资源竞用性以及服务治理的问题。<br><br><font color="#00CED1"> <strong>可靠性与高性能的平衡</strong>  </font>：我们知道要让一个水管里的水流的又快又多，一是给水管灌满水，二是水管通畅同时保证不炸裂水管。同样的道理，在分布式系统里要让系统跑出最好的性能和最可靠的效果，一方面压榨整个系统的资源，另一方面又要保证系统不出故障，在系统不出故障的前提下，尽量榨净系统资源。<br><br>因此为了解决以上问题，这里提出了系统自适应模式。<br><br><br><br><font></font>
+
+
+
+<h2 id="系统自适应模式设计思路"><a href="#系统自适应模式设计思路" class="headerlink" title="系统自适应模式设计思路"></a><font color="#FF8C00">系统自适应模式设计思路</font></h2><h3 id="资源平衡"><a href="#资源平衡" class="headerlink" title="资源平衡"></a><font color="#00CED1">资源平衡</font></h3><p>服务治理与其说是分布式下的套路，不如说是控制论下的套路，其本质是资源的细粒度管控，精巧的平衡整个系统里的资源竞用，从而保证分布式系统对外提供高质量的服务。如下图《一根羽毛的力量》所示，其将平衡的思想用到极致，我们也希望在分布式系统里体现有限资源下的平衡的产品设计哲学。</p>
+<div align="center"> 
+
+<p> <img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/systemadaptive/balance.jpg" alt="平衡"></p>
+<p>​    图片来源于网络版权归原作者所有</p>
+<div align="left"> 
+
+<p>我们将平衡的思想融入分布式系统，在系统健康的前提下，极致的压榨系统的能力(capacity)，同时又保证不会主动造成系统故障，如果发现系统内部出现故障，又会自动调整下发的压力，这就是系统自适应保护。</p>
+<h3 id="最佳衡量指标"><a href="#最佳衡量指标" class="headerlink" title="最佳衡量指标"></a><font color="#00CED1"><strong>最佳衡量指标</strong></font></h3><p>确定相应衡量指标，通常比较的原始情况下，是以工作负载比如1分钟、5分钟、15分钟的CPU负载作为系统衡量指标，但是这并不大正确。比如假设 CPU load &gt; 2 就 触发一个系统保护，如果这个 时候系统的CPU load是在下降的，它虽然此时刻大于2， 但是趋势却是下降的，因此没必要触发系统保护。还有就是干扰性，比如 按 1分钟负载&amp;&amp; 5分钟负载&amp;&amp;15分钟负载，全都是满足大于2的条件就触发系统保护。但是实际上，也许 5分钟负载是不大于2的，因此这个条件就不成立，并不会触发系统过载保护， 这种行为我称之为负载干扰性。</p>
+<p>参考水管的流量算法只依赖于管的截面大小以及流速，我们定义系统的自适应算法依赖的参数为系统入口处的 QPS或TPS ，以及请求的返回时间（RT），这里我将这个公式定义为 System Balance Capacity = QPS * RT。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/systemadaptive/qps-and-rt.PNG" alt="最佳值"></p>
+<p>如上图，最好的情况就是即满足 最大的QPS 又满足最小的RT，通过一个时间窗口计算QPS 和 RT ，自适应调整整个系统。</p>
+<h3 id="系统自适应算法"><a href="#系统自适应算法" class="headerlink" title="系统自适应算法"></a><font color="#00CED1"><strong>系统自适应算法</strong></font></h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/systemadaptive/systemadaptive.PNG" alt="自适应算法"></p>
+<p>造成系统负载过高以及故障传播的因素很多，比如不合适的线程数、TPS或QPS过大、返回时间过长都有可能，上图表示了一个自适应算法，在系统的入口处，实时采集QPS/TPS 以及RT， 然后跟最佳样本值进行比较，然后依据一个调节系数进行计算，再调节发送的请求量，发送请求后又采集造成的影响，再反馈在系统入口处。其中，样本值可以在系统启动时按动态采样的方式计算，逐渐增加QPS ，当发现时延发生转折时，我们就确定这个转折点为分布式系统自适应最佳平衡点，记下该值作为当前样本。 </p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲诉了服务治理里的 <font color="#00CED1"><strong>“系统自适应”</strong></font>模式，内容也没有多少，，在前一篇《分布式系统架构设计三十六式之服务治理-5F容错模式》里讲诉了分布式系统服务治理的容错模式。另作者能力与认知都有限，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及大数据，现就职于DELL EMC。个人技术博客：<a href="https://changping.me" target="_blank" rel="noopener">https://changping.me</a></p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a> ，可以自由阅读、分享、转发、复制、分发等，限制是需署名、非商业使用（以获利为准）以及禁止演绎。</p>
+</div></div>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/04/06/distributed-servicegovernance-failure-handling/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -169,7 +242,7 @@
 <p>比如上图中服务20出现故障就快速上报故障给服务10，然后服务10就可以采用Failover策略将服务请求切换到服务21，从而避免更多的不可用时间。</p>
 <h3 id="Failback-失败恢复"><a href="#Failback-失败恢复" class="headerlink" title="Failback 失败恢复"></a><font color="#00CED1">Failback 失败恢复</font></h3><p>Failback跟Failover有点类似，但是Failover是发现故障时就把请求切换到别的服务或设备上去，而Failback是在发现下游的故障后，把请求扔到一个临时的设备或者服务或者组件（比如队列）上，然后待下游故障修复后，重新同步数据以及请求，把这些数据或者请求还原到原来的服务或者设备上。比如上图所示，在服务20出现故障后，服务10发过来的请求被放到一个临时的队列里，然后在服务20在一定的时间内被恢复后，又把这些请求从队列中恢复发到服务20，这个过程用户时不感知的。</p>
 <h3 id="Failsafe-失败安全"><a href="#Failsafe-失败安全" class="headerlink" title="Failsafe 失败安全"></a><font color="#00CED1">Failsafe 失败安全</font></h3><p>FailSafe 是指系统出现故障时可以直接忽略这个故障，不进行相应的故障处理，在Failsafe的场景下，故障不会给系统带来伤害，对服务质量也不会有什么影响，简单的处理方式就是把故障的信息写到日志里保存。</p>
-<h3 id="Forking-服务分叉"><a href="#Forking-服务分叉" class="headerlink" title="Forking 服务分叉"></a><font color="#00CED1">Forking 服务分叉</font></h3><p>在Forking策略下，将请求进行裂变下发，只要一个请求处理成功整体请求就成功。比如上图所示，一个读请求到网关后被分裂成同样的请求三份，然后这三个请求被下发到服务10，11，12，只要有一个请求处理成功就返回成功。</p>
+<h3 id="Forking-请求分叉"><a href="#Forking-请求分叉" class="headerlink" title="Forking 请求分叉"></a><font color="#00CED1">Forking 请求分叉</font></h3><p>在Forking策略下，将请求进行裂变下发，只要一个请求处理成功整体请求就成功。比如上图所示，一个读请求到网关后被分裂成同样的请求三份，然后这三个请求被下发到服务10，11，12，只要有一个请求处理成功就返回成功。</p>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲诉了服务治理里的 <font color="#00CED1"><strong>“5F容错”</strong></font>模式，内容也没有多少，但是需要应用合适保证服务质量却并不容易，在应用的时候一般会根据实际的业务场景进行策略组合使用，在前一篇《分布式系统架构设计三十六式之服务治理-横向限流模式》里讲诉了分布式系统服务治理的横向限流模式。另作者能力与认知都有限，欢迎大家拍砖留念。</p>
 <h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及大数据，现就职于DELL EMC。个人技术博客：<a href="https://changping.me" target="_blank" rel="noopener">https://changping.me</a></p>
 <h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a> ，可以自由阅读、分享、转发、复制、分发等，限制是需署名、非商业使用（以获利为准）以及禁止演绎。</p>
@@ -340,8 +413,7 @@
 <li>线程资源限流的“流”指的是线程数。</li>
 </ul>
 <p>这些“流” 通常具有资源竞用性、延迟性、抖动性以及不可靠性的特征。资源竞用性以及不可靠性需要控制流的资源使用，延迟性、抖动性需要对“流”进行整形，削峰填谷，控制请求的指标波形图。</p>
-<h2 id="限流处理策略"><a href="#限流处理策略" class="headerlink" title="限流处理策略"></a><font color="#FF8C00">限流处理策略</font></h2><p>根据对超出阈值的处理方式的不同限流策略可以划分为：直接拒绝式、冷启动式以及匀速排队式[2]</p>
-<ul>
+<h2 id="限流处理策略"><a href="#限流处理策略" class="headerlink" title="限流处理策略"></a><font color="#FF8C00">限流处理策略</font></h2><ul>
 <li><p>直接拒绝：当请求量超过阈值后，新的请求就会被直接拒绝，方式为直接返回或者抛出异常。这种方式比较适合于对分布式系统的负载容量已知的情况下，比如通过全链路压测已经确定了准确的系统处理能力及系统容量，对应固定窗口、滑动窗口算法。</p>
 </li>
 <li><p>冷启动：当分布式系统长期处于低负载的情况下，请求量突发时，会把系统负载很快拉到很高的水准，这样就可能瞬间就把系统击垮。通过”冷启动”方式，让输入的请求量缓慢增加，在一个时间段内慢慢增加到系统所能承载的阈值上限，给冷系统一个预热的时间，避免系统被压垮，对应令牌桶算法。</p>
@@ -858,158 +930,9 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/02/pravega-blog-exploring-state-synchronizer/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/03/02/pravega-blog-exploring-state-synchronizer/" itemprop="url">pravega blog - pravega状态同步器</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-03-02T18:56:59+08:00">2019-03-02 18:56:59</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>Pravega允许使用状态同步器在集群中分布的多个协作进程中以一致的方式共享状态。本文详细介绍了如何使用State Synchronizer[1] 在分布式应用程序中构建和维护一致性。</p>
-<h2 id="状态同步器"><a href="#状态同步器" class="headerlink" title="状态同步器"></a>状态同步器</h2><p>在分布式系统中，经常需要跨应用程序的多个实例共享状态。如果此信息位于数据路径上，则通常会通过适合应用程序的任何数据存储区。通常，我们会根据应用程序的要求仔细选择数据存储区。</p>
-<p>当我们拥有需要由多个进程使用的状态时，例如架构注册表或与应用程序数据无关的集群成员资格，需要考虑替代存储选项，因为要求可能完全不同。元数据通常不能完全适合数据路径的模式或一致性模型。因此，拥有不同的存储解决方案通常是有意义, 有时，这一点的重要性被低估并作为事后的想法实施。</p>
-<p>在Pravega中，当Reader Group用于读取事件时，我们遇到了类似的问题。在以前的文章中讨论的缩放，而不是读者如何协调会员和主机拥有什么样的数据。这是一个棘手的问题，所以我们需要提供一次语义。</p>
-<p>我们开发了一个新模型：正在运行的应用程序的所有实例在内存中都具有相同的对象。它包含的数据完全由用户定义。它是一个普通的Java对象，除了它不是被普通方法修改，它就像一个状态机一样：每种可能的修改方法都有一个单独的类。这些类在运行时是可序列化的和确定的。该对象由State Synchronizer包装，它将确保所有主机以相同的顺序对其对象应用相同的更新。这样，对象在任何地方都保持相同。</p>
-<p>这为现有解决方案无法很好处理的大量不同用例打开了大门。</p>
-<h2 id="现有解决方案"><a href="#现有解决方案" class="headerlink" title="现有解决方案"></a>现有解决方案</h2><p>成员和领导者选举的常用解决方案是使用Apache ZooKeeper[1]。ZooKeeper适用于需要保持一致的共享状态。ZooKeeper几乎在每个数据中心的某个地方运行。</p>
-<p>ZooKeeper的用户可以选择部署多个集合并在它们之间传播应用程序。这样做可以让我们提高整体容量，但不能以细粒度的方式。为了提高资源效率，有必要在同一个集合上执行多个任务，甚至可能跨越多个应用程序。一旦它们达到整体的容量，就不可能增加它或在其他地方迁移任务。</p>
-<p>有许多存储系统在其API中提供了强大的一致性，并且内部依赖ZooKeeper来保持其内部元数据的一致性。这是一种常见模式，可以利用一个一致性点来创建另一个点。Pravega遵循这种模式。它在Segment [3] 上提供了强大的一致性，这是通过使用Apache BookKeeper [4] 提供的写屏障来保证的，而后者又使用ZooKeeper作为其元数据。</p>
-<p>State Synchronizer更进一步，提供了一个抽象，其中Java对象可以在多台机器上保持一致，以便组中的所有成员即使在修改时也能看到相同的对象。</p>
-<p>使用状态同步器，我们将更新存储在可以任意长的日志中，并确保始终存储和复制日志。应用程序逻辑负责了解更新并应用它们，从而将服务从执行部分中释放出来，使整个方法具有高度可扩展性。因此，Zookeeper是复制状态机的特定实现; State Synchronizer为实现任意复制状态机提供了基础。</p>
-<p>Pravega使用状态同步器将数据与强一致性保证同步。具体来说，我们使用它来协调读者群中读者的行为，例如，跨读者分配流段。</p>
-<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>Pravega的工作原理是将数据存储在第1层存储中，缓冲数据一段时间，然后将数据移动到第2层以进行长期存档。（参见 Pravega Internals博客）。然而，与大多数系统不同，它与（或甚至可以写入的系统）竞争，它提供了强大的一致性。在大多数系统中，一致性最终由ZooKeeper [14]锚定，即使它从未在数据路径（甚至大多数元数据路径）中使用。</p>
-<p>这是可能的，因为一旦存在强一致性，就可以利用它来创建一个也提供一致性的更大系统。在State Synchronizer的情况下，它使用的事实是，在任何给定时间只有一个Pravega服务器可以更新Segment。因此，它可以在Segment上使用原子比较和设置操作来构建更高级别的抽象，同时保持较大应用程序的一致性。</p>
-<p>可以跨各种进程使用State Synchronizer API [5]来对该对象执行更新。状态同步器确保对该对象的最新版本执行更新的每个进程。因此，对象在一个队列中协调，并且每个人在同一对象上看到相同的更新序列。</p>
-<p>作为示例用例，在Pravega中，我们需要在读者组中协调读者的位置[6]。</p>
-<p>可以将一组读取器组合在一起，以便可以并行读取流中的事件集。这组读者称为读者组。Pravega保证流中的每个事件都由读者组中的一个读取器读取。</p>
-<p>有来自阅读器的地图列表段，并在这些段存储的偏移量。我们可以执行各种类型的更新：更新段的位置，在段拆分或合并 [7] 时用其后续替换段，或者通过将细分重新分配到不同的读取器来重新平衡。这些更新中的每一个仅在某些情况下才有意义。（读取器无法更新它不拥有的段的位置。只有在接收段的读取器处于联机状态时，重新平衡才有意义。）因此，虽然更新速率和数据不是很大，但数据需要保持一致。由于许多主机可以更新数据，因此没有任何明确的“所有者”。这使得这是使用状态同步器的完美案例（这就是我们的工作）。</p>
-<h2 id="State-Synchronizer如何工作？"><a href="#State-Synchronizer如何工作？" class="headerlink" title="State Synchronizer如何工作？"></a>State Synchronizer如何工作？</h2><p>我们的想法是使用Stream来保持共享状态的一系列更改。并允许各种应用程序使用Pravega Java客户端库（如下图所示）以一致的方式同时读取和写入共享状态。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/blog-state_syn_fig1.png" alt="状态同步器的高级视图"></p>
-<p>为了使用它，我们创建了一个普通的Java Object，它封装了我们想要跟踪的数据。对于该对象的每个可能的更新，我们编写一个类，该applyTo 方法接受该状态对象的实例并返回具有更新的状态对象。（更新操作可以是修改或生成新对象。）然后我们提供一个可以序列化和反序列化这些更新对象的类。然后使用状态同步器接口   [8]，我们可以从我们车队中的任何主机更新我们的状态对象，并保证所有主机他们将以相同的顺序看到相同的更新。（幕后所有更新写入Pravega，并Pravega保证它们的顺序）。假设该applyTo 方法是确定性的，因为所有主机都将到达相同的State对象。</p>
-<p>由于状态完全由用户定义，因此应用程序可以执行以下任何操作：</p>
-<ul>
-<li>跟踪主机会员资格</li>
-<li>做领导选举</li>
-<li>存储配置</li>
-<li>用于协调更复杂的过程。</li>
-<li>或者如上所述，跟踪进度和工作分配。</li>
-</ul>
-<p><strong> 但它如何保证一致性？所有两台主机都可以尝试同时写入更新。</strong></p>
-<p>这是通过使更新的附加条件有条理地使用乐观并发来完成的。在内部，状态同步器正在跟踪读取的数据量。当新的更新到达时，它会根据数据的长度递增计数器。然后，当请求更新时，它会序列化更新并将其作为条件追加发送到Pravega。</p>
-<p>对于服务器，请求如下所示：</p>
-<blockquote>
-<blockquote>
-<p>“ 当且仅当<countertotal> 是已写入此流的所有数据的长度总和时，才附加此数据。”</countertotal></p>
-</blockquote>
-</blockquote>
-<p>在服务器端，服务器将比较数据的长度与客户端提供的值。如果客户端值匹配，则附加数据。否则，将向调用者返回错误。当状态同步器出现此错误时，它可以读取它不知道的新更新并重新运行其逻辑以查看是否应再次尝试更新。</p>
-<p>通过跟踪客户端上的长度以及服务器更新可以在没有争用的情况下尽快从Pravega写入和读取数据来执行，即，一次只有一个客户端正在更新。因为状态同步器使用乐观并发进行更新，所以只有在合理的情况下使用它才合适。如果许多主机争用并发更新，性能会下降。但是，无论吞吐量降低，它都将继续提供一致的结果，并始终取得进展。一般来说，虽然最好避免争用并保持小状态。</p>
-<h2 id="使用状态同步器"><a href="#使用状态同步器" class="headerlink" title="使用状态同步器"></a>使用状态同步器</h2><p>作为State Synchronizer如何使用的一个例子，当我们希望ReaderGroup中的所有读者都同意谁在读什么数据时。我们定义了一个包含我们想要跟踪的信息的数据结构。然后我们可以定义我们想要从中读取的任何方法。（就像任何其他对象一样）。对于每一个方式，数据可以被更新（AddNewReader，RemoveReader，ReassignSegment等），我们创建实现对应的类Update接口。该接口具有单个方法applyTo，该方法提供要更新的状态对象。保证传递给该applyTo 方法的对象将已应用所有先前编写的更新。</p>
-<p>为了检测主机是否存活，我们可以创建一个成员资格跟踪器对象。它可以保留每个主机最后一次听到的时间戳。如果主机在足够长的时间内没有心跳，则可以宣告主机已经死亡。在这种情况下，我们会这样定义更新的对象AddNewHost，Heartbeat，DeclareDead，等。</p>
-<p>我们已经创建了一些预先制作的示例，这些示例应该有助于查看：</p>
-<ul>
-<li>协调通用Map对象的内容 [9]。</li>
-<li>实施领导人选举 [10]。</li>
-</ul>
-<p>领导者选举示例将允许许多主机加入一个组，并且一个将作为领导者被通知。Callbacks用于在失去领导力时通知它。</p>
-<h2 id="保持状态尺寸尽量小"><a href="#保持状态尺寸尽量小" class="headerlink" title="保持状态尺寸尽量小"></a>保持状态尺寸尽量小</h2><p>状态和序列化更新很小时，状态同步器的效果最佳。状态对象需要保存在内存中，并且需要重新读取更新以重建对象。为了防止应用程序意外泄露，Pravega对状态对象施加了1MB的限制。</p>
-<p>状态也应该毫不含糊。包含配置参数是一个好主意，这些参数指示如何在状态对象本身中解释状态对象中的数据。在成员资格跟踪器示例中，我们用于跟踪成员是否仍然是集合的一部分的超时应该是状态的一部分。这可以确保所有主机都同意数据的含义。</p>
-<p>扩展的自然方式是使用多个不同的对象。与像Zookeeper这样的系统不同，其中所有东西都在同一个整体中，你可以拥有任意数量的状态同步器，每个都是独立的。因此，如果多个数据不相关或彼此原子级不一致，最好将它们置于不同的状态同步器之后。此外，请记住，可以使用URL或ID来引用外部数据。</p>
-<p>另一个最佳实践是简化我们的更新。该UpdateGenerator函数可以返回多个更新。如果是，那么它们将被原子地附加。（意思是他们要么全部进入，要么都没有，并且他们之间不会有任何其他更新）。因此，为简单起见，将复杂操作分解为多个更新可能会有所帮助。这允许我们的更新对象保持小而简单。</p>
-<h2 id="要记住的事情"><a href="#要记住的事情" class="headerlink" title="要记住的事情"></a>要记住的事情</h2><h3 id="UpdateGenerators"><a href="#UpdateGenerators" class="headerlink" title="UpdateGenerators"></a>UpdateGenerators</h3><p>在客户端，以下是要更新的签名：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">void updateState(UpdateGenerator&lt;StateT&gt; updateGenerator);<br></code></pre></td></tr></table></figure>
-<p>这有时非常有用。例如，当我们管理读者组的状态时，如果我们执行更新以重新平衡读者，我们的初始尝试可能会失败，但随后查看新状态，我们可能会认为毕竟不需要重新平衡。下面是一个简化的示例，其中被管理的状态是一组值：应用程序传递的UpdateGenerator,是一个函数，它接受当前状态并返回应该应用的更新，而不是直接传递更新。这不会修改状态对象。相反，建议的更新有条件地附加到支持段。因此，应用更新可能会由于其他主机同时写入状态而失败。在这种情况下，更新生成简单地再次与新的状态对象调用（在UpdateGenerator可以多次调用）。</p>
-<p>这有时非常有用。例如，当我们管理ReaderGroup的状态时，如果我们执行更新以重新平衡读者，我们的初始尝试可能会失败，但随后查看新状态，我们可能会认为毕竟不需要重新平衡。下面是一个简化示例，其中所管理的状态是一组值：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>public void add(T value) &#123;<br>    stateSynchronizer.updateState((set, updates) -&gt; &#123;<br>        if (!set.impl.contains(value)) &#123;<br>            updates.add(new AddToSet&lt;&gt;(value));<br>        &#125;<br>    &#125;);<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>这里函数使用传入的状态对象来检查要添加的项是否已经存在。<br>重要的是要注意，在更新方法期间不应该调用更新状态对象之外的东西的函数。为了解决这种情况，我们添加了另一个API：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>&lt;ReturnT&gt; ReturnT updateState(UpdateGeneratorFunction&lt;StateT,ReturnT&gt; updateGenerator);<br></code></pre></td></tr></table></figure>
-<p>此签名类似于UpdateState调用，但具有额外的优点，即UpdateGenerator可以返回结果。最终调用的结果将UpdateGenerator返回给调用者。如果需要采取措施来响应执行的更新，这将非常有用。</p>
-<p>例如，当我们向读者组添加新读者时，我们执行以下操作：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>void initializeReader(long initialAllocationDelay) &#123;<br>    boolean alreadyAdded = sync.updateState((state, updates) -&gt; &#123;<br>        if (state.getSegments(readerId) == null) &#123;<br>            updates.add(new AddReader(readerId));<br>            return false;<br>        &#125; else &#123;<br>            return true;<br>        &#125;<br>    &#125;);<br>...<br>&#125;<br></code></pre></td></tr></table></figure>
-<h3 id="FetchUpdates"><a href="#FetchUpdates" class="headerlink" title="FetchUpdates"></a>FetchUpdates</h3><p>要获得最新信息，我们需要致电fetchUpdates()[11]。updateState()[12] 也在内部调用这种方法。只有在调用这两个方法之一时，状态对象才会更改。这使得很容易推断出对状态对象的更改。</p>
-<p>它是一种反模式，fetchUpdates()后跟无条件更新。因为状态对象可以由另一个主机同时更新导致竞争条件，所以应始终使用依赖于状态的更新updateState()。</p>
-<h3 id="无条件更新"><a href="#无条件更新" class="headerlink" title="无条件更新"></a>无条件更新</h3><p>无条件更新将始终将更新对象置于Pravega Stream上，无论之前的更新是什么。无条件更新的优点是避免了争用。但是，这并不意味着我们完全放弃了一致性。更新仍然运行该applyTo方法，并应用所有以前的更新。（就像条件更新一样）。因此，完全可以无条件地写入更新，但是然后查看applyTo方法内部的状态决定不需要做任何事情。在这种情况下，更新将在Stream中，并且所有主机都将应用更新，但这样做将不起作用。</p>
-<p>例如，在集合的情况下，上述add方法可以更简单地实现为：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>public void add(T value) &#123;<br>    stateSynchronizer.updateStateUnconditionally(<br>        new AddToSet&lt;&gt;(value));<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>假设这AddToSet.applyTo  是幂等的。（在一组情况下应该是这样）。</p>
-<h3 id="线程安全"><a href="#线程安全" class="headerlink" title="线程安全"></a>线程安全</h3><p>State Synchronizer接口上的所有方法都是线程安全的。在同步器上或在读取状态之前调用方法时不需要锁定，因为线程安全性将在内部进行管理。但是，如果一个线程update并行调用，则另一个线程正在读取状态对象，并且更新会修改对象（而不是返回新的状态对象）。然后可能会有关于阅读的竞赛。这可以通过以下任何一种方式避免：</p>
-<ol>
-<li>使用单个线程来管理状态对象。</li>
-<li>让update函数返回一个新对象，而不是修改现有对象。</li>
-<li>在状态对象的方法中使用同步。</li>
-</ol>
-<p>（在这种情况下，值得知道update函数在调用时在状态对象本身上同步applyTo）</p>
-<h3 id="压缩数据"><a href="#压缩数据" class="headerlink" title="压缩数据"></a>压缩数据</h3><p>随着更新被连续写入Pravega，存储的数据量随着时间的推移而增长。为了防止数据存储的无限增长，可以通过压缩和删除旧状态更新来偶尔压缩数据 [13]，以便只有最新版本的状态保留在后备流中。这是使用以下方法完成的：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>void compact(Function&lt;StateT,InitialUpdate&lt;StateT&gt;&gt; compactor);<br></code></pre></td></tr></table></figure>
-<p>这允许以更紧凑的形式重写现有的状态对象。压缩状态与正常更新类似地写入，从提供的函数返回的压缩状态被写入流。一旦它被删除之前写入所有更新。从而用包含当前值的单个更新替换更新历史。</p>
-<h3 id="何时压缩？"><a href="#何时压缩？" class="headerlink" title="何时压缩？"></a>何时压缩？</h3><p>压缩并不比等效大小的更新昂贵。因此，可以在更新列表变得非常大的任何时候执行压缩。通常，这是通过维持计数器并在N次更新之后压缩状态来执行的。任何副本都可以执行压缩，但它们不应该过于频繁地尝试，因为它可能会浪费空间。一种简单的方法是包括自状态中最后一次压缩以来更新次数的计数器。无法在同一操作中执行压缩和更新。它们必须在两个单独的调用中完成。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/blog-state_syn_fig2.png" alt="执行压缩"></p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>看看GitHub中的State Synchronizer，它是一个有趣且独特的工具。Pravega在内部使用State Synchronizer来管理分布在整个网络中的Reader Groups和Readers 的状态。</p>
-<h2 id="致谢"><a href="#致谢" class="headerlink" title="致谢"></a>致谢</h2><p>特别感谢Srikanth Satya和Flavio Junqueira帮助完成了这篇文章。</p>
-<h2 id="作者"><a href="#作者" class="headerlink" title="作者"></a>作者</h2><p>Tom Kaitchuck是Pravega项目的原始开发人员之一，目前是戴尔雇用的核心贡献者。他拥有瓦尔帕莱索大学的学士学位。汤姆是一位热心的开源软件开发人员，之前曾在谷歌和亚马逊担任高级软件开发人员。Tom的兴趣包括分布式系统，异步通信，并发，扩展系统，一致性模型。</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
-<li><a href="http://pravega.io/docs/latest/state-synchronizer/" target="_blank" rel="noopener">http://pravega.io/docs/latest/state-synchronizer/</a></li>
-<li><a href="https://zookeeper.apache.org/" target="_blank" rel="noopener">https://zookeeper.apache.org/</a></li>
-<li><a href="http://pravega.io/docs/latest/pravega-concepts/#stream-segments" target="_blank" rel="noopener">http://pravega.io/docs/latest/pravega-concepts/#stream-segments</a></li>
-<li><a href="https://bookkeeper.apache.org/" target="_blank" rel="noopener">https://bookkeeper.apache.org/</a></li>
-<li><a href="https://github.com/pravega/pravega/blob/master/client/src/main/java/io/pravega/client/state/StateSynchronizer.java" target="_blank" rel="noopener">https://github.com/pravega/pravega/blob/master/client/src/main/java/io/pravega/client/state/StateSynchronizer.java</a></li>
-<li><a href="http://pravega.io/docs/latest/reader-group-design/" target="_blank" rel="noopener">http://pravega.io/docs/latest/reader-group-design/</a></li>
-<li><a href="http://pravega.io/docs/latest/pravega-concepts/#autoscaling-the-number-of-stream-segments-can-vary-over-time" target="_blank" rel="noopener">http://pravega.io/docs/latest/pravega-concepts/#autoscaling-the-number-of-stream-segments-can-vary-over-time</a></li>
-<li><a href="https://github.com/pravega/pravega/blob/master/client/src/main/java/io/pravega/client/state/StateSynchronizer.java" target="_blank" rel="noopener">https://github.com/pravega/pravega/blob/master/client/src/main/java/io/pravega/client/state/StateSynchronizer.java</a></li>
-<li><a href="https://github.com/pravega/pravega-samples/blob/master/pravega-client-examples/src/main/java/io/pravega/example/statesynchronizer/SharedMap.java" target="_blank" rel="noopener">https://github.com/pravega/pravega-samples/blob/master/pravega-client-examples/src/main/java/io/pravega/example/statesynchronizer/SharedMap.java</a></li>
-<li><a href="https://github.com/pravega/pravega-leaderElection" target="_blank" rel="noopener">https://github.com/pravega/pravega-leaderElection</a></li>
-<li><a href="https://github.com/pravega/pravega/blob/3f5b65084ae17e74c8ef8e6a40e78e61fa98737b/client/src/main/java/io/pravega/client/state/StateSynchronizer.java#L51" target="_blank" rel="noopener">https://github.com/pravega/pravega/blob/3f5b65084ae17e74c8ef8e6a40e78e61fa98737b/client/src/main/java/io/pravega/client/state/StateSynchronizer.java#L51</a></li>
-<li><a href="https://github.com/pravega/pravega/blob/3f5b65084ae17e74c8ef8e6a40e78e61fa98737b/client/src/main/java/io/pravega/client/state/StateSynchronizer.java#L105" target="_blank" rel="noopener">https://github.com/pravega/pravega/blob/3f5b65084ae17e74c8ef8e6a40e78e61fa98737b/client/src/main/java/io/pravega/client/state/StateSynchronizer.java#L105</a></li>
-<li><a href="http://pravega.io/docs/latest/state-synchronizer/#delete-operations" target="_blank" rel="noopener">http://pravega.io/docs/latest/state-synchronizer/#delete-operations</a></li>
-<li><a href="https://fpj.me/2016/02/10/note-on-fencing-and-distributed-locks/" target="_blank" rel="noopener">https://fpj.me/2016/02/10/note-on-fencing-and-distributed-locks/</a></li>
-</ol>
-<h2 id="原文链接"><a href="#原文链接" class="headerlink" title="原文链接"></a>原文链接</h2><p><a href="http://blog.pravega.io/2019/02/15/exploring-state-synchronizer/" target="_blank" rel="noopener">http://blog.pravega.io/2019/02/15/exploring-state-synchronizer/</a></p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
   </nav>
   
   
@@ -1032,7 +955,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">56</a></div>
+      <div><a href="/archives">57</a></div>
     </div>
     
     

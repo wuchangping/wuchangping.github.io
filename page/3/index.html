@@ -115,6 +115,72 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/09/pravega-pdp-design-proposals/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/10/09/pravega-pdp-design-proposals/" itemprop="url">pravega handbook - 设计提案</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-09T20:02:34+08:00">2018-10-09 20:02:34</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>本文档描述了开发Pravega新特性所遵循的流程。我们的想法是在开始实现这个特性之前先提出设计方案，并与社区讨论这个设计，避免由于方案的分歧而导致的长时间的检视。流程如下：</p>
+<h2 id="设计文档"><a href="#设计文档" class="headerlink" title="设计文档"></a>设计文档</h2><p>将设计文档编写为当前页面的子页面。页面标题应为：</p>
+<blockquote>
+<p>PDP-XX: 简要描述特性</p>
+</blockquote>
+<p>XX是我们通过递增先前提案的编号而生成的数字。第一个数字是01，希望在创建新PDP时不会有任何冲突。我们将使用PDP-XX作为标签来指代特定的设计。</p>
+<p>该文件应包含：</p>
+<ul>
+<li>功能和提案的摘要（摘要）</li>
+<li>API更改的说明（API更改）</li>
+<li>内部变更说明（内部变更）</li>
+<li>必要时有关向后兼容性和迁移计划的部分（兼容性和迁移）</li>
+<li>关于解决问题的废弃方法的章节（废弃方法）</li>
+<li>引用，例如，Github问题或pull请求（参考）</li>
+</ul>
+<p>如果某个部分不适用，请说“不适用”，但不要省略该部分。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/02/pravega-working-with-connector-readergroupnotifications/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -856,82 +922,9 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/24/flink-apache-flink-home/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/24/flink-apache-flink-home/" itemprop="url">Flink handbook - Apache Flink的文档</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-24T22:01:25+08:00">2018-09-24 22:01:25</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="Apache-Flink文档"><a href="#Apache-Flink文档" class="headerlink" title="Apache Flink文档"></a>Apache Flink文档</h2><p>本文档适用于Apache Flink master版。</p>
-<p>Apache Flink是一个用于分布式流和批处理数据处理的开源平台。Flink的核心是流数据流引擎，为数据流上的分布式计算提供数据分发，通信和容错。Flink在流引擎之上构建批处理，涵盖原生的迭代支持，受管理的内存和程序优化。</p>
-<h2 id="第一步"><a href="#第一步" class="headerlink" title="第一步"></a>第一步</h2><p><strong>概念：</strong>从Flink的<a href="https://ci.apache.org/projects/flink/flink-docs-master/concepts/programming-model.html" target="_blank" rel="noopener">数据流编程模型</a>和<a href="https://ci.apache.org/projects/flink/flink-docs-master/concepts/runtime.html" target="_blank" rel="noopener">分布式运行时环境</a>的基本概念开始。这将有助于您了解文档的其他部分，包括配置和编程指南。我们建议您先阅读这部分内容。</p>
-<p><strong>教程：</strong></p>
-<ul>
-<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/tutorials/datastream_api.html" target="_blank" rel="noopener">实现并运行DataStream应用</a></li>
-<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/tutorials/local_setup.html" target="_blank" rel="noopener">配置本地Flink群集</a></li>
-</ul>
-<p><strong>编程指南：</strong>您可以阅读我们关于<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/api_concepts.html" target="_blank" rel="noopener">基本API概念</a>和<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/datastream_api.html" target="_blank" rel="noopener">DataStream API</a>或<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/index.html" target="_blank" rel="noopener">DataSet API</a>的指南，以了解如何编写您的第一个Flink程序。</p>
-<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>在将Flink作业投入生产之前，请阅读<a href="https://ci.apache.org/projects/flink/flink-docs-master/ops/production_ready.html" target="_blank" rel="noopener">生产准备清单</a>。</p>
-<h2 id="发行说明"><a href="#发行说明" class="headerlink" title="发行说明"></a>发行说明</h2><p>发行说明涵盖了Flink版本之间的重要更改。如果您计划将Flink升级到更高版本，请仔细阅读这些说明。</p>
-<ul>
-<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/release-notes/flink-1.6.html" target="_blank" rel="noopener">Flink 1.6发行说明</a></li>
-<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/release-notes/flink-1.5.html" target="_blank" rel="noopener">Flink 1.5的发行说明</a></li>
-</ul>
-<h2 id="外部资源"><a href="#外部资源" class="headerlink" title="外部资源"></a>外部资源</h2><ul>
-<li><p>Flink Forward：<a href="http://flink-forward.org/" target="_blank" rel="noopener">Flink Forward网站</a>和<a href="https://www.youtube.com/channel/UCY8_lgiZLZErZPF47a2hXMA" target="_blank" rel="noopener">YouTube</a>上提供了以往会议的讲座。<a href="http://2016.flink-forward.org/kb_sessions/robust-stream-processing-with-apache-flink/" target="_blank" rel="noopener">使用Apache Flink进行可靠的流处理</a>，那这些资料是一个很好的起点。</p>
-</li>
-<li><p>培训：data Artisans的<a href="http://training.data-artisans.com/" target="_blank" rel="noopener">培训材料</a>包括幻灯片，练习和示例。</p>
-</li>
-<li><p>博客：<a href="https://flink.apache.org/blog/" target="_blank" rel="noopener">Apache Flink</a>和<a href="https://data-artisans.com/blog/" target="_blank" rel="noopener">data Artisans</a>博客会比较频繁的发布flink相关的、深入的技术文章。</p>
-</li>
-</ul>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/4/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/4/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
   </nav>
   
   
@@ -954,7 +947,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">56</a></div>
+      <div><a href="/archives">57</a></div>
     </div>
     
     
