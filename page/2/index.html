@@ -115,6 +115,149 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/08/distributed-streaming-the-next-storage/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/03/08/distributed-streaming-the-next-storage/" itemprop="url">下一个分布式存储系统，为万物互联的智能世界而发</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-03-08T21:32:38+08:00">2019-03-08 21:32:38</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>如果说互联网和云计算使得对象存储在存储市场上与块存储、文件存储三分天下，相应的业务需求直接奠定了对象存储与块存储、文件存储并列存储江湖一哥的地位，那么接下来也许我们需要为下一场数据变革的大事做好准备 – <font color="#00CED1"><strong>万物互联这样的商业场景将给数据存储带来极大的商业挑战和技术挑战。</strong></font></p>
+<h2 id="万物互联下的数据"><a href="#万物互联下的数据" class="headerlink" title="万物互联下的数据"></a><font color="#FF8C00">万物互联下的数据</font></h2><p>纵观人类历史，各种技术变革都是以人类活动为中心，然后发明各种工具。石器时代，原始人发明了石器以及用火从而提升了生活品质和社会文明。现代社会，人类为了解决各种寂寞空虚冷吃穿住用行、生理和心理上的各种需求从而发明了各种社交空间、社交工具、网络购物、生活服务APP等，为了更好的服务这些应用场景，挖掘这些场景所生产的数据的价值，从而有了今天的各种大数据技术。</p>
+<p>在互联网时代，数据主要来源于网页、APP以及一些相应的日志系统，而在万物互联的世界，数据还可以来源于有各种传感器、工业设备、监控设备、检测设备、智能家居、自动驾驶等。大数据的四个特征：数据量、时效性、多样性、价值密度在万物互联的场景下被进一步的深化，这就意味着商业成本以及技术成本的增加。</p>
+<p>理论奠定技术的基础，业务驱使技术的变革。在万物互联的智能时代，我们有一个愿景：<font color="#FF0000"> <strong>能够将万物互联下生成的海量原始数据转化为可用的信息以及行为决策，并且这个转换的时间差需要能够接近于零。</strong></font>而需要实现这个愿景，从技术角度来看，需要有计算层面的解决方案也需要有存储层面的，如今在计算层面已经有Flink、Spark等这类成熟的分布式计算应用，然而在存储层面还没有。</p>
+<h2 id="流数据与流存储"><a href="#流数据与流存储" class="headerlink" title="流数据与流存储  "></a><font color="#FF8C00">流数据与流存储  </font></h2><p>在万物互联的场景下，各种传感器以及设备生成的数据有其原生的属性，这种数据自带时间戳、实时性要求高，而且是<font color="#FF0000"> <strong>“流数据”</strong></font>。</p>
+<p>首先流数据在百度百科里是这样被定义的：</p>
+<blockquote>
+<p>流数据是一组顺序、大量、快速、连续到达的数据序列，一般情况下，数据流可被视为一个随时间延续而无限增长的动态数据集合。应用于网络监控、传感器网络、航空航天、气象测控和金融服务等领域。</p>
+</blockquote>
+<p>从数据的生产与传输场景来看流数据具有几个与众不同的带有破坏性的特性：</p>
+<ol>
+<li>数据随时间延续而无限增长，这意味着数据的无限性；</li>
+<li>数据到达的速度有快有慢、负载有高有低，这意味着灵活又细粒度的资源弹性需求；</li>
+<li>数据有序、无序、持久化以及复杂的传输环境而又要保证数据处理结果的唯一正确性。</li>
+</ol>
+<p>这是三个特性转换成存储技术的语义对应着：<font color="#FF0000"> <strong>无限性、可伸缩性以及恰好一次：持久化、有序、一致性以及事务。</strong></font></p>
+<p>从<font color="#FF0000"> <strong>存储的视角</strong></font>来说，每种类型的数据都有其原生的属性和需求，对应有最佳的适用场景以及最合适的存储系统。跑在数据库里的数据对实时性和可靠性要求非常的高，因此适合采用块存储系统。文件共享场景下需要向用户共享文件，多个用户可以共享读取一个文件，因此适合采用文件存储系统。而互联网网页与APP里的文件、图像、视频可以看作一个个的数据对象又需要租户隔离以及无限扩展，因此又非常适合采用对象存储系统。那么目前又有哪种存储系统最适合用于<font color="#FF0000"> <strong>“流数据”</strong></font>呢？</p>
+<p>正如当前技术条件下最适合<font color="#FF0000"> <strong>“流数据”</strong></font>计算的是类似Flink这样的分布式流计算应用，最适合“流数据”的应当是<font color="#00CED1"><strong>分布式流存储系统。</strong></font> </p>
+<h2 id="分布式流存储系统"><a href="#分布式流存储系统" class="headerlink" title="分布式流存储系统"></a><font color="#FF8C00">分布式流存储系统</font></h2><h3 id="产品定位"><a href="#产品定位" class="headerlink" title="产品定位"></a><font color="#00CED1">产品定位</font></h3><p>分布式流存储系统的产品定位是给万物互联这样的应用场景服务的，从技术角度来看它具有自身的特点，正如标题里提到的三个关键词：<font color="#FF8C00"> <strong>“分布式”、“流”、“存储”</strong></font>。首先是分布式的，它具有分布式系统本身所具有的一切能力，接着表示是专门给流式数据设计和实现的，最后的存储表示的是一个原生的存储解决方案，它讲究数据的<font color="#FF8C00"> <strong>可靠性、持久化、一致性、资源隔离等</strong></font>，它从<font color="#FF0000"> <strong>存储的视角</strong></font>处理流数据。分布式流存储针对 <strong>“流数据”</strong> 的自身属性以及相应的特殊的业务需求场景做了专门的设计与实现，下面从<font color="#FF8C00"> <strong>命名空间、业务场景、无限性、可伸缩性、恰好一次、字节流、数据管道、租户隔离、海量小文件、数据治理、流式架构</strong></font>的角度依据 <strong>最佳实践原则</strong> 讲述了为什么需要专门设计和实现一个流式存储系统。</p>
+<h3 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a><font color="#00CED1">命名空间</font></h3><p>通常，块存储系统以<font color="#FF0000"><strong>分区、目录、文件</strong></font>，文件存储系统以<font color="#FF0000"><strong>目录、文件</strong></font>，以及对象存储以<font color="#FF0000"><strong>租户、桶、对象</strong></font>来定义数据的存储路径以及命名空间，而流存储系统则以<font color="#FF0000"><strong>范围(scope)、流(stream)、段(segment)、事件(event)</strong></font>来描述数据的存储路径以及命名空间。</p>
+<div align="center"> 
+
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>命名空间</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>块存储</td>
+<td>分区、目录、文件</td>
+</tr>
+<tr>
+<td>文件存储</td>
+<td>目录、文件</td>
+</tr>
+<tr>
+<td>对象存储</td>
+<td>租户、桶、对象</td>
+</tr>
+<tr>
+<td>流存储</td>
+<td>范围、流、段、事件</td>
+</tr>
+</tbody>
+</table>
+<div align="left"> 
+
+<p>在流存储系统里，如下图所示，数据的组织形式被抽象成范围、流、段和事件，范围由流组成，流由段组成，段由事件组成，事件由字节(bytes)组成。</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-scope-stream.png" alt="流的组成"></p>
+<div align="left"> 
+
+<h3 id="业务场景"><a href="#业务场景" class="headerlink" title="业务场景"></a><font color="#00CED1">业务场景</font></h3><h5 id="可穿戴设备、自动驾驶与工业厂房"><a href="#可穿戴设备、自动驾驶与工业厂房" class="headerlink" title=" 可穿戴设备、自动驾驶与工业厂房"></a><font color="#FF00ff"> 可穿戴设备、自动驾驶与工业厂房</font></h5><p>可以想象一下这样的业务场景：某个商家销售了几千万个智能手表，这些智能手表可以记录每个用户每天走了多少步，同时还可以分析过往的历史数据，用柱状图给用户展示历史数据，如下图所示：</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-watch.png" alt="步数分析"></p>
+<div align="left">  
+
+<p>考虑到信息安全，用户A是不能看到用户B的数据的，那么就需要按智能手表为单位进行租户隔离，这种的场景下就有几千万个租户，同时每个租户还有自己的存储空间配额，比如给每个智能手表分配5GB 存储空间。光是这样的租户隔离场景，依据<strong>最佳实践</strong>的系统设计原则，不管是块存储系统、文件存储系统、对象存储系统还是Kafka这样的消息系统，按他们本身的隔离特性以及支持的租户规模都是难以在单个系统里支持这样的租户隔离场景。但是用流存储来实现就很方便，比如以智能手表的业务场景为例：</p>
+<ul>
+<li>默认分配5GB存储空间给一个智能手表，然后定义一个智能手表类型的命名空间用于与其他智能设备进行隔离，给每个智能手表分配一个流，每个智能手表上报的字节数据以事件为单位存储在流内的段里。</li>
+<li>也可以这样来定义：给每个智能手表分配一个5GB 存储空间的命名空间，手表里的每个传感器都对应一个流，每个传感器以事件为单位上报字节数据存储到流的段里。</li>
+</ul>
+<p>还可以想象一下这样的业务场景：自动驾驶。采用分布式流存储的话，我们可以这样处理自动驾驶的数据：给每一辆无人车定义一个1TB存储空间的范围，车上的每个传感器都归属于一个流，传感器上报的事件都在段内持久化。再假设每辆车都有1000个传感器（实际情况只多不少），那么10万辆车就需要定义1亿个流，可以想象要进行这种规模的隔离也就只有这种专门针对流数据而设计的流存储系统能够支持。</p>
+<p>在工业互联网的场景下，还可以这样定义工业设备的数据：给一个厂房里的每台设备定义一个范围，每台设备里的每个传感器都对应一个流，传感器上传的事件数据保存在流内的段里，这样就很方便的对工业设备进行了大规模的租户数据隔离。</p>
+<p>因此，以<font color="#FF0000"><strong>“范围、流、段、事件”</strong></font>的方式很方便的进行了大规模的租户隔离保证了用户信息安全同时又进行了存储资源配额的隔离。</p>
+<h5 id="大数据处理平台"><a href="#大数据处理平台" class="headerlink" title=" 大数据处理平台"></a><font color="#FF00FF"> 大数据处理平台</font></h5><p>万物互联场景下无限量的数据给数据处理技术带来巨大的挑战与压力，不同的应用场景意味着不同的数据处理要求与复杂度，要把这些不同的甚至矛盾的数据处理要求都很好的综合在一个大数据处理系统里，对现有的大数据处理技术来说是个非常大的挑战，比如无人车的处理要求毫秒甚至纳秒级的数据处理实时性、而有些工业设备数据只需要分析历史数据，要让一个大数据处理系统既能能处理历史数据又能提供毫秒级甚至纳秒级的实时性处理能力还能应对各种不同格式不同传输场景的数据，而且每种数据处理都能达到这些应用场景原生指标的处理需求。相信这样的场景对工程技术人员来说是个很大的挑战。为了解决上述问题，按照现有的成熟的技术能力，通常开发人员采用类似Lambda架构（如下图）这样的大数据处理平台来处理大数据。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/streaming-bigdata-lambda-arch.PNG" alt="Lambda架构"></p>
+<p>Lambda架构即支持批处理也支持实时处理，能应对数据的多样性、具有容错功能、复杂性分离、能处理流式数据也能处理历史数据等优点，但是缺点也很明显：<strong>批处理一套独立的数据处理路径，实时处理又一套数据处理路径，然后还要合并结果再输出展示，同时系统里同样的数据存在存储多份的问题，比如同样的数据在Elasticsearch里有、HDFS里有、ceph里有、Kafka里也有，除了这些甚至还存在其他一些复杂的存储组件，而且同样的数据还都是多份冗余的，因此存储成本太高太过于复杂。Lambda架构里为了提供一个功能却引入一个组件，在复杂之上堆积复杂，存储成本、开发与运维成本都太过于复杂。</strong></p>
+<p>那么应当如何解决Lambda架构带来的这些缺点？<font color="#FF0000"><strong>以数据流向为核心</strong></font>重构大数据处理平台是一个比较好的方案，它具体包括数据的采集、聚合、传输、缓存、持久化、处理、展示等。依据这种设计理念我们可以推出一个端到端的原生的流式大数据处理平台：原生的流式计算加上一个原生的流式存储并且可以平衡商业成本与技术成本。</p>
+<p>流式计算可以采用Flink，然而并没有发现当前有合适的流式存储可以使用，如果采用Flink加上传统的文件存储或者块存储、对象存储的方式，也只能认为是半原生的大数据处理平台：<font color="#FF0000"><strong>计算是原生的流式计算而存储却不是原生的流式存储</strong></font>。</p>
+<p>因此，综合思考万物互联场景下的数据处理场景也需要一个原生的分布式流存储系统，<font color="#FF0000"><strong>重构Lambda架构里的存储栈</strong></font>，使得分布式流计算加上分布式流存储即为原生的流式大数据处理系统，同时还能很好的平衡商业成本与技术成本之间的关系。</p>
+<h3 id="数据无限性"><a href="#数据无限性" class="headerlink" title="数据无限性"></a><font color="#00CED1">数据无限性</font></h3><p>无限性是分布式流存储最为重要的设计原则。从流数据的角度来看，数据是大量、快速、连续而又无限的，这就给流存储系统的设计与实现带来极大的困难，无限的数据使得存储系统必须能支持连续且无限规模的数据流，光这一点就对存储系统的可扩展性要求非常的高，同时还要求存储系统能够根据到达的数据量动态而又优雅地进行扩容与缩容。从技术与成本的角度来看，数据无限性意味着冷热数据分离，长期不用的数据淘汰到长期存储系统里，热点数据需要缓存，同时还需要能支持历史数据的读取与实时数据的读取与写入。</p>
+<h3 id="可伸缩性"><a href="#可伸缩性" class="headerlink" title="可伸缩性"></a><font color="#00CED1">可伸缩性</font></h3><p>可伸缩性也是分布式流存储最为重要的设计原则之一，而且流存储里的可伸缩性要求还是自动化的资源细粒度的可伸缩。通常，在云原生的场景下，资源的缩放是以主机、虚机或容器为单位的，这样的缩放对流存储来说粒度太大。在流存储的场景下需要能够以数据的<strong>“流段”</strong>为单位，比如一个流段2MB，那么就需要能支持一次自动扩容或缩容2MB的存储空间。另外在流存储里还要求写入与读取对数据子集的操作是解耦分离的，并且写入与读取二者之间跟数据流段还要有一个合理的平衡。</p>
+<h3 id="恰好一次"><a href="#恰好一次" class="headerlink" title="恰好一次"></a><font color="#00CED1">恰好一次</font></h3><p>恰好一次也是分布式流存储最为重要的设计原则之一，恰好一次意味着数据的可持久化、有序、一致性以及事务性的支持。持久性意味着一旦得到确认，即使存储组件发生故障，写入的数据也不会丢失。有序意味着读客户端将严格按照写入的顺序处理数据。一致性意味着所有的读客户端即使面对存储故障、网络故障也都会看到相同的有序数据视图。事务性写入对于保证Flink这样的计算应用处理结果的完全正确是非常必要的。</p>
+<h3 id="字节流"><a href="#字节流" class="headerlink" title="字节流"></a><font color="#00CED1">字节流</font></h3><p>分布式流存储里采用字节流的格式组织数据而不是像消息系统里采用消息报文的方式，这意味着接口的通用性。二进制的字节流是与数据格式无关的，字节流可以组成事件封装在分布式存储的流段里。而消息系统里数据是消息头消息体的格式封装的，在兼容性上不如字节流。</p>
+<h3 id="数据管道"><a href="#数据管道" class="headerlink" title=" 数据管道"></a><font color="#00CED1"> 数据管道</font></h3><p>在存储界通常喜欢用跑车、卡车、渡轮来比喻块存储、文件存储以及对象存储，打个比方来说块存储类似跑车：极快、极稳、装的人少、成本高；文件存储类似卡车：快、稳、装的人比跑车多，但是没跑车那么快；对象存储类似渡轮：可以装非常多的货，讲究量大、成本低；那么分布式流存储像什么呢？ 在我们的定义里它就像管道：<font color="#FF0000"><strong>数据如同流水一般流过管道，又快又稳源源不断而又永无止境</strong>。</font></p>
+<h3 id="租户隔离"><a href="#租户隔离" class="headerlink" title="租户隔离"></a><font color="#00CED1">租户隔离</font></h3><p>分布式流存储从一开始设计的时候就将”租户隔离“作为其基本特性进行实现，”隔离“是分布式流存储的最基本的特性之一，在分布式流存储里租户隔离不只是租户B绝对不能看的到租户A的任何信息这样的信息安全层面的隔离，它支持范围、流、段、事件层面的隔离还将支持的租户规模作为设计的目标之一，在分布式流存储里单集群需要能支持千万量级起的租户数，另外还有资源、命名、可视空间、权限以及服务质量层面的隔离。</p>
+<h3 id="海量小文件"><a href="#海量小文件" class="headerlink" title="海量小文件"></a><font color="#00CED1">海量小文件</font></h3><p>对巨量小文件的支持是分布式流存储的设计原则之一。正如前面提到的，万物互联下的海量数据来源于传感器，而传感器上传的数据都是类似温度、地理位置、告警信息这样的几个字节几个字节的小数据，这就意味着在万物互联的场景下会有巨量的小数据上传，而且90%以上的数据操作行为都是写入。为了保证数据写入的性能以及可靠性、正确性、持久性以及保证介质的使用寿命降低成本，这也需要存储系统针对这种业务场景进行专门的设计。</p>
+<p>在分布式流存储里每个事件第一步是被仅附加写入一个缓存的段内进行封装的，在段达到一定的尺寸（比如64MB）后会被封闭不再写入，这时再将整个段写入下一级的持久化存储里。通过这样的设计，实现小数据在缓存里封装成大块的数据，再将大块数据写入持久化存储设备的方式保证了存储系统整体的性能。</p>
+<h3 id="数据治理"><a href="#数据治理" class="headerlink" title="数据治理"></a><font color="#00CED1">数据治理</font></h3><p>当前的大数据处理平台，不管是Kappa架构还是lambda架构，数据的存储都是多组件化、多份化的。比如同样的数据在Kafka里有、在HDFS里有、在Elasticsearch里又有，有些用户还使用了更多的存储中间件，而且这些数据还是多份冗余的。这一方面增加了数据的存储成本，另一方面也降低了数据的可信性、可靠性、合规性，给数据标准化以及数据的重复利用带来了困难，不利于数据的分享、合规、降低成本以及安全可靠地支持业务和决策。数据治理也是分布式流存储的基本设计原则之一，通过使用分布式流存储，大数据处理平台的架构可以进化成<font color="#FF0000"><strong>”分布式流计算+ 分布式流存储“</strong></font>这样的原生流式数据处理平台架构。</p>
+<h3 id="流式架构"><a href="#流式架构" class="headerlink" title="流式架构"></a><font color="#00CED1">流式架构</font></h3><p>下图体现了<font color="#FF0000"><strong>”分布式流计算+ 分布式流存储“</strong></font>这样的原生流式大数据处理平台的架构理念。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/streaming-bigdata-processor.PNG" alt="流式架构"></p>
+<p>这个架构体现了<font color="#FF0000"> <strong>“流原生”(stream native)式</strong> </font>的设计哲学，“流原生”的计算加上“流原生”的存储管道组成了“流原生”的大数据处理平台。数据从分布式流存储输入经过map算子计算，输出中间计算结果到分布式流存储里，数据又从分布式流存储里读入到Filter算子里，再经过计算，中间结果放到了分布式流存储里，再最后的计算结果经过聚合算子的计算放到了目的地的分布式流存储里。这个过程体现了算子编排和管道式编程的设计哲学，在这里分布式流存储起了大数据处理平台里的管道的作用。</p>
+<p>同时，在分布式流存储里数据的存储单位是流段，当输入的数据速率或者负载增加时，流段就会自动扩容，通过流协议联动，流计算应用的算子也相应扩容。相应的，如果输入的数据速率或负载降低，流段就自动收缩，通过流协议联动，流计算应用的算子也相应的缩容，所有这些行为都是自动完成的，无需人工干预，这种行为体现了分布式流存储的细粒度可伸缩性。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>综上所述，在万物互联的智能世界里，为了实现将海量数据近实时转化成信息和决策的愿景，除了流式计算应用还需要一个流式存储系统，未来已来，已有开源的分布式流存储系统正走在这条路上。另本文仅为作者愚见，与任何组织机构无关，作者能力也很有限，如有不足之处欢迎留言批评指正。</p>
+<h2 id="问题思考"><a href="#问题思考" class="headerlink" title="问题思考"></a><font color="#FF8C00">问题思考</font></h2><p>最后给大家留一个思考题：<font color="#00CED1"><strong>如果让你来设计一个分布式流存储产品，你会如何定义它的产品灵魂？</strong></font></p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及大数据，现就职于DELL EMC。个人技术博客：<a href="https://changping.me" target="_blank" rel="noopener">https://changping.me</a></p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a> ，可以自由阅读、分享、转发、复制、分发等，限制是需署名、非商业使用（以获利为准）以及禁止演绎。</p>
+</div></div></div></div></div></div>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/02/pravega-blog-exploring-state-synchronizer/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -1005,104 +1148,6 @@
 <blockquote>
 <p>About the Author： Salvatore DeSimone – VP and CTO Advanced Software Division at Dell EMC</p>
 </blockquote>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/11/02/pravega-blog-internals/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/11/02/pravega-blog-internals/" itemprop="url">pravega blog - pravega的内部架构</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-11-02T20:19:51+08:00">2018-11-02 20:19:51</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>尾随数据流的一些困难归结为源和流处理器总是动态变化的。例如，如果源以非计划的方式增加其输出率，则读取系统必须能够适应这种变化。处理器下游遇到问题并努力跟上速率的变化也是如此。为了能够适应所有这些变化，用于存储流数据的系统（如Pravega）必须足够灵活，这一点至关重要。</p>
-<p>Pravega的灵活性来自将数据流分解为段：仅附加的字节序列，这些字节序列被顺序和并行地组织成流。段支持重要的特性，例如并行读写，自动缩放和事务; 它们一开始就是按创建和维护成本低廉的理念而设计。当需要更多并行性，需要扩展或需要启动事务时，我们可以为给定流创建新的段。</p>
-<p>Pravega中的控制面负责所有影响流的生命周期的所有操作，如创建、删除和缩放。数据面存储和服务段的数据。下图描绘了具有核心组件的高级Pravega架构。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/flavio_fig1.png" alt=" Pravega 架构图"></p>
-<p>鉴于我们在之前的博客文章中讨论了客户端的概念，我们将在以下部分重点介绍控制器和段存储。</p>
-<h2 id="控制器"><a href="#控制器" class="headerlink" title="控制器"></a>控制器</h2><p>控制器实现了Pravega的控制平面。它负责Pravega集群中的一些非常重要的任务，例如：</p>
-<ol>
-<li><p>流生命周期：管理流的创建，删除和缩放。</p>
-</li>
-<li><p>事务管理：它负责启动或创建事务并跟踪其状态，包括时间跟踪。</p>
-</li>
-</ol>
-<h2 id="控制器服务"><a href="#控制器服务" class="headerlink" title="控制器服务"></a>控制器服务</h2><p>控制器主要负责编排所有流生命周期操作，如创建、更新、缩放和删除流。因此，控制器维护流元数据并响应客户端对流的查询。</p>
-<p>创建和删除流是由用户请求触发的操作，但是控制器的某些操作由内部机制触发，例如缩放和保留。控制器实现工作流，使用户能够配置控制器以自动缩放流，并根据时间或大小截断流。此机制的配置基于策略，并且根据应用程序所期望的行为将策略配置为流配置的一部分。有关如何配置此类策略的示例，请参阅以下代码段：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>// Set up scaling and retention policies. <br>//<br>// In this example, the scaling policy sets the target rate to be<br>// of 10 events/second, with a scaling factor of 2, and a minimum<br>// of 2 segments.<br>//<br>// http://pravega.io/docs/latest/javadoc/javadoc/clients/io/pravega/client/stream/ScalingPolicy.html<br>//<br>// The retention policy sets it to an hour. With this policy, Pravega<br>// retains stream data for at least an hour and truncates eventually<br>// after the time has elapsed.<br>//<br>// http://pravega.io/docs/latest/javadoc/javadoc/clients/io/pravega/client/stream/RetentionPolicy.html<br>ScalingPolicy scalingPolicy = ScalingPolicy.byEventRate(10, 2, 2);<br>RetentionPolicy retentionPolicy = RetentionPolicy.byTime(Duration.ofMinutes(60);<br><br>// Configure the stream adding the policies<br>StreamConfiguration config = StreamConfiguration.builder().scope(&quot;myScope&quot;)<br>                                                          .streamName(&quot;myStream&quot;)<br>                                                          .scalingPolicy(scalingPolicy)<br>                                                          .retentionPolicy(retentionPolicy)<br>                                                          .build();<br><br>// Create scope and stream with the previously built configuration<br>StreamManager streamManager = StreamManager.create(controllerURI);<br>streamManager.createScope(&quot;myScope&quot;);<br>streamManager.createStream(&quot;myScope&quot;, &quot;myStream&quot;, config);<br></code></pre></td></tr></table></figure>
-<h2 id="客户端交互"><a href="#客户端交互" class="headerlink" title="客户端交互"></a>客户端交互</h2><p>控制器在客户端交互中起着至关重要的作用。客户端与控制器交互以创建和删除scope和流。此交互通过Java或REST API进行。</p>
-<p>创建和删除流是通过API调用直接触发的操作，但是对于客户端的来说，其他操作也很重要的，并且这些操作需要透明化。具体而言，客户端在其生命周期中需要与控制器交互，以了解段集以及它们所处的位置。回想一下，流执行自动缩放，因此，任何配置为自动缩放的流的段集都可以随时间改变。随着流的演进，客户端需要知道从控制器获得的这些段的拆分和合并。然而，了解当前的段集是不够的。客户端还需要知道对于给定的段，需要联系哪个段存储。控制器负责客户端和段存储之间的这种交集。</p>
-<p>作为缩放流的一部分，控制器负责密封其部分片段。密封段是我们用来向客户端指示它需要从控制器获取新元数据的主要机制。在找到段的末尾（段密封）后，客户端从控制器请求后继段，包括联系用于新段的相应段存储所需的信息。此流程对于确保流的伸缩与应用程序无缝地互动至关重要，并且避免对应用程序的任何干扰。</p>
-<h2 id="控制器实例"><a href="#控制器实例" class="headerlink" title="控制器实例"></a>控制器实例</h2><p>控制器服务包括许多控制器实例，这些实例当前依赖Apache ZooKeeper进行元数据协调。可以根据群集要求创建实例数。建议至少有两个实例能够容忍崩溃，并引入其他实例，既具有较高的崩溃容忍度，又能提高容量。只要有可能，控制器就会缓存ZooKeeper元数据以避免网络延迟。</p>
-<p>随着控制器实例的数量随时间变化，系统必须能够适应对控制器集合的变化。在控制器实例崩溃或有意从系统中删除的情况下，我们实现了故障转移机制，以便其余实例接管已删除实例的工作。为了启用此类故障转移过程，控制器实例将向ZooKeeper注册并监视订阅的更改。在检测到实例已被移除时，每个控制器实例触发一组清扫任务争夺已删除实例的工作所有权。通过这种方式，我们可以自动响应控制平面中实例数量的变化。请注意，元数据是通过ZooKeeper存储和协调的，因此，控制器实例被视为无状态进程。目前正在努力将一些流元数据移出ZooKeeper fort可伸缩性。我们将在以后的文章中介绍它。</p>
-<h2 id="事务管理"><a href="#事务管理" class="headerlink" title="事务管理"></a>事务管理</h2><p>控制器服务管理事务的生命周期。用户应用程序中的编写器请求控制器执行与事务有关的所有控制平面操作。在启动事务时，写入器需要使用控制器服务进行设置。控制器添加必要的元数据以跟踪事务的状态，并在需要更多时间才能完成的情况下将其设置为超时。</p>
-<p>客户端针对单个流执行事务，因为Pravega当前不支持跨多个流的事务。当客户端开始事务处理时，控制器创建事务段，会为每个流段开放一个事务段。例如，假设客户端针对具有三个开放段s 1、s 2、s 3的流S启动事务。控制器创建事务TS i为每个打开的段SI，i∈{1，2，3} 。当客户端使用给定密钥k写入事件时要附加到段s i，该事件将附加到ts i。在提交事务的情况下，事务段被合并到流段上，并且事务事件变得可用于读取。</p>
-<p>一旦写入器准备好，它就根据应用程序逻辑提交或中止事务，并且控制器负责命令段存储执行事务段的合并。它还负责更新事务相应的元数据。<br>当通过提交或中止事务来结束事务时，控制器需要确保事务的结果在确认操作后不会改变。接受提交事务并随后中止同一事务，或者反过来，是不可接受的方案。当它收到提交事务的请求时，控制器通过读取事务元数据（存储在ZooKeeper中）来检查事务的状态。如果事务仍处于打开状态，则控制器会更新元数据以反映其新状态。请注意，可以有多个控制器实例，并且元数据的更新需要以znode版本为条件，以避免因竞争条件导致的不一致。</p>
-<p>事务元数据操作成功后，它会将事件发布到内部提交流，以便异步处理。这种流是用于内部目的的常规Pravega流。内部流的事件由提交事件处理器处理，提交事件处理器是处理流事件的控制器实例中的元素。提交事务事件包括合并事务段。在提交事件的处理被中断的情况下，例如，因为控制器实例崩溃，不同控制器流中的提交处理器可以拾取并执行它。合并操作是幂等的，并且在同一段上多次尝试时不会引起任何不一致。</p>
-<p>同样，在事务中止的情况下，该过程类似于删除事务段。</p>
-<p>对于同一流上的并发事务，控制器按顺序提交它们以保证两个或多个事务的事件在单个段中的排序不同。如果控制器同时合并两个事务t 1和t 2 ，那么一些段可能在t 2事件之前对t 1事件进行排序，而其他段可能具有相反的顺序。提交（和合并）的串行顺序保证满足此属性。</p>
-<p>一个有趣的方面是在存在缩放的情况下处理事务。如果事务段和开放流段之间存在一对一映射，那么当流缩放并更改段数时会发生什么？在Pravega的原始设计中，我们选择阻止流的缩放，直到所有未完成的事务都已提交或中止。。我们有一个超时，如果事务在进行伸缩操作时调用时间过长，则会中止事务。这个超时可能导致的主要问题是应用程序花了太长时间来提交事务，即使它确实想要提交事务。这种情况在本质上存在正确性的问题，因为写入的数据是从应用程序获取的，而应用程序则指望将其公开。最近，我们添加了一项特性，使事务能够在缩放事件中“滚动”。在事务以一组给定的段开始，并且当事务提交时段的集合不同的情况下，我们就像对流的缩放一样处理它：我们密封当前的段集Σ，使事务段成为后继者，并创建一组新的后继段Σ’，使得| Σ| = | Σ’| 密钥空间的分割与Σ相同。</p>
-<h2 id="段存储"><a href="#段存储" class="headerlink" title="段存储"></a>段存储</h2><p>段存储实现了Pravega的数据平面，并且正如名称所说的那样：它存储段。它在使分段数据持久并有效地提供服务方面发挥着关键作用。段存储与流的概念无关。控制器执行分段到流的组成。例如，当我们将一个段拆分为新段时，段存储会创建新段，但控制器有责任了解流中段的顺序。</p>
-<p>段存储服务的一个角色是将事务段合并为流的段。控制器负责命令段存储在事务提交时合并事务段，并且段存储基于每个段执行必要的操作。</p>
-<p>段存储有两个主存储依赖关系，我们给出了第1层和第2层的通用名称。第1层的主要目标是保证写入持久且低延迟。使写入持久意味着一旦应用程序获知写入请求成功，系统就会保证写入不会丢失，即使有错误。第1层的实现是段存储写入的仅附加数据结构。可以将其视为段存储更新的日志。</p>
-<p>我们将附加的数据和一些其他Bookeeper数据同步记录到第1层，这些数据是我们为了正确操作服务而需要持久保存的。目前，Pravega使用Apache BookKeeper [1]来实现第1层.BookKeeper为少量数据提供了出色的写入延迟，这保证了写操作的持久性，同时为事件流提供低延迟。我们还使用了在打开BookKeeper分类帐时屏蔽旧陈述者的能力。这是BookKeeper提供的一个特性，即使存在错误的崩溃问题，也能使其一致性。</p>
-<p>我们将数据异步迁移到第2层，一旦我们这样做，我们就会截断了来自第1层的相应数据。我们有一个第2层，原因有两个：</p>
-<ul>
-<li>我们设想一个可以存储大量数据的无限量数据的系统。因此，我们需要一个水平可扩展的大容量存储来容纳所有的这些数据，遵循更紧密的云存储选项。</li>
-<li>我们需要为读取数据提供高吞吐量选项，特别是在我们需要赶上流时读取旧数据时。</li>
-</ul>
-<p>我们目前支持第2层的几个选项：HDFS [2]，NFS [3]和扩展S3 [4]。</p>
-<p>在这一点上，重要的是要讨论我们预期的两种不同类型的读取，以便我们理解这种架构背后的动机。我们希望应用程序执行尾部读取和追赶或历史读取 [5]。尾部读取对应于最近写入的字节读取，正如术语所指示的那样尾随流的写入者。这样的读取器期望非常低的延迟，并且为了满足这个要求，我们保留最近写入内存的数据缓存以服务于这些读取。我们目前使用RocksDB [6]来实现这样的缓存。</p>
-<p>下图说明了Pravega中的尾部和追赶读取。段存储服务的所有数据都来自缓存。对于尾部读取，期望它是足够新的，以便缓存命中，并且可以立即提供服务。对于历史数据，它可能是缓存未命中，其中它会引起对第2层的读取以填充缓存。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/flavio_fig2.png" alt="尾部和追赶读取"></p>
-<p>第一层中的数据唯一地用于恢复的，并且如上所述，在缓存未命中的情况下，我们提供从缓存的读取和从第2层获取数据的服务。我们还开始实现一种不同类型的只读段存储（PDP-25）的实现。只读段存储不会缓存来自第2层的数据。这样的特性对于批处理读取量很大的设置很有用（例如，对于批处理作业），因为这种批量读取可能最终在常规段存储的情况下干扰新数据的摄取。只读段存储的工作尚未完成，在撰写本文时，客户端无法使用该功能。</p>
-<p>段存储服务器中的工作负载在跨段容器之间进行拆分。在轻量级虚拟化环境中，这不会与容器混淆（例如， Docker容器）。段容器是Pravega的概念。它们是段的逻辑分组，并负责对这些段内的所有操作进行操作。容器是工作分配和恢复的单位; 控制器是负责在重新平衡时将容器分配给不同的段存储的元素，这是由于段存储崩溃导致新的段存储启动或重新分配。每个容器在任何时候都应该有一个所有者，我们使用围栏机制来防止僵尸进程的出现（仍然认为他们拥有它的旧所有者）。</p>
-<p>段存储的每个实例都执行容器管理器，该管理器负责管理分配给该实例的段容器的生命周期。在重新分配容器的情况下，容器管理器需要通过关闭或引导段容器来做出反应，具体取决于段存储实例是新所有者还是容器的先前所有者。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>这篇文章介绍了Pravega内部的概要性的架构视图。它展现了控制器和段存储。它们是实现Pravega核心的两个主要组件：控制器实现控制平面，而段存储实现数据平面。正如之前的文章所讨论的那样，段抽象非常重要，可以灵活地开发kick-ass功能，以支持流作为存储原语。</p>
-<p>未来的文章将详细介绍控制器和分段存储机制，这篇文章介绍一些概念，为即将发布的pravega的更深入的文章为读者提供背景上下文信息。</p>
-<h3 id="About-the-Author"><a href="#About-the-Author" class="headerlink" title="About the Author"></a>About the Author</h3><p>Flavio Junqueira leads the Pravega team at Dell EMC. He holds a PhD in computer science from the University of California, San Diego and is interested in various aspects of distributed systems, including distributed algorithms, concurrency, and scalability. Previously, Flavio held a software engineer position with Confluent and research positions with Yahoo! Research and Microsoft Research. Flavio has contributed to a few important open-source projects. Most of his current contributions are to the Pravega open-source project, and previously he contributed and started Apache projects such as Apache ZooKeeper and Apache BookKeeper. Flavio coauthored the O’Reilly ZooKeeper: Distributed process coordination book.</p>
-<h3 id="References"><a href="#References" class="headerlink" title="References"></a>References</h3><p>[1] Apache BookKeeper. <a href="http://bookkeeper.apache.org" target="_blank" rel="noopener">http://bookkeeper.apache.org</a><br>[2] Hadoop File System. <a href="https://hadoop.apache.org/" target="_blank" rel="noopener">https://hadoop.apache.org/</a><br>[3] R. Sandberg, D. Goldberg, S. Kleiman, D. Walsh, and B. Lyon. Design and Implementation of the Sun Network Filesystem. USENIX Conference and Exhibition, 1985.<br>[4] Extended S3. <a href="https://www.emc.com/techpubs/ecs/ecs_s3_supported_features-1.htm" target="_blank" rel="noopener">https://www.emc.com/techpubs/ecs/ecs_s3_supported_features-1.htm</a><br>[5] Leigh Stewart. Building DistributedLog: High-performance replicated log service, September 2016.<br>[6] RocksDB: A persistent key-value store for fast storage environments. <a href="https://rocksdb.org/" target="_blank" rel="noopener">https://rocksdb.org/</a><br>[7] Stephan Ewen and Flavio Junqueira, An elastic batch and stream processing stack with Pravega and Apache Flink, April 2018.</p>
-<p>原文链接：<a href="http://blog.pravega.io/2018/10/" target="_blank" rel="noopener">http://blog.pravega.io/2018/10/</a></p>
 
       
     </main>
