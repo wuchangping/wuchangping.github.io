@@ -95,29 +95,6 @@
     </entry>
     
     <entry>
-      <title>黑客马拉松 2019</title>
-      <link href="/2019/04/12/person-dellemc-hackson-2019/"/>
-      <url>/2019/04/12/person-dellemc-hackson-2019/</url>
-      
-        <content type="html"><![CDATA[<p>参加公司的hackathson 2019 获奖了。。。。</p><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/person/hackson-2019.png" alt="hackson"></p>]]></content>
-      
-      
-      <categories>
-          
-          <category> person </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> person </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    <entry>
       <title>分布式系统架构设计三十六式之服务治理 – 5F容错模式</title>
       <link href="/2019/04/06/distributed-servicegovernance-failure-handling/"/>
       <url>/2019/04/06/distributed-servicegovernance-failure-handling/</url>

@@ -115,76 +115,6 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/flink-deployment-docker/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/20/flink-deployment-docker/" itemprop="url">Flink handbook - flink 集群与部署之docker篇</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T06:46:03+08:00">2018-09-20 06:46:03</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="作者标注"><a href="#作者标注" class="headerlink" title="作者标注"></a>作者标注</h2><p>经过验证， 到当前版本为止 flink-1.7 snapshot，构建 flink docker镜像需要采用这个flink docker 构建工具 <code>https://github.com/docker-flink/docker-flink</code>，按照<a href="https://github.com/apache/flink/tree/master/flink-container" target="_blank" rel="noopener">flink官方代码库</a>里的构建出来的flink镜像有些功能不能用，比如 flink-standalone模式，report metrics等。</p>
-<h2 id="Docker设置"><a href="#Docker设置" class="headerlink" title="Docker设置"></a>Docker设置</h2><p>Docker Hub上有关于Apache Flink的Docker镜像，可用于部署flink群集。Flink镜像库还包含用于创建容器映像以部署flink工作集群的一些工具以及说明。</p>
-<h2 id="Flink-session群集"><a href="#Flink-session群集" class="headerlink" title="Flink session群集"></a>Flink session群集</h2><p>Flink会话群集可用于运行多个业务。在部署后，每个业务都需要提交到集群才能跑起来。</p>
-<h2 id="Docker镜像"><a href="#Docker镜像" class="headerlink" title="Docker镜像"></a>Docker镜像</h2><p>该<a href="https://hub.docker.com/_/flink/" target="_blank" rel="noopener">Flink镜像库</a>托管在docker hub，提供了flink1.2.1以及之后的版本镜像。</p>
-<p>注意： Docker镜像是由个人提供的社区项目，它们并不是Apache Flink PMC的官方版本（作者标注：所以需要用这个个人的<a href="https://github.com/docker-flink/docker-flink" target="_blank" rel="noopener">构建工具</a>，而不是官方代码库里的构建工具）。</p>
-<h2 id="Flink作业集群"><a href="#Flink作业集群" class="headerlink" title="Flink作业集群"></a>Flink作业集群</h2><p>Flink作业集群是运行单个作业的专用集群，这是镜像内容的一部分，因此，不需要额外的工作。</p>
-<h2 id="Docker镜像-1"><a href="#Docker镜像-1" class="headerlink" title="Docker镜像"></a>Docker镜像</h2><p>Flink作业集群镜像需要包含启动集群的作业的用户代码jar。因此，需要为每个作业构建专用的容器镜像。该flink-container模块包含一个build.sh脚本，可用于创建此类镜像。有关详细信息，请参阅<a href="https://github.com/apache/flink/blob/master/flink-container/docker/README.md" target="_blank" rel="noopener">说明</a>。（作者注：这个是官方的构建方式，试过有问题，比如跑 flink-standalone再 report metrics）</p>
-<h2 id="Flink与Docker-Compose"><a href="#Flink与Docker-Compose" class="headerlink" title="Flink与Docker Compose"></a>Flink与Docker Compose</h2><p>Docker Compose是一种很方便的用于在本地启动一组Flink Docker容器的方式。</p>
-<p>GitHub上提供了<a href="https://github.com/docker-flink/examples/blob/master/docker-compose.yml" target="_blank" rel="noopener">集群部署实例</a>和<a href="https://github.com/apache/flink/blob/master/flink-container/docker/docker-compose.yml" target="_blank" rel="noopener">作业群集示例</a>的配置文件。</p>
-<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><p>启动集群</p>
-<p><code>$docker-compose up</code></p>
-<p>以deamon的方式启动集群</p>
-<p> <code>$docker-compose up -d</code></p>
-<p>集群扩展 N 个 TaskManagers</p>
-<p><code>$docker-compose scale taskmanager=&lt;N&gt;</code></p>
-<p>销毁集群</p>
-<p><code>$docker-compose kill</code></p>
-<p>当拉起一个Flink群集后，您可以访问 <code>http：// localhost：8081</code>的Web UI ，在界面里您还可以将作业提交到群集。</p>
-<p>如果要通过命令行将作业提交到会话群集，必须将JAR复制到JobManager容器里并从那里执行作业。</p>
-<p>例如：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$ JOBMANAGER_CONTAINER=$(docker ps --filter name=jobmanager --format=&#123;&#123;.ID&#125;&#125;)<br>$ docker cp path/to/jar &quot;$JOBMANAGER_CONTAINER&quot;:/job.jar<br>$ docker exec -t -i &quot;$JOBMANAGER_CONTAINER&quot; flink run /job.jar<br></code></pre></td></tr></table></figure>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/19/pravega-segment-containers/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -939,6 +869,102 @@
     </footer>
   </article>
   
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/distributed-cap-pacelc/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/16/distributed-cap-pacelc/" itemprop="url">是时候把分布式系统的理论指导从CAP升级到PACELC</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T21:09:29+08:00">2018-09-16 21:09:29</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="从-CAP到-PACELC"><a href="#从-CAP到-PACELC" class="headerlink" title="从 CAP到 PACELC"></a>从 CAP到 PACELC</h2><p>CAP理论是当前分布式系统设计的理论指导，而PACELC理论是CAP理论的扩展，分布式系统设计的理论依据是时候从CAP理论扩展为PACELC理论, PACELC在wiki上的定义是:</p>
+<blockquote>
+<p>It states that in case of network partitioning (P) in a distributed computer system, one has to choose between availability (A) and consistency (C) (as per the CAP theorem), but else (E), even when the system is running normally in the absence of partitions, one has to choose between latency (L) and consistency (C).</p>
+</blockquote>
+<p>简单来说这里的意思就是：</p>
+<blockquote>
+<p>如果有分区partition (P)，系统就必须在availability 和consistency (A and C)之间取得平衡; 否则else (E) 当系统运行在无分区情况下,系统需要在 latency (L) 和 consistency (C)之间取得平衡</p>
+</blockquote>
+<p>CAP理论认为以下三者不能同时满足：</p>
+<ul>
+<li><p>一致性(Consistency): 所有的节点在同一时刻看到同样的数据。</p>
+</li>
+<li><p>可用性(Availability):  节点失效不会影响系统的读写。</p>
+</li>
+<li><p>分区容忍性(Partition Tolerance): 系统能支持网络分区，即使分区之间的消息丢失系统也正常工作。</p>
+</li>
+</ul>
+<p>根据业务场景的不同，不同的分布式系统会根据自身业务的需求在CAP三者中进行权衡， CAP理论的意义是一种在分布式系统设计时权衡的因素，而非绝对的三者必舍其一，并且在CAP理论中是没有提到系统的时延（Latency）的，而访问时延（Latency）却是很重要的可用性(Availability)因素。</p>
+<p>因此重新定义一个新的模型PACELC，添加了系统中的Latency，如下图：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fcap-pacelc.png" alt="cap-pacelc"></p>
+<p>当前分布式系统设计指导理论应当用PACELC理论替代CAP理论，理由如下：</p>
+<ol>
+<li><p>PACELC更能满足实际操作中分布式系统的工作场景是更好的工程实现策略；</p>
+</li>
+<li><p>当partition (P)存在的场景下，需要在availability 和consistency (A and C)之间获得权衡，当时实际上分布式系统中绝大多数时间里partition (P)是不存在的，那么就需要在latency (L) 和 consistency (C)之间取得权衡。</p>
+</li>
+<li><p>availability在不存在partition (P)的场景下跟 latency关联,在partition (P)时跟reliable指标关联。</p>
+</li>
+<li><p>PACELC 可以在 latency vs consistency之间获得平衡</p>
+</li>
+<li><p>CAP 理论忽略了 一致性和时延之间的权衡</p>
+</li>
+</ol>
+<p>PACELC建立在CAP之上，二者都描述了在一致性(Consistency)，可用性(Availability)和分区容忍性(Partition Tolerance)之间的限制和权衡。而PACELC更进一步描述了即使在没有Partition的场景下，也存在Latency和Consistency之间的权衡，从而为分布式系统的Consistency模型提供了一个更为完整的理论依据。</p>
+<p>要保证系统的高可用（high availability）那么就必须复制数据，而分布式系统进行数据复制复制，就会出现在Consistency和Latency之间做个权衡的要求。</p>
+<p>举个栗子，如下图所示，</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fconsistency-latency.png" alt="consistency-latency"></p>
+<ol>
+<li><p>在强一致性复制场景下，需要三副本都下盘才能返回ok给client端，Master向 Slave 复制数据，Latancy的限制是 20ms，有时候，slave 2 硬盘或网络出现故障，Master 往 Slave 复制数据的时延超过 20ms了，这个时候如果还一致等待 slave 2 返回结果再notify 给client就会出现性能和时延抖动，而且这种抖动是经常发生的长尾效应。</p>
+</li>
+<li><p>依据PACELC理论，我们可以在 consistency和Latency之间做个权衡，比如 slave 2 节点的时延超过 20ms了，就不等待slave 2 返回，master 和 slave 1 返回结果给client即可，如果 slave 2 出现 超时的 次数超过 5次那么就认为 这个节点可能出现故障，打个故障标签，进行后续的处理。</p>
+</li>
+</ol>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a>作者简介</h2><p>常平，毕业于中国科学技术大学，获硕士研究生学历学位，10年+ 存储、布式系统、云计算以及大数据经验，曾就职于Marvell、AMD等，现就职于EMC，资深首席工程师，主要负责流式大数据处理平台的架构设计、编码及产品交付等。</p>
+<h3 id="参考文献："><a href="#参考文献：" class="headerlink" title="参考文献："></a>参考文献：</h3><p>[1] <a href="https://en.wikipedia.org/wiki/PACELC_theorem" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/PACELC_theorem</a></p>
+<p>[2] CAP理论与分布式系统设计，S先生</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/5/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/7/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -964,7 +990,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">61</a></div>
+      <div><a href="/archives">60</a></div>
     </div>
     
     
