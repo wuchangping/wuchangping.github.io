@@ -3,6 +3,29 @@
   
     
     <entry>
+      <title>产品思维奇点图</title>
+      <link href="/2019/10/21/distributed-product-architecture-daoist/"/>
+      <url>/2019/10/21/distributed-product-architecture-daoist/</url>
+      
+        <content type="html"><![CDATA[<h2 id="产品思维奇点图"><a href="#产品思维奇点图" class="headerlink" title="产品思维奇点图"></a>产品思维奇点图</h2><p>理解技术、产品与商业是产品架构师的基本职责，架构思维、产品思维与商业思维是架构师的底层思维，就个人领悟来说技术与产品是其实不分家的，二者互补互利。</p><p>这里先放出一张我自己用的产品思维图（如下），接下来会写一篇文章详细解读这个产品思维模型，这张图我称之为产品思维奇点图，结合了“第一性原理”、“奇点理论”以及中国古朴的哲学，口诀是“四点一线五元组”。</p><p>四点分为“产品定位点、价值点、业务点以及奇点”，一线是指“能力线”，五元组是指 “势、道、法、术、器”，对应产品的“趋势、优势、劣势”，“本质、灵魂、规律、价值”，“方法论”，“技能”，“工具”。</p><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/daoist/product-architecture-daoist.PNG" alt="产品架构奇点图"></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> product </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> product </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
       <title>重构工业物联网大数据处理平台的存储栈</title>
       <link href="/2019/06/23/distributed-streaming-refactor-iot-platform/"/>
       <url>/2019/06/23/distributed-streaming-refactor-iot-platform/</url>
@@ -1383,11 +1406,11 @@
     </entry>
     
     <entry>
-      <title>about</title>
-      <link href="/about/index.html"/>
-      <url>/about/index.html</url>
+      <title>tags</title>
+      <link href="/tags/index.html"/>
+      <url>/tags/index.html</url>
       
-        <content type="html"><![CDATA[<h2 id="关于作者"><a href="#关于作者" class="headerlink" title="关于作者"></a>关于作者</h2><ul><li>毕业于中国科学技术大学，获硕士研究生学历学位</li><li>主要工作背景：分布式系统、检索、存储、缓存、云计算以及大数据</li><li>曾就职于Marvell、AMD等，现就职于EMC，资深首席工程师，主要负责工业物联网大数据处理平台的架构设计、编码及产品交付</li></ul><h2 id="联系方式"><a href="#联系方式" class="headerlink" title="联系方式"></a>联系方式</h2><ul><li>Email : <a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a></li><li>Blog : <a href="https://www.changping.me">https://www.changping.me</a></li><li>Github : <a href="https://github.com/wuchangping" target="_blank" rel="noopener">https://github.com/wuchangping</a></li></ul><h2 id="网站声明"><a href="#网站声明" class="headerlink" title="网站声明"></a>网站声明</h2><p>文章内容仅为作者愚见，与任何组织机构无关，如有错误及不足之处欢迎发信批评指正。</p><h2 id="版权声明"><a href="#版权声明" class="headerlink" title="版权声明"></a>版权声明</h2><p>非商业用途在注明作者及本网站前提下无需授权即可转载。</p><h2 id="免责声明"><a href="#免责声明" class="headerlink" title="免责声明"></a>免责声明</h2><p>文章坚持原创，且仅供技术交流及研究使用，如有不小心侵犯您的版权， 请联系：<a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a>，会尽快删除。</p><p>–</p>]]></content>
+        <content type="html"><![CDATA[]]></content>
       
     </entry>
     
@@ -1410,11 +1433,11 @@
     </entry>
     
     <entry>
-      <title>tags</title>
-      <link href="/tags/index.html"/>
-      <url>/tags/index.html</url>
+      <title>about</title>
+      <link href="/about/index.html"/>
+      <url>/about/index.html</url>
       
-        <content type="html"><![CDATA[]]></content>
+        <content type="html"><![CDATA[<h2 id="关于作者"><a href="#关于作者" class="headerlink" title="关于作者"></a>关于作者</h2><ul><li>毕业于中国科学技术大学，获硕士研究生学历学位</li><li>主要工作背景：分布式系统、检索、存储、缓存、云计算以及大数据</li><li>曾就职于Marvell、AMD等，现就职于EMC，资深首席工程师，主要负责工业物联网大数据处理平台的架构设计、编码及产品交付</li></ul><h2 id="联系方式"><a href="#联系方式" class="headerlink" title="联系方式"></a>联系方式</h2><ul><li>Email : <a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a></li><li>Blog : <a href="https://www.changping.me">https://www.changping.me</a></li><li>Github : <a href="https://github.com/wuchangping" target="_blank" rel="noopener">https://github.com/wuchangping</a></li></ul><h2 id="网站声明"><a href="#网站声明" class="headerlink" title="网站声明"></a>网站声明</h2><p>文章内容仅为作者愚见，与任何组织机构无关，如有错误及不足之处欢迎发信批评指正。</p><h2 id="版权声明"><a href="#版权声明" class="headerlink" title="版权声明"></a>版权声明</h2><p>非商业用途在注明作者及本网站前提下无需授权即可转载。</p><h2 id="免责声明"><a href="#免责声明" class="headerlink" title="免责声明"></a>免责声明</h2><p>文章坚持原创，且仅供技术交流及研究使用，如有不小心侵犯您的版权， 请联系：<a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a>，会尽快删除。</p><p>–</p>]]></content>
       
     </entry>
     
