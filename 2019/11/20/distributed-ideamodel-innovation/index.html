@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#1D2D2D">
+    <meta name="msapplication-TileColor" content="#1D2D2D">
+    
+    
+    
+    <meta name="keywords" content="flink, pravega, kubernetes, docker, streaming, storage">
+    
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicons/android-chrome-192x192.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+    
+    
+    <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#1D2D2D">
+    
+    
+    <link rel="manifest" href="/favicons/site.webmanifest">
+    
+    
+    <meta name="msapplication-config" content="/favicons/browserconfig.xml">
+    
+    
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/favicons/favicon.ico">
+    
+    
+    <link rel="stylesheet" type="text/css" href="/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="/css/index.css">
+    
+    <link rel="stylesheet" type="text/css" href="/css/sidebar.css">
+    
+    
+<link rel="stylesheet" type="text/css" href="/css/page.css">
+<link rel="stylesheet" type="text/css" href="/css/post.css">
+
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link rel="stylesheet" type="text/css" href="/css/atom-one-dark.css">
+    <link rel="stylesheet" type="text/css" href="/css/lightgallery.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script defer type="text/javascript" src="/js/util.js"></script>
+    <script defer type="text/javascript" src="/js/scrollspy.js"></script>
+    <script defer type="text/javascript" src="/js/fontawesome-all.min.js"></script>
+    <script defer type="text/javascript" src="/js/lightgallery.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-fullscreen.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-hash.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-pager.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-thumbnail.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-zoom.min.js"></script>
+    
+    <script defer src="/js/busuanzi.pure.mini.js"></script>
+    
+    
+    
+    <script defer type="text/javascript" src="/js/index.js"></script>
+    
+    <script defer type="text/javascript" src="/js/custom.js"></script>
+    <title>分布式系统架构设计36式之思维模型 – 第9式-创新思维模型 | 正心 取势 明道 优术 合众 践行 - 常平的网站</title>
+  </head>
+  <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
+    
+<header id="header" class="header" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="header-container">
+      <div class="header-title">
+        <h1 class="title"><a href="/">正心 取势 明道 优术 合众 践行</a></h1>
+        <h2 class="subtitle">www.changping.me</h2>
+      </div>
+      
+      <div class="logo">
+        <img src="/images/logo.png" alt="logo">
+      </div>
+      
+    </div>
+    <nav id="nav" class="nav">
+      <a id="nav-toggle" class="nav-toggle" aria-hidden="true"><i class="fas fa-bars" aria-label="切换导航栏"></i></a>
+      <ul id="menu" role="menubar" aria-hidden="false">
+        
+        <li role="menuitem"><a href="/">首页</a></li>
+        
+        <li role="menuitem"><a href="/archives">全部</a></li>
+        
+        <li role="menuitem"><a href="/categories">分类</a></li>
+        
+        <li role="menuitem"><a href="/tags">标签</a></li>
+        
+        <li role="menuitem"><a href="/about">关于</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+    <main id="main" class="main">
+      <div class="container">
+        <div class="main-container">
+          <div class="content">
+            
+<div id="post" class="page">
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/11/20/distributed-ideamodel-innovation/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+       <meta itemprop="name" content="常平">
+       <meta itemprop="description" content="“分布式系统架构设计师”">
+       <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+       <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">分布式系统架构设计36式之思维模型 – 第9式-创新思维模型</h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-11-20T20:40:41+08:00">2019-11-20 20:40:41</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>日拱一卒，功不唐捐，一个知识领域里的 “道 法 术 器” 这四个境界需要从 微观、中观以及宏观 三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计36式》，讲诉分布式系统里最重要的三十六个的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
+<p><strong>“兵者，国之大事，死生之地，存亡之道，不可不察也”</strong>，这句话对企业来讲，兵即产品，国即企业，察即研究探讨，产品关系到企业的存亡，所以不可以不慎重地加以研究探讨。</p>
+<p>我们知道一个产品的成功不只是技术的成功，它还包括商业、创新、管理、资本、运营以及销售等的成功。当打造一个产品的时候，通常来说工程人员往往会比较关注技术层面的东西： 方案、功能、难点、亮点以及如何实现等，深度有余但高度与广度往往不足 。一般有点经验的工程人员都可以从点或线的层面考虑一个产品的实现，但往往缺乏从面及体的层面看待一个产品的能力。</p>
+<p>因此，如果说技术思维是架构师的一根DNA螺旋线，那么产品思维、创新思维以及商业思维等就是架构师的另外一根DNA螺旋线，只有两根DNA螺旋线俱全才能有机会进化出新物种。</p>
+<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>人的知识与能力可以从“时空”这两个角度进行评价，其可分为四个维度：深度、广度、高度以及跨度。空间角度指的是深度、广度、高度，时间角度指的是跨度。深度靠专研，广度靠学习，高度靠抽象，而跨度靠长久地积累经验。这四个维度组合成了一个人的知识与能力的时空度。</p>
+<p>万事万物逃脱不出<strong>“不易、简易、变易”</strong>这三个层次，金庸先生的《天龙八部》里少林寺有72技，其每一技又千变万化，想要样样精通，今生无望，然而练就“小无相功”却可以以这功法催动不同的“技”，甚至可以比原版更具威力，以“不易 简易”之功施展“变易”之术。那么对于技术开发人员来说技术也是“变易”的，更新快，领域多，复杂度高，样样精通也是今生无望，那么需要的就是找出适合自己的“功”，技术思维模型、产品思维模型、创新思维模型、商业思维模型就是这样的“功”。</p>
+<p>因此本系列文章提出了技术、产品、创新与商业这四个思维模型，这一系列文章不是为了解决具体的某个分布式系统设计里的难题，它提出了一种思维框架，从技术、产品、创新以及商业的角度，给分布式系统工程人员以一种系统性的分析分布式系统的设计难题的模型，这也是一种系统思维模型的体现。</p>
+<h2 id="创新思维模型"><a href="#创新思维模型" class="headerlink" title="创新思维模型"></a><font color="#FF8C00">创新思维模型</font></h2><p>受李善友老师的《第二曲线创新》的启发，这里提出“奇点破界”创新思维模型，如下图：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ideamodel/idea-model-creative.PNG" alt="创新思维模型"></p>
+<h4 id="创新三重境：”更好、不同、新生“"><a href="#创新三重境：”更好、不同、新生“" class="headerlink" title=" 创新三重境：”更好、不同、新生“"></a><font color="#00CED1"> 创新三重境：”更好、不同、新生“</font></h4><ul>
+<li><p><strong>更好，</strong>指的是市场是明确存在需求的，但是提供的新产品在质量、功能、渠道、价格等方面比原有产品更具优势，是用更好的体验来满足客户的真需求；</p>
+</li>
+<li><p><strong>不同，</strong>指的是差异化竞争，”与其更好不如不同”[1]，不同不只是技术面的不同，而是处处差异化不同，理念、技术、渠道，运营，销售等处处差异化竞争；</p>
+</li>
+<li><p><strong>新生，</strong>指的是 从0到1，从无到有的创造一个新物种，是指用凭空创造出一个新产品来满足客户需求，这种形态的产品要么是颠覆式的创造带来巨大的商业上的成功，要么就是没有真实客户需求的新事物，商业上完全失败。</p>
+</li>
+</ul>
+<p>这里，分布式流存储采用的是“<strong>更好与不同”</strong>这两个产品创新方法论，组合原有的技术开拓出新产品，规避风险，满足客户真实的需求。</p>
+<h4 id="奇点破界"><a href="#奇点破界" class="headerlink" title=" 奇点破界"></a><font color="#00CED1"> 奇点破界</font></h4><p>物理学认为宇宙从无到有始于一个点，这个点叫做“奇点”，它积聚了形成现有宇宙中所有物质的势能，当这一个点的能量平衡被破坏后，宇宙大爆炸发生，从而生成我们现在的宇宙。如果把宇宙比作我们的产品，奇点就是这个产品赖以出现与存在的关键点，“奇点破界”创新思维模型的理论依据是奇点创新三部曲：“破坏，外延，重生”，即：</p>
+<p>1，破坏，找到产品奇点并加以破坏。产品缺点不是奇点，奇点是产品赖以出现与存在的点，找到它，然后破坏它，类似于使得宇宙奇点能量失去平衡；</p>
+<p>2，外延，产品奇点下移，产品边界外延，类似于宇宙大爆炸从而造成宇宙边界外延；</p>
+<p>3，重生，重构产品奇点，形成新的产品体系，类似于新宇宙的形成。</p>
+<p>以分布式流存储的创新为例，这里只涉及技术面的创新，销售、渠道、运营、管理、商业模式等方面的创新不在本文范围。可以知道的是目前市面上的分布式流存储的最大竞争对手是Kafka，对其应用奇点创新思维模型的步骤有：</p>
+<p>1， 破坏，找出产品奇点，然后破坏它的奇点。例如，我们知道Kafka的赖以依存的关键点有：提供消息服务语义；分布式的；依赖于代理中心的横向扩展以及依赖于分区的数据冗余；依据初代版本时间点的硬件特性进行软件的设计；</p>
+<p>2，外延，产品奇点下移，破界，新的产品边界外延。针对以上Kafka的四条关键点，提出分布式流存储的新奇点：提供存储语义服务而不是消息语义；依据云原生、微服务的理念进行产品架构，扩展分布式系统外延；软件定义，抽象1层存储与2层存储，平衡高性能与无限扩容的问题；抓住技术进步的福利，依据当前最新的硬件特性进行产品软件设计；</p>
+<p>3， 重生，最后更新的、更具有技术竞争力的、针对流式数据而实现的新产品”分布式流存储“诞生。</p>
+<p>这一套创新思维模型的关键点在于找出原有的产品赖以出现以及存在的“奇点”，然后破界重生。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本系列文章讲述了四个思维模型： “技术思维模型、创新思维模型、商业思维模型以及产品思维模型”，再结合分布式流存储做了简单的举例分析。本文讲述”创新思维模型“，日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这几个思维模型对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“[1]，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，主要从事分布式产品的交付、架构设计以及开发工作。</p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1]《第二曲线创新》 李善友</p>
+<p>[2]《如何在一分钟内用5个问题讲清你的商业模式》 中欧商业评论，关苏哲 </p>
+<p>[3] Pravega.io</p>
+
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  
+  <nav class="page-nav">
+    <div class="page-nav-next page-nav-item">
+      
+      <a href="/2019/11/20/distributed-ideamodel-technology/" rel="next" title="分布式系统架构设计36式之思维模型 – 第8式-技术思维模型"><i class="fas fa-angle-left"></i><span class="nav-title">分布式系统架构设计36式之思维模型 – 第8式-技术思维模型</span></a>
+      
+    </div>
+    <div class="page-nav-prev page-nav-item">
+      
+      <a href="/2019/11/20/distributed-ideamodel-business/" rel="prev" title="分布式系统架构设计36式之思维模型 – 第10式-商业思维模型"><span class="nav-title">分布式系统架构设计36式之思维模型 – 第10式-商业思维模型</span><i class="fas fa-angle-right"></i></a>
+      
+    </div>
+  </nav>
+  
+  
+</div>
+
+          </div>
+          
+          
+          
+<aside class="sidebar" id="sidebar" >
+  
+  
+<div class="info sidebar-item" id="info">
+  
+  <img class="author-avatar" src="/images/avatar.jpg" alt="常平">
+  
+  <h1 class="author-name">常平</h1>
+  <h2 class="author-description">“分布式系统架构设计师”</h2>
+  <div class="site-count">
+    
+    <div class="archives-count">
+      <div class="site-count-title">全部</div>
+      <div><a href="/archives">65</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="categories-count">
+      <div class="site-count-title">分类</div>
+      <div><a href="/categories">5</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="tags-count">
+      <div class="site-count-title">标签</div>
+      <div><a href="/tags">5</a></div>
+    </div>
+    
+  </div>
+  
+</div>
+
+
+  <div class="sidebar-sticky">
+    
+    
+    
+    
+    
+    <hr>
+    <div class="post-toc sidebar-item" id="toc-div">
+      <div><i class="fas fa-list-ol"></i>文章目录</div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#动机"><span class="toc-text">动机</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#创新思维模型"><span class="toc-text">创新思维模型</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#创新三重境：”更好、不同、新生“"><span class="toc-text"> 创新三重境：”更好、不同、新生“</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#奇点破界"><span class="toc-text"> 奇点破界</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#小结"><span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#作者简介"><span class="toc-text">作者简介</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#版权申明"><span class="toc-text">版权申明</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#参考资料"><span class="toc-text">参考资料</span></a></li></ol></div>
+    </div>
+    
+    
+    
+    <hr>
+    <div class="social-link sidebar-item">
+      <div><i class="far fa-address-card"></i>链接</p></div>
+      <ul>
+        
+        <li><i class="fab fa-github"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a></li>
+        
+      </ul>
+    </div>
+    
+    
+  </div>
+</aside>
+
+
+          
+        </div>
+      </div>
+    </main>
+    
+<footer id="footer" class="footer" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="back-to-top">
+      <button id="back-to-top"><i class="fas fa-angle-double-up" aria-label="回到顶部"></i></button>
+    </div>
+    <div class="footer-container">
+      <div class="footer-left">
+        <div class="copyright">
+          <span class="author">常平</span><span class="year"><i class="far fa-copyright"></i>2017 - 2019</span>
+        </div>
+        
+        <div class="busuanzi">
+          <span id="busuanzi_container_site_pv"><i class="fas fa-eye" aria-label="站点点击量" aria-hidden="false"></i><span id="busuanzi_value_site_pv"></span></span><span id="busuanzi_container_site_uv"><i class="fas fa-user" aria-label="站点用户数" aria-hidden="false"></i><span id="busuanzi_value_site_uv"></span></span><span id="busuanzi_container_page_pv"><i class="far fa-file-alt"></i><span id="busuanzi_value_page_pv" aria-label="页面点击量" aria-hidden="false"></span></span>
+        </div>
+        
+      </div>
+      <div class="footer-right">
+        <div class="custom-info">
+          
+          PoweredBy<i class="fab fa-github-alt"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a>
+          
+        </div>
+        <div class="powered-by">
+          由 <a href="https://hexo.io/" target="_blank">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/AlynxZhou/hexo-theme-aria/" target="_blank">ARIA</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>
