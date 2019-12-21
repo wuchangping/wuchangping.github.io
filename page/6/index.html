@@ -68,7 +68,7 @@
     <script defer type="text/javascript" src="/js/index.js"></script>
     
     <script defer type="text/javascript" src="/js/custom.js"></script>
-    <title>正心 取势 明道 优术 合众 践行 - 常平的网站</title>
+    <title>常平的技术博客 - 技术是有生命的，因为它可以进化</title>
   </head>
   <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
     
@@ -76,7 +76,7 @@
   <div class="container">
     <div class="header-container">
       <div class="header-title">
-        <h1 class="title"><a href="/">正心 取势 明道 优术 合众 践行</a></h1>
+        <h1 class="title"><a href="/">常平的技术博客</a></h1>
         <h2 class="subtitle">www.changping.me</h2>
       </div>
       
@@ -115,6 +115,99 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/21/pravega-streaming-put-several-event-types-kafka-topic/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/21/pravega-streaming-put-several-event-types-kafka-topic/" itemprop="url">应该在同一个Kafka主题中放入几种事件类型吗？</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-21T06:46:43+08:00">2018-09-21 06:46:43</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>如果您采用Apache Kafka等流平台，有个很重要的问题是：将使用哪些主题？特别是，如果要将一堆不同的事件作为消息发布到Kafka，是将它们放在同一主题中，还是将它们拆分为不同的主题？</p>
+<p>主题最重要的功能是允许使用者指定它想要使用的消息子集。在一个极端情况下，所有数据都放在一个主题中可不是一个好主意，因为这意味着消费者无法选择感兴趣的事件 - 给他们的只会是所有的内容。在另一个极端，拥有数百万个不同的主题也不是一个好事，因为Kafka中的每个主题都会消耗资源消耗，因此拥有大量的主题就会对性能不利。</p>
+<p>实际上，从性能的角度来看，重要的是分区数量。但由于Kafka中的每个主题至少有一个分区，如果你有n个主题，那么就不可避免地至少有n个分区。不久之前，[Jun Rao撰写了一篇博文]，解释了拥有多个分区的成本（端到端延迟，文件描述符，内存开销，故障后的恢复时间）。根据经验，如果您关注延迟问题，您应该关注每个代理节点上的（数量级）数百个主题分区。如果每个节点有数万个甚至数千个分区，则延迟会受到影响。</p>
+<p>该性能参数给设计主题的结构提供了一些指导：如果您发现自己有数千个主题，那么将一些细粒度，低吞吐量的主题合并到粗粒度主题中是明智之举，从而减少分区的扩散。</p>
+<p>然而，性能问题并不是结束。在我看来，更重要的是您的主题结构的数据完整性和数据建模方面。我们将在本文的其余部分讨论这些内容。</p>
+<h2 id="主题-相同类型的事件的集合？"><a href="#主题-相同类型的事件的集合？" class="headerlink" title="主题=相同类型的事件的集合？"></a>主题=相同类型的事件的集合？</h2><p>常见的想法（根据我所拥有的几个对话，并根据邮件列表）似乎是：将同类型的所有事件放在同一主题中，并针对不同的事件类型使用不同的主题。这种思路让人联想到关系数据库，其中表是具有相同类型（即同一组列）的记录的集合，因此我们在关系表和Kafka主题之间进行类比。</p>
+<p>该<a href="https://www.confluent.io/confluent-schema-registry/" target="_blank" rel="noopener">融合模式的注册表</a>本质上强化了这种模式，因为它鼓励你在主题中的所有消息使用相同的Avro模式。该模式可以在保持兼容性的同时进化（例如，通过添加可选字段），但最终所有消息都必须符合某种记录类型。在我们介绍了更多背景之后，我们将在后面的帖子中再次讨论这个问题。</p>
+<p>对于某些类型的流数据（例如记录的活动事件），要求同一主题中的所有消息都符合相同的模式是有意义的。但是，有些人正在使用Kafka来实现更多类似数据库的目的，例如事件溯源，或者在微服务之间交换数据。在这种情况下，我相信，它定义一个主题为一组具有相同模式的消息并不重要。更重要的是Kafka维护主题分区内的消息排序。</p>
+<p>想象一下，您有一些事物（比如客户），并且该事物可能发生许多不同的事情：创建客户，客户更改地址，客户向其帐户添加新信用卡，客户进行客户支持查询，客户支付发票，客户关闭其帐户。</p>
+<p>这些事件的顺序很重要。例如，我们期望在客户做任何动作之前创建客户，并且我们也期望在客户关闭其帐户之后不再发生任何其他事情。使用Kafka时，您可以通过将它们全部放在同一个分区中来保留这些事件的顺序。在此示例中，您将使用客户ID作为分区键，然后将所有这些不同的事件放在同一主题中。它们必须位于同一主题中，因为不同的主题意味着不同的分区，并且不会跨分区保留排序。</p>
+<h2 id="排序问题"><a href="#排序问题" class="headerlink" title="排序问题"></a>排序问题</h2><p>如果你没有使用（比方说）不同的主题<code>customerCreated</code>，<code>customerAddressChanged</code>和<code>customerInvoicePaid</code>事件，然后这些议题的消费者可能会看到荒谬的事件顺序。例如，消费者可能会看到不存在的客户的地址更改（因为尚未创建，因为相应的<code>customerCreate</code>事件已被延迟）。</p>
+<p>如果消费者暂停一段时间（可能是维护或部署新版本），则重新排序的风险尤其高。当消费者停止时，事件将继续发布，并且这些事件将存储在Kafka代理的选定主题分区中。当消费者再次启动时，它会消耗来自其所有输入分区的积压事件。如果消费者只有一个输入，那就没问题了：挂起的事件只是按照它们存储的顺序依次处理。但是，如果消费者有几个输入主题，它将选择输入主题以按任意顺序读取。它可以在读取另一个输入主题上的积压之前从一个输入主题读取所有挂起事件，或者它可以以某种方式交错输入。</p>
+<p>因此，如果你把<code>customerCreated</code>，<code>customerAddressChanged</code>以及<code>customerInvoicePaid</code>事件在三个独立的主题，消费者可能会看到所有的<code>customerAddressChanged</code>事件，它看到任何之前<code>customerCreated</code>的事件。因此，消费者可能会看到一个<code>customerAddressChanged</code>客户的事件，根据其对世界的看法，尚未创建。</p>
+<p>您可能想要为每条消息附加时间戳，并将其用于事件排序。如果要将事件导入数据仓库，您可以在事后对事件进行排序，这可能就可以了。但是在流进程中，时间戳是不够的：如果你得到一个具有特定时间戳的事件，你不知道你是否仍然需要等待一个时间戳较低的先前事件，或者所有之前的事件是否已到达而你是’准备好处理这个事件。依靠时钟同步通常会导致噩梦;</p>
+<h2 id="何时分割主题，何时结合？"><a href="#何时分割主题，何时结合？" class="headerlink" title="何时分割主题，何时结合？"></a>何时分割主题，何时结合？</h2><p>鉴于这种背景，我将提出一些经验法则来帮助您确定在同一主题中放入哪些内容，以及将哪些内容拆分为单独的主题：</p>
+<ol>
+<li><p>最重要的规则是，  任何需要保持固定顺序的事件必须放在同一主题中（并且它们也必须使用相同的分区键）。最常见的是，如果事件的顺序与同一事物有关，则事件的顺序很重要。因此，根据经验，我们可以说关于同一事物的所有事件都需要在同一主题中。如果您使用事件排序方法进行数据建模，事件的排序尤为重要。这里，聚合对象的状态是通过以特定顺序重放它们来从事件日志中导出的。因此，即使可能存在许多不同的事件类型，定义聚合的所有事件也必须在同一主题中。</p>
+</li>
+<li><p>当您有关于不同事物的事件时，它们应该是相同的主题还是不同的主题？我想说，如果一个事物依赖于另一个事物（例如，一个地址属于一个客户），或者如果它们经常需要在一起，那么它们也可能会出现在同一个主题中。另一方面，如果它们不相关并由不同的团队管理，则最好将它们放在单独的主题中。它还取决于事件的吞吐量：如果一个事物类型具有比另一个事物类型高得多的事件，它们是更好地分成单独的主题，以避免压倒性的消费者只想要具有低写入吞吐量的事物（参见第4点）。但是，几个都具有低事件率的事物可以很容易地合并。</p>
+</li>
+<li><p>如果一个事件涉及多个事物怎么办？例如，购买涉及产品和客户，并且从一个帐户到另一个帐户的转移涉及至少那两个帐户。我建议最初将事件记录为单个原子消息，而不是将其分成几个消息。主题，最好以完全按照您收到的方式记录事件，并尽可能采用原始形式。您可以随后使用流处理器拆分复合事件 - 但如果您过早地将其拆分，则重建原始事件要困难得多。更好的是，您可以为初始事件提供唯一ID（例如UUID）; 以后，当您将原始事件拆分为每个涉及的事物的一个事件时，您可以将该ID转发，从而使每个事件的起源都可追溯。</p>
+</li>
+<li><p>查看消费者需要订阅的主题数量。如果几个消费者都阅读了一组特定的主题，这表明可能应该将这些主题组合在一起。如果将细粒度的主题组合成粗粒度的主题，一些消费者可能会收到他们需要忽略的不需要的事件。这不是什么大问题：消费来自Kafka的消息非常便宜，所以即使消费者最终忽略了一半的事件，这种过度消费的成本可能也不大。只有当消费者需要忽略绝大多数消息（例如99.9％是不需要的）时，我才建议从高容量流中分割低容量事件流。</p>
+</li>
+<li><p>Kafka Streams状态存储（KTable）的更改日志主题应与所有其他主题分开。在这种情况下，主题由Kafka Streams流程管理，不应与其他任何内容共享。</p>
+</li>
+<li><p>最后，如果上述规则都没有告诉您是否将某些事件放在同一主题或不同主题中，该怎么办？然后，通过将相同类型的事件放在同一主题中，通过所有方法将它们按事件类型分组。但是，我认为这条规则是最不重要的。</p>
+</li>
+</ol>
+<h2 id="模式管理"><a href="#模式管理" class="headerlink" title="模式管理"></a>模式管理</h2><p>如果您使用的是数据编码（如JSON），而没有静态定义的模式，则可以轻松地将许多不同的事件类型放在同一主题中。但是，如果您使用的是基于模式的编码（如Avro），则需要更多地考虑在单个主题中处理多个事件类型。</p>
+<p>如上所述，基于Avro的<code>Kafka Confluent Schema Registry</code>目前依赖于每个主题都有一个模式的假设（或者更确切地说，一个模式用于密钥，一个模式用于消息的值）。您可以注册新版本的模式，注册表会检查模式更改是向前还是向后兼容。这个设计的一个好处是，您可以让不同的生产者和消费者同时使用不同的模式版本，并且它们仍然保持彼此兼容。</p>
+<p>更确切地说，当Confluent的Avro序列化程序在注册表中注册模式时，它会在主题名称下注册。默认情况下，该主题<code>&lt;topic&gt;-key</code>用于消息键和<code>&lt;topic&gt;-value</code>消息值。然后，模式注册表检查在特定主题下注册的所有模式的相互兼容性。</p>
+<p>我最近对<a href="https://github.com/confluentinc/schema-registry/pull/680" target="_blank" rel="noopener">Avro序列化程序进行了修补</a>，使兼容性检查更加灵活。该补丁添加了两个新的配置选项:(<code>key.subject.name.strategy</code>定义如何构造消息键的主题名称），以及<code>value.subject.name.strategy</code>（如何构造消息值的主题名称）。选项可以采用以下值之一：</p>
+<ul>
+<li><p><code>io.confluent.kafka.serializers.subject.TopicNameStrategy</code>（默认值）：消息键的主题名称是<code>&lt;topic&gt;-key</code>，<code>&lt;topic&gt;-value</code>对于消息值。这意味着主题中所有消息的模式必须相互兼容。</p>
+</li>
+<li><p><code>io.confluent.kafka.serializers.subject.RecordNameStrategy</code>：主题名称是邮件的Avro记录类型的完全限定名称。因此，模式注册表会检查特定记录类型的兼容性，而不考虑主题。此设置允许同一主题中的任意数量的不同事件类型。</p>
+</li>
+<li><p><code>io.confluent.kafka.serializers.subject.TopicRecordNameStrategy</code>：主题名称是<code>&lt;topic&gt;-&lt;type&gt;</code>，<code>&lt;topic&gt;Kafka</code>主题名称在哪里，并且<type>是邮件的Avro记录类型的完全限定名称。此设置还允许同一主题中的任意数量的事件类型，并进一步将兼容性检查限制为仅当前主题。</type></p>
+</li>
+</ul>
+<p>使用此新功能，可以轻松，干净地将特定事物的所有不同事件放在同一主题中。现在，可以根据上述条件自由选择主题的粒度，而不仅限于每个主题的单个事件类型。</p>
+<h2 id="原文："><a href="#原文：" class="headerlink" title="原文："></a>原文：</h2><p>[1] <a href="https://www.confluent.io/blog/put-several-event-types-kafka-topic/" target="_blank" rel="noopener">https://www.confluent.io/blog/put-several-event-types-kafka-topic/</a>, Martin KleppmannMartin Kleppmann</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/pravega-controller-service-3/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -122,7 +215,7 @@
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+        <meta itemprop="name" content="常平的技术博客">
       </span>
     </div>
     <header class="post-header">
@@ -200,7 +293,7 @@
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+        <meta itemprop="name" content="常平的技术博客">
       </span>
     </div>
     <header class="post-header">
@@ -290,7 +383,7 @@
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+        <meta itemprop="name" content="常平的技术博客">
       </span>
     </div>
     <header class="post-header">
@@ -375,7 +468,7 @@
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+        <meta itemprop="name" content="常平的技术博客">
       </span>
     </div>
     <header class="post-header">
@@ -454,7 +547,7 @@
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+        <meta itemprop="name" content="常平的技术博客">
       </span>
     </div>
     <header class="post-header">
@@ -524,7 +617,7 @@
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+        <meta itemprop="name" content="常平的技术博客">
       </span>
     </div>
     <header class="post-header">
@@ -584,7 +677,7 @@
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+        <meta itemprop="name" content="常平的技术博客">
       </span>
     </div>
     <header class="post-header">
@@ -689,174 +782,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/18/pravega-segment-store-service-3/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/18/pravega-segment-store-service-3/" itemprop="url">pravega handbook - 数据面段存储服务之三</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-18T21:42:38+08:00">2018-09-18 21:42:38</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="与Controller集成"><a href="#与Controller集成" class="headerlink" title="与Controller集成"></a>与Controller集成</h2><p>关于如何将段容器映射到主机以及使用什么规则从一个迁移到另一个的实际方法超出了本文的范围。这里，我们只描述段存储服务如何与控制器交互，以及它如何基于外部事件管理段容器的生命周期。</p>
-<h2 id="段容器管理"><a href="#段容器管理" class="headerlink" title="段容器管理"></a>段容器管理</h2><p>Segment Store Service的每个实例都需要Segment Container Manager。此组件的作用是管理分配给该节点（服务）的Segment Containers的生命周期。它履行以下职责：</p>
-<ul>
-<li>连接到Controller服务端客户端（即，仅处理Segment Container事件的客户端，而不是Streams的管理，并侦听与其自身实例相关的所有与Container相关的更改。</li>
-<li>当它收到需要为特定Container Id启动Segment Container的通知时，它会启动引导此类对象的过程。在操作完成且没有错误之前，它不会通知请求客户端成功。</li>
-<li>当它收到需要停止特定Container Id的Segment Container的通知时，它会启动关闭它的过程。在操作完成且没有错误之前，它不会通知请求客户端成功。</li>
-<li>如果Segment Container意外关闭（无论是在Start期间还是在正常操作期间），它将不会尝试在本地重新启动它; 相反，它会通知控制器这个事实。</li>
-</ul>
-<h2 id="存储抽象"><a href="#存储抽象" class="headerlink" title="存储抽象"></a>存储抽象</h2><p>段存储不是专门针对TIER-1或TiR-2的实现而设计的。相反，所有这些组件都已经抽象出来并定义得很好，可以针对任何标准文件系统（Tier-2）或仅追加日志系统（Tier-1）实现。</p>
-<p>第1层存储的可能候选者：</p>
-<ul>
-<li>Apache BookKeeper（首选，适配器完全实现为Pravega的一部分）</li>
-<li>非持久性，非复制性解决方案：</li>
-<li>内存中（只部署单个节点——Pravega成为二级存储的易失性缓冲区；在进程崩溃或系统重新启动的情况下，数据丢失是不可避免的和不可恢复的）。<ul>
-<li>这仅用于单元测试。</li>
-</ul>
-</li>
-<li>本地文件系统（仅单节点部署——Pravega成为二级存储的半持久缓冲区；在完全节点失败的情况下，数据丢失是不可避免的和不可恢复的）</li>
-</ul>
-<p>二级存储的可能候选者：</p>
-<ul>
-<li>HDFS（可实施）</li>
-<li>扩展S3（可实现）</li>
-<li>NFS（通用FileSystem）（可用实现）</li>
-<li>内存中（单节点部署——有限的用途；在进程崩溃或系统重新启动的情况下，数据丢失是不可避免的和不可恢复的）<ul>
-<li>这仅用于单元测试。</li>
-</ul>
-</li>
-</ul>
-<p>关于Tier-2 Truncation的注释：</p>
-<ul>
-<li><p>Segment Store支持在特定偏移量处的Segment截断，这意味着，一旦该请求完成，那么在该偏移量以下的偏移量将不可用于读取。<br>上面这只是一个元数据更新操作，但是这也需要由Tier-2支持，以便从其中物理删除截断的数据。</p>
-</li>
-<li><p>如果Tier-2实现从具有偏移量保存的文件开始就不支持截断（即，在偏移50处截断长度为100的段，则删除偏移0..49，但是偏移量50-99可用并且没有向下移动），然后Segment Store在通用的Tier-2实现之上提供了一个包装器，它可以做到这一点.</p>
-</li>
-<li><p>所述RollingStorage tier-2 分割segment成多个段组块并暴露它们作为一个单一的段到上层。已截断的段块将自动删除。这不是一个非常精确的应用程序（因为它在很大程度上依赖于规定粒度的翻转策略），但对于那些真正的第2层实现不提供我们需要的功能的情况，它是一个实用的解决方案。</p>
-</li>
-</ul>
-<h2 id="数据流"><a href="#数据流" class="headerlink" title="数据流"></a>数据流</h2><p>以下是Pravega Segment Store Service中数据流动的几个示例。</p>
-<h2 id="追加"><a href="#追加" class="headerlink" title="追加"></a>追加</h2><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2FSegment.Store.Appends.png" alt="Segment.Store.Appends"></p>
-<p>上图描绘了这些步骤（注意步骤编号可能不匹配，但顺序相同）：</p>
-<ol>
-<li>Segment Store接收带有params的附加请求：Segment Name，Payload和AttributeUpdates。</li>
-<li>Segment Store确定给定Segment的ContainerId，并验证Segment Container是否在本地注册。如果不是，则返回适当的错误代码。</li>
-<li>Segment Store将请求委托给相应的Segment Container实例。<ul>
-<li>Segment Container验证Segment是否属于Segment Container并且Segment实际存在。如果不是，则返回适当的错误代码。<ul>
-<li>在此过程中，它还会获得现有的段ID或分配新段（通过使用段映射器组件）。</li>
-</ul>
-</li>
-<li>Segment Container StreamSegmentAppendOperation使用输入数据创建a 并将其发送到Durable Log。</li>
-</ul>
-</li>
-</ol>
-<ol start="4">
-<li><p>持久日志采用追加操作并根据持久日志部分中描述的算法对其进行处理:</p>
-<ul>
-<li>将其放入其操作队列中。</li>
-<li>操作处理器从队列中拉出所有操作。</li>
-<li>操作处理器使用数据框构建器来构建具有其操作的数据框架。</li>
-<li>Data Frame Builder将数据帧异步写入持久数据日志。</li>
-<li>完成后，以下内容并行完成：<ul>
-<li>元数据已更新。</li>
-<li>操作被添加到内存操作日志和读取索引中。</li>
-<li>触发操作的呼叫被激活。</li>
-</ul>
-</li>
-<li>上述过程是异步的，这意味着操作处理器将具有多个未受控制的数据帧（未示出）。它将跟踪每一个的变化并根据需要应用或回滚。<br>此过程适用于Segment Store支持的每个操作。所有修改操作都通过操作处理器并具有类似的路径。</li>
-</ul>
-</li>
-</ol>
-<h2 id="读取"><a href="#读取" class="headerlink" title="读取"></a>读取</h2><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2FSegment.Store.Reads.png" alt="Segment.Store.Reads"></p>
-<p>上图描绘了这些步骤（注意步骤编号可能不匹配，但顺序相同):</p>
-<ol>
-<li>段存储接收带有参数的读取请求：段名称，读取偏移量，最大长度。<ul>
-<li>Segment Store确定给定Segment的ContainerId，并验证它是否是给定Segment Container的 Leader 。如果不是，则返回适当的错误代码。</li>
-<li>Segment Store将请求委托给Segment Container实例。</li>
-</ul>
-</li>
-<li><p>Segment Container验证Segment是否属于该Container并且它实际存在。如果没有，它会向客户端返回适当的错误代码。</p>
-<ul>
-<li>在此过程中，它还会获得现有的段ID或分配新段（通过使用段映射器组件）。</li>
-</ul>
-</li>
-<li><p>段容器将请求委托给其读取索引，该索引按照“ 读取索引”部分中的描述处理读取，方法是从存储中发出读取（对于不在缓存中的数据），并根据需要查询/更新缓存。</p>
-</li>
-</ol>
-<h2 id="与Tier-2（存储写入器）同步"><a href="#与Tier-2（存储写入器）同步" class="headerlink" title="与Tier-2（存储写入器）同步"></a>与Tier-2（存储写入器）同步</h2><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2FSegment.Store.SyncTier2.png" alt="Segment.Store.SyncTier2"></p>
-<p>上图描绘了这些步骤（注意步骤编号可能不匹配，但顺序相同）：</p>
-<ol>
-<li>该存储写入的主循环是子组件触发所有这些操作</li>
-<li>从持久日志中读取下一个操作（在每个循环之间，Writer会记住上次处理的操作的序列号是什么）</li>
-<li>处理所有操作，并将其添加到内部段聚合器（每个段一个聚合器）</li>
-<li>符合条件的段聚合器被刷新到存储（资格取决于每个聚合器中收集的数据量，以及是否有排队的Seal，Merge或Truncate操作）<ul>
-<li>每次遇到Append操作时，可能需要访问Read Index以获取追加的内容</li>
-</ul>
-</li>
-<li>在对storage的每次成功修改（写入/密封/连接/截断）之后，都会更新Container Metadata以反映更改。</li>
-<li>该持久日志被截断（如果符合条件）。</li>
-</ol>
-<h2 id="容器启动（正常-恢复）"><a href="#容器启动（正常-恢复）" class="headerlink" title="容器启动（正常/恢复）"></a>容器启动（正常/恢复）</h2><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2FSegment.Store.Recovery.png" alt="Segment.Store.Recovery"></p>
-<p>上图描绘了这些步骤（注意步骤编号可能不匹配，但顺序相同）：</p>
-<ol>
-<li>容器管理器接收在该段存储服务的这个实例中启动容器的请求。<ul>
-<li>它创建，注册和启动Container。</li>
-</ul>
-</li>
-<li>该容器启动持久日志组件。</li>
-<li>持久日志启动恢复过程（由Recovery Executor协调）。</li>
-<li>Recovery Executor从持久数据日志中读取所有数据帧。</li>
-<li>读取数据帧中的反序列化操作将添加到“ 内存操作日志”中。</li>
-<li>所述容器的元数据是由的方式更新操作元数据更新器（同运算处理器内使用的）。</li>
-<li>该读取索引填充了那些适用于IT运营的内容。</li>
-<li>该容器启动存储写入器。<ul>
-<li>该存储写入的主循环开始从处理操作持久化日志，以及在第一次遇到一个新的segment时，它将其内容（和元数据）与存储中存在的实际情况调和。</li>
-</ul>
-</li>
-<li>在Durable Log和Storage Writer都启动后，Container已准备好开始接受新的外部请求。</li>
-</ol>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/5/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/7/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -882,7 +807,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">65</a></div>
+      <div><a href="/archives">66</a></div>
     </div>
     
     

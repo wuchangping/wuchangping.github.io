@@ -68,7 +68,7 @@
     <script defer type="text/javascript" src="/js/index.js"></script>
     
     <script defer type="text/javascript" src="/js/custom.js"></script>
-    <title>正心 取势 明道 优术 合众 践行 - 常平的网站</title>
+    <title>常平的技术博客 - 技术是有生命的，因为它可以进化</title>
   </head>
   <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
     
@@ -76,7 +76,7 @@
   <div class="container">
     <div class="header-container">
       <div class="header-title">
-        <h1 class="title"><a href="/">正心 取势 明道 优术 合众 践行</a></h1>
+        <h1 class="title"><a href="/">常平的技术博客</a></h1>
         <h2 class="subtitle">www.changping.me</h2>
       </div>
       
@@ -115,6 +115,120 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/26/flink-concepts-programming-model/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/26/flink-concepts-programming-model/" itemprop="url">flink handbook - flink数据流编程模型</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-26T06:34:26+08:00">2018-09-26 06:34:26</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="抽象层次"><a href="#抽象层次" class="headerlink" title="抽象层次"></a>抽象层次</h2><p>Flink提供不同级别的抽象来开发流/批处理应用程序。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/levels_of_abstraction.svg" alt="抽象层次"></p>
+<ul>
+<li><p>最低级抽象只提供有状态流。它通过Process Function嵌入到DataStream API中。它允许用户自由处理来自一个或多个流的事件，并使用一致的容错状态。此外，用户可以注册事件时间和处理时间回调，允许程序实现复杂的计算。</p>
+</li>
+<li><p>实际上，大多数应用不需要上述低级抽象，而是针对Core API编程， 如DataStream API（有界/无界流）和DataSet API （有界数据集）。这些流动的API提供了用于数据处理的通用构建块，例如各种形式的用户指定的转换，连接，聚合，窗口，状态等。在这些API中处理的数据类型在相应的编程语言中表示为类。</p>
+</li>
+</ul>
+<p>低级Process Function与DataStream API集成，因此只能对某些操作进行低级抽象。DataSet API提供的有限数据集的其他原语，如循环/迭代。</p>
+<ul>
+<li>Table API是以表为中心的声明性DSL，其可以是动态地改变的表（表示流时）。Table API遵循（扩展）关系模型：表附加了一个模式（类似于在关系数据库中的表），API提供了类似的操作，如选择，项目，连接，分组依据，聚合等。Table API程序以声明方式定义应该执行的逻辑操作，而不是准确指定 操作代码的外观。虽然Table API可以通过各种类型的用户定义函数进行扩展，但它的表现力不如Core API，但使用更简洁（编写的代码更少）。此外，Table API程序还会通过优化程序，在执行之前应用优化规则。</li>
+</ul>
+<p>可以在表和DataStream / DataSet之间无缝转换，允许程序混合Table API以及DataStream 和DataSet API。</p>
+<ul>
+<li>Flink提供的最高级抽象是SQL。这种抽象在语义和表达方面类似于Table API，但是将程序表示为SQL查询表达式。在SQL抽象与 Table API紧密地相互作用，和SQL查询可以在Table API中定义的表上执行。</li>
+</ul>
+<h2 id="程序和数据流"><a href="#程序和数据流" class="headerlink" title="程序和数据流"></a>程序和数据流</h2><p>Flink程序的基本构建块是流和转换。（请注意，Flink的DataSet API中使用的DataSet也是内部流 - 稍后会详细介绍。）从概念上讲，流是（可能永无止境的）数据记录流，而转换是将一个或多个流作为输入，并产生一个或多个流输出的结果。</p>
+<p>执行时，Flink程序映射到流数据流，由流和转换运算符组成。每个数据流都以一个或多个源开头，并以一个或多个接收器结束。数据流类似于任意有向无环图 （DAG）。尽管通过迭代结构允许特殊形式的循环 ，但为了简单起见，我们将在大多数情况下对此进行掩饰。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/program_dataflow.svg" alt="DataStream程序及其数据流"></p>
+<p>通常，程序中的转换与数据流中的运算符之间存在一对一的对应关系。但是，有时一个转换可能包含多个转换运算符。</p>
+<p>源流和接收器记录在流连接器和批处理连接器文档中。DataStream运算符和DataSet转换中记录了转换。</p>
+<h2 id="并行数据流"><a href="#并行数据流" class="headerlink" title="并行数据流"></a>并行数据流</h2><p>Flink中的程序本质上是并行和分布式的。在执行期间，流具有一个或多个流分区，并且每个运算符具有一个或多个运算符子任务。运算符子任务彼此独立，并且可以在不同的线程中执行，并且可能在不同的机器或容器上执行。</p>
+<p>运算符子任务的数量是该特定运算符的并行度。流的并行性始终是其生成运算符的并行性。同一程序的不同运算符可能具有不同的并行级别。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/parallel_dataflow.svg" alt="并行数据流"></p>
+<p>流可以以一对一（或转发）模式或以重新分发模式在两个算子之间传输数据：</p>
+<ul>
+<li><p>一对一流（例如，在上图中的Source和map（）算子之间）保留元素的分区和排序。这意味着map（）算子的subtask [1] 将以与Source算子的subtask [1]生成的顺序相同的顺序看到相同的元素。</p>
+</li>
+<li><p>重新分配流（在上面的map（）和keyBy / window之间，以及 keyBy / window和Sink之间）重新分配流。每个算子子任务将数据发送到不同的目标子任务，具体取决于所选的转换。实例是 keyBy（） （其通过散列密钥重新分区），广播（） ，或重新平衡（） （其重新分区随机地）。在重新分配交换中，元素之间的排序仅保留在每对发送和接收子任务中（例如，map（）的子任务[1] 和子任务[2]keyBy / window）。因此，在此示例中，保留了每个密钥内的排序，但并行性确实引入了关于不同密钥的聚合结果到达接收器的顺序的非确定性。</p>
+</li>
+</ul>
+<p>有关配置和控制并行性的详细信息，请参阅并行执行的文档。</p>
+<h2 id="视窗"><a href="#视窗" class="headerlink" title="视窗"></a>视窗</h2><p>聚合事件（例如，计数，总和）在流上的工作方式与批处理方式不同。例如，不可能计算流中的所有元素，因为流通常是无限的（无界）。相反，流上的聚合（计数，总和等）由窗口限定，例如“在最后5分钟内计数”或“最后100个元素的总和”。</p>
+<p>Windows可以是时间驱动的（例如：每30秒）或数据驱动（例如：每100个元素）。一个典型地区分不同类型的窗口，例如翻滚窗口（没有重叠）， 滑动窗口（具有重叠）和会话窗口（由不活动的间隙打断）。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/windows.svg" alt="时间和计数Windows"></p>
+<p>更多窗口示例可以在此博客文章中找到。更多详细信息在窗口文档中。</p>
+<h2 id="时间"><a href="#时间" class="headerlink" title="时间"></a>时间</h2><p>当在流程序中引用时间（例如定义窗口）时，可以参考不同的时间概念：</p>
+<ul>
+<li><p>事件时间是创建事件的时间。它通常由事件中的时间戳描述，例如由生产传感器或生产服务附加。Flink通过时间戳分配器访问事件时间戳。</p>
+</li>
+<li><p>摄取时间是事件在源操作员处输入Flink数据流的时间。</p>
+</li>
+<li><p>处理时间是执行基于时间的操作的每个算子的本地时间。</p>
+</li>
+</ul>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/event_ingestion_processing_time.svg" alt="事件时间，摄取时间和处理时间"></p>
+<p>有关如何处理时间的更多详细信息，请参阅<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/event_time.html" target="_blank" rel="noopener">事件时间文档</a>。</p>
+<h2 id="有状态的操作"><a href="#有状态的操作" class="headerlink" title="有状态的操作"></a>有状态的操作</h2><p>虽然数据流中的许多操作只是一次查看一个单独的事件（例如事件解析器），但某些操作会记住多个事件（例如窗口操作符）的信息。这些操作称为有状态。</p>
+<p>状态操作的状态保持在可以被认为是嵌入式键/值存储的状态中。状态被分区并严格地与有状态算子读取的流一起分发。因此，只有在keyBy（）函数之后才能在键控流上访问键/值状态，并且限制为与当前事件的键相关联的值。对齐流和状态的密钥可确保所有状态更新都是本地操作，从而保证一致性而无需事务开销。此对齐还允许Flink重新分配状态并透明地调整流分区。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/state_partitioning.svg" alt="状态和分区"></p>
+<p>有关更多信息，请参阅有关状态的文档。</p>
+<h2 id="容错检查点"><a href="#容错检查点" class="headerlink" title="容错检查点"></a>容错检查点</h2><p>Flink使用流重放和检查点的组合实现容错。检查点与每个输入流中的特定点以及每个算子的对应状态相关。通过恢复算子的状态并从检查点重放事件，可以从检查点恢复流数据流，同时保持一致性（恰好一次处理语义）。</p>
+<p>检查点间隔是在执行期间用恢复时间（需要重放的事件的数量）来折衷容错开销的手段。</p>
+<p><a href="https://ci.apache.org/projects/flink/flink-docs-master/internals/stream_checkpointing.html" target="_blank" rel="noopener">容错内部</a>的描述提供了有关Flink如何管理检查点和相关主题的更多信息。有关启用和配置检查点的详细信息，请参阅检查点API文档。</p>
+<h2 id="批处理流"><a href="#批处理流" class="headerlink" title="批处理流"></a>批处理流</h2><p>Flink执行<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/index.html" target="_blank" rel="noopener">批处理程序</a>作为流程序的特殊情况，其中流是有界的（有限数量的元素）。数据集做为数据流在内部处理。因此，上述概念以适用于流程序相同的方式应用于批处理程序，只是少数例外：</p>
+<ul>
+<li><p><a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/fault_tolerance.html" target="_blank" rel="noopener">批处理程序的容错</a>不使用检查点。而是通过完全重放流来恢复。这是可能的，因为输入是有界的。这会使成本更多高，但却使常规处理更便宜，因为它避免了检查点。</p>
+</li>
+<li><p>DataSet API中的有状态操作使用简化的内存/核外数据结构，而不是键/值索引。</p>
+</li>
+<li><p>DataSet API引入了特殊的同步（基于超前的）迭代，这在有界流上是可行的。有关详细信息，请查看<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/iterations.html" target="_blank" rel="noopener">迭代文档</a>。</p>
+</li>
+</ul>
+<h2 id="下一步"><a href="#下一步" class="headerlink" title="下一步"></a>下一步</h2><p>Flink的Distributed Runtime。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/24/flink-apache-flink-home/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -122,7 +236,7 @@
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+        <meta itemprop="name" content="常平的技术博客">
       </span>
     </div>
     <header class="post-header">
@@ -195,7 +309,7 @@
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+        <meta itemprop="name" content="常平的技术博客">
       </span>
     </div>
     <header class="post-header">
@@ -260,7 +374,7 @@
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+        <meta itemprop="name" content="常平的技术博客">
       </span>
     </div>
     <header class="post-header">
@@ -355,7 +469,7 @@
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+        <meta itemprop="name" content="常平的技术博客">
       </span>
     </div>
     <header class="post-header">
@@ -430,7 +544,7 @@
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+        <meta itemprop="name" content="常平的技术博客">
       </span>
     </div>
     <header class="post-header">
@@ -527,7 +641,7 @@
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+        <meta itemprop="name" content="常平的技术博客">
       </span>
     </div>
     <header class="post-header">
@@ -613,7 +727,7 @@
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
+        <meta itemprop="name" content="常平的技术博客">
       </span>
     </div>
     <header class="post-header">
@@ -702,99 +816,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/21/pravega-streaming-put-several-event-types-kafka-topic/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="正心 取势 明道 优术 合众 践行">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/21/pravega-streaming-put-several-event-types-kafka-topic/" itemprop="url">应该在同一个Kafka主题中放入几种事件类型吗？</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-21T06:46:43+08:00">2018-09-21 06:46:43</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>如果您采用Apache Kafka等流平台，有个很重要的问题是：将使用哪些主题？特别是，如果要将一堆不同的事件作为消息发布到Kafka，是将它们放在同一主题中，还是将它们拆分为不同的主题？</p>
-<p>主题最重要的功能是允许使用者指定它想要使用的消息子集。在一个极端情况下，所有数据都放在一个主题中可不是一个好主意，因为这意味着消费者无法选择感兴趣的事件 - 给他们的只会是所有的内容。在另一个极端，拥有数百万个不同的主题也不是一个好事，因为Kafka中的每个主题都会消耗资源消耗，因此拥有大量的主题就会对性能不利。</p>
-<p>实际上，从性能的角度来看，重要的是分区数量。但由于Kafka中的每个主题至少有一个分区，如果你有n个主题，那么就不可避免地至少有n个分区。不久之前，[Jun Rao撰写了一篇博文]，解释了拥有多个分区的成本（端到端延迟，文件描述符，内存开销，故障后的恢复时间）。根据经验，如果您关注延迟问题，您应该关注每个代理节点上的（数量级）数百个主题分区。如果每个节点有数万个甚至数千个分区，则延迟会受到影响。</p>
-<p>该性能参数给设计主题的结构提供了一些指导：如果您发现自己有数千个主题，那么将一些细粒度，低吞吐量的主题合并到粗粒度主题中是明智之举，从而减少分区的扩散。</p>
-<p>然而，性能问题并不是结束。在我看来，更重要的是您的主题结构的数据完整性和数据建模方面。我们将在本文的其余部分讨论这些内容。</p>
-<h2 id="主题-相同类型的事件的集合？"><a href="#主题-相同类型的事件的集合？" class="headerlink" title="主题=相同类型的事件的集合？"></a>主题=相同类型的事件的集合？</h2><p>常见的想法（根据我所拥有的几个对话，并根据邮件列表）似乎是：将同类型的所有事件放在同一主题中，并针对不同的事件类型使用不同的主题。这种思路让人联想到关系数据库，其中表是具有相同类型（即同一组列）的记录的集合，因此我们在关系表和Kafka主题之间进行类比。</p>
-<p>该<a href="https://www.confluent.io/confluent-schema-registry/" target="_blank" rel="noopener">融合模式的注册表</a>本质上强化了这种模式，因为它鼓励你在主题中的所有消息使用相同的Avro模式。该模式可以在保持兼容性的同时进化（例如，通过添加可选字段），但最终所有消息都必须符合某种记录类型。在我们介绍了更多背景之后，我们将在后面的帖子中再次讨论这个问题。</p>
-<p>对于某些类型的流数据（例如记录的活动事件），要求同一主题中的所有消息都符合相同的模式是有意义的。但是，有些人正在使用Kafka来实现更多类似数据库的目的，例如事件溯源，或者在微服务之间交换数据。在这种情况下，我相信，它定义一个主题为一组具有相同模式的消息并不重要。更重要的是Kafka维护主题分区内的消息排序。</p>
-<p>想象一下，您有一些事物（比如客户），并且该事物可能发生许多不同的事情：创建客户，客户更改地址，客户向其帐户添加新信用卡，客户进行客户支持查询，客户支付发票，客户关闭其帐户。</p>
-<p>这些事件的顺序很重要。例如，我们期望在客户做任何动作之前创建客户，并且我们也期望在客户关闭其帐户之后不再发生任何其他事情。使用Kafka时，您可以通过将它们全部放在同一个分区中来保留这些事件的顺序。在此示例中，您将使用客户ID作为分区键，然后将所有这些不同的事件放在同一主题中。它们必须位于同一主题中，因为不同的主题意味着不同的分区，并且不会跨分区保留排序。</p>
-<h2 id="排序问题"><a href="#排序问题" class="headerlink" title="排序问题"></a>排序问题</h2><p>如果你没有使用（比方说）不同的主题<code>customerCreated</code>，<code>customerAddressChanged</code>和<code>customerInvoicePaid</code>事件，然后这些议题的消费者可能会看到荒谬的事件顺序。例如，消费者可能会看到不存在的客户的地址更改（因为尚未创建，因为相应的<code>customerCreate</code>事件已被延迟）。</p>
-<p>如果消费者暂停一段时间（可能是维护或部署新版本），则重新排序的风险尤其高。当消费者停止时，事件将继续发布，并且这些事件将存储在Kafka代理的选定主题分区中。当消费者再次启动时，它会消耗来自其所有输入分区的积压事件。如果消费者只有一个输入，那就没问题了：挂起的事件只是按照它们存储的顺序依次处理。但是，如果消费者有几个输入主题，它将选择输入主题以按任意顺序读取。它可以在读取另一个输入主题上的积压之前从一个输入主题读取所有挂起事件，或者它可以以某种方式交错输入。</p>
-<p>因此，如果你把<code>customerCreated</code>，<code>customerAddressChanged</code>以及<code>customerInvoicePaid</code>事件在三个独立的主题，消费者可能会看到所有的<code>customerAddressChanged</code>事件，它看到任何之前<code>customerCreated</code>的事件。因此，消费者可能会看到一个<code>customerAddressChanged</code>客户的事件，根据其对世界的看法，尚未创建。</p>
-<p>您可能想要为每条消息附加时间戳，并将其用于事件排序。如果要将事件导入数据仓库，您可以在事后对事件进行排序，这可能就可以了。但是在流进程中，时间戳是不够的：如果你得到一个具有特定时间戳的事件，你不知道你是否仍然需要等待一个时间戳较低的先前事件，或者所有之前的事件是否已到达而你是’准备好处理这个事件。依靠时钟同步通常会导致噩梦;</p>
-<h2 id="何时分割主题，何时结合？"><a href="#何时分割主题，何时结合？" class="headerlink" title="何时分割主题，何时结合？"></a>何时分割主题，何时结合？</h2><p>鉴于这种背景，我将提出一些经验法则来帮助您确定在同一主题中放入哪些内容，以及将哪些内容拆分为单独的主题：</p>
-<ol>
-<li><p>最重要的规则是，  任何需要保持固定顺序的事件必须放在同一主题中（并且它们也必须使用相同的分区键）。最常见的是，如果事件的顺序与同一事物有关，则事件的顺序很重要。因此，根据经验，我们可以说关于同一事物的所有事件都需要在同一主题中。如果您使用事件排序方法进行数据建模，事件的排序尤为重要。这里，聚合对象的状态是通过以特定顺序重放它们来从事件日志中导出的。因此，即使可能存在许多不同的事件类型，定义聚合的所有事件也必须在同一主题中。</p>
-</li>
-<li><p>当您有关于不同事物的事件时，它们应该是相同的主题还是不同的主题？我想说，如果一个事物依赖于另一个事物（例如，一个地址属于一个客户），或者如果它们经常需要在一起，那么它们也可能会出现在同一个主题中。另一方面，如果它们不相关并由不同的团队管理，则最好将它们放在单独的主题中。它还取决于事件的吞吐量：如果一个事物类型具有比另一个事物类型高得多的事件，它们是更好地分成单独的主题，以避免压倒性的消费者只想要具有低写入吞吐量的事物（参见第4点）。但是，几个都具有低事件率的事物可以很容易地合并。</p>
-</li>
-<li><p>如果一个事件涉及多个事物怎么办？例如，购买涉及产品和客户，并且从一个帐户到另一个帐户的转移涉及至少那两个帐户。我建议最初将事件记录为单个原子消息，而不是将其分成几个消息。主题，最好以完全按照您收到的方式记录事件，并尽可能采用原始形式。您可以随后使用流处理器拆分复合事件 - 但如果您过早地将其拆分，则重建原始事件要困难得多。更好的是，您可以为初始事件提供唯一ID（例如UUID）; 以后，当您将原始事件拆分为每个涉及的事物的一个事件时，您可以将该ID转发，从而使每个事件的起源都可追溯。</p>
-</li>
-<li><p>查看消费者需要订阅的主题数量。如果几个消费者都阅读了一组特定的主题，这表明可能应该将这些主题组合在一起。如果将细粒度的主题组合成粗粒度的主题，一些消费者可能会收到他们需要忽略的不需要的事件。这不是什么大问题：消费来自Kafka的消息非常便宜，所以即使消费者最终忽略了一半的事件，这种过度消费的成本可能也不大。只有当消费者需要忽略绝大多数消息（例如99.9％是不需要的）时，我才建议从高容量流中分割低容量事件流。</p>
-</li>
-<li><p>Kafka Streams状态存储（KTable）的更改日志主题应与所有其他主题分开。在这种情况下，主题由Kafka Streams流程管理，不应与其他任何内容共享。</p>
-</li>
-<li><p>最后，如果上述规则都没有告诉您是否将某些事件放在同一主题或不同主题中，该怎么办？然后，通过将相同类型的事件放在同一主题中，通过所有方法将它们按事件类型分组。但是，我认为这条规则是最不重要的。</p>
-</li>
-</ol>
-<h2 id="模式管理"><a href="#模式管理" class="headerlink" title="模式管理"></a>模式管理</h2><p>如果您使用的是数据编码（如JSON），而没有静态定义的模式，则可以轻松地将许多不同的事件类型放在同一主题中。但是，如果您使用的是基于模式的编码（如Avro），则需要更多地考虑在单个主题中处理多个事件类型。</p>
-<p>如上所述，基于Avro的<code>Kafka Confluent Schema Registry</code>目前依赖于每个主题都有一个模式的假设（或者更确切地说，一个模式用于密钥，一个模式用于消息的值）。您可以注册新版本的模式，注册表会检查模式更改是向前还是向后兼容。这个设计的一个好处是，您可以让不同的生产者和消费者同时使用不同的模式版本，并且它们仍然保持彼此兼容。</p>
-<p>更确切地说，当Confluent的Avro序列化程序在注册表中注册模式时，它会在主题名称下注册。默认情况下，该主题<code>&lt;topic&gt;-key</code>用于消息键和<code>&lt;topic&gt;-value</code>消息值。然后，模式注册表检查在特定主题下注册的所有模式的相互兼容性。</p>
-<p>我最近对<a href="https://github.com/confluentinc/schema-registry/pull/680" target="_blank" rel="noopener">Avro序列化程序进行了修补</a>，使兼容性检查更加灵活。该补丁添加了两个新的配置选项:(<code>key.subject.name.strategy</code>定义如何构造消息键的主题名称），以及<code>value.subject.name.strategy</code>（如何构造消息值的主题名称）。选项可以采用以下值之一：</p>
-<ul>
-<li><p><code>io.confluent.kafka.serializers.subject.TopicNameStrategy</code>（默认值）：消息键的主题名称是<code>&lt;topic&gt;-key</code>，<code>&lt;topic&gt;-value</code>对于消息值。这意味着主题中所有消息的模式必须相互兼容。</p>
-</li>
-<li><p><code>io.confluent.kafka.serializers.subject.RecordNameStrategy</code>：主题名称是邮件的Avro记录类型的完全限定名称。因此，模式注册表会检查特定记录类型的兼容性，而不考虑主题。此设置允许同一主题中的任意数量的不同事件类型。</p>
-</li>
-<li><p><code>io.confluent.kafka.serializers.subject.TopicRecordNameStrategy</code>：主题名称是<code>&lt;topic&gt;-&lt;type&gt;</code>，<code>&lt;topic&gt;Kafka</code>主题名称在哪里，并且<type>是邮件的Avro记录类型的完全限定名称。此设置还允许同一主题中的任意数量的事件类型，并进一步将兼容性检查限制为仅当前主题。</type></p>
-</li>
-</ul>
-<p>使用此新功能，可以轻松，干净地将特定事物的所有不同事件放在同一主题中。现在，可以根据上述条件自由选择主题的粒度，而不仅限于每个主题的单个事件类型。</p>
-<h2 id="原文："><a href="#原文：" class="headerlink" title="原文："></a>原文：</h2><p>[1] <a href="https://www.confluent.io/blog/put-several-event-types-kafka-topic/" target="_blank" rel="noopener">https://www.confluent.io/blog/put-several-event-types-kafka-topic/</a>, Martin KleppmannMartin Kleppmann</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/4/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/6/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -820,7 +841,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">65</a></div>
+      <div><a href="/archives">66</a></div>
     </div>
     
     
