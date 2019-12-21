@@ -115,6 +115,156 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/06/23/distributed-streaming-refactor-iot-platform/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/06/23/distributed-streaming-refactor-iot-platform/" itemprop="url">重构工业物联网大数据处理平台的存储栈</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-06-23T21:32:38+08:00">2019-06-23 21:32:38</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>本文为《下一个分布式存储系统，为万物互联的智能世界而发》升级版。</p>
+<h2 id="导言"><a href="#导言" class="headerlink" title="导言"></a><font color="#FF8C00">导言</font></h2><p>纵观人类历史，各种技术变革都是以人类活动为中心，然后发明各种工具。石器时代，原始人发明了石器以及用火从而提升了生活品质和社会文明。现代社会，人类为了解决各种寂寞空虚冷吃穿住用行、生理和心理上的各种需求从而发明了各种社交空间、社交工具、网络购物、生活服务APP等，为了更好的服务这些应用场景，挖掘这些场景所生产的数据的价值，从而有了今天的各种大数据技术。</p>
+<p>在互联网时代，数据主要来源于网页、APP以及一些相应的日志系统，而在万物互联的世界，数据还可以来源于有各种传感器、工业设备、监控设备、检测设备、智能家居、自动驾驶等。大数据的四个特征：数据量、时效性、多样性、价值密度在万物互联的场景下被进一步的深化，这就意味着商业成本以及技术成本的增加。</p>
+<p>理论奠定技术的基础，业务驱使技术的变革。在万物互联的智能时代，我们有一个愿景：<font color="#FF0000"> <strong>能够将万物互联下生成的海量原始数据转化为可用的信息以及行为决策，并且这个转换的时间差需要能够接近于零。</strong></font>通过现有技术的组合，技术人员打造了工业物联网平台从而希望能达成这个愿景。</p>
+<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>现有的工业物联网大数据处理平台很多是基于开源的技术<font color="#00CED1"><strong>“D-I-Y”</strong></font>而来，它是一个”DIY“系统，往往为了一个功能而引入一个复杂的组件，这就容易造成平台只关注功能而忽略“质量与约束”，在复杂之上堆积复杂，致使客户商业成本、技术成本以及运维成本高昂。</p>
+<p>从商业角度来说，在构建物联网大数据处理平台的时候，大家都用的开源的技术，构建出来的平台同质化严重，那么有个问题需要回答的就是：“大家都用的同样的开源技术，客户凭什么需要买单你的？”</p>
+<p>从产品的角度来看，一个好的产品既能<font color="#00CED1"><strong>“顶天”</strong></font>，还能<font color="#00CED1"><strong>“立地”</strong></font>，它除了能有自己独到的灵魂与创新，还能将自己扎根于用户，替客户解决实际的生产问题，而不是又给客户带来新的问题。然而现有的工业物联网大数据处理平台除了给客户解决了一部分的生产问题，但是又引入了新的问题：成本高昂以及平台质量还往往难以达标。</p>
+<font color="#00CED1"><strong>新的技术不仅可以来源于已有技术的组合与进化，还可以来自于对现有现象的理解与征服。</strong></font>因此，出于对现有的工业物联网平台的理解以及降低客户的商业成本、技术成本以及运维成本的目的，这里提出了重构工业物联网大数据平台存储栈的理念。<br><br><font> </font>
+
+
+
+<h2 id="工业物联网平台"><a href="#工业物联网平台" class="headerlink" title="工业物联网平台"></a><font color="#FF8C00">工业物联网平台</font></h2><p>如下图所示，通常一个工业物联网平台是以<font color="#FF0000"> <strong>“云-管-端”</strong></font>三部分组成的，类似x86服务器主板南桥北桥的叫法，工业物联网平台也是如此，在“管”的左边跟外设传感器之类打交道的地方我们称之为“南向”，跟数据处理相关“管”的右边我们称之为“北向”。南向由各种传感器以及SCADA/PLC/HMI组成，负责数据的采集，然后数据再经过RTU、DTU、网关或路由传输到云端的工业大数据处理平台进行处理，从而完成监控、告警、预测性维护、分析等功能。</p>
+<p>​                             </p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/iot_platform.PNG" alt="工业物联网平台"></p>
+<h5 id="流数据-时序数据"><a href="#流数据-时序数据" class="headerlink" title="流数据/时序数据"></a><font color="#FF00FF">流数据/时序数据</font></h5><p>如下表所示，工业物联网平台南向传感器采集的数据，具有时间属性并且自带标签与数值，每条数据代表一个监测指标并且反应数值的变化，同时这些数据又随时间延续而无限增长，因此被称之为流数据或时序数据。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/iot_data_format.PNG" alt="时序数据"></p>
+<p> 南向采集数据的设备虽然多种多样，然而本质上它们的数据格式是一样的，都由“timestamp,tags,metrics”这三部分组成。数据格式看上去是很简单的，但是对于数据处理系统来说复杂度的来源在于：</p>
+<ol>
+<li>数据自带时间戳具有时间有效性，这意味着数据处理的实时性;</li>
+<li>数据都是小数据，这意味着数据存储系统需要对此进行专门的高性能设计；</li>
+<li>数据随时间延续而无限增长，这意味着数据的无限性；</li>
+<li>数据到达的速度有快有慢、负载有高有低，这意味着灵活又细粒度的资源弹性需求；</li>
+<li>数据有序、无序、持久化以及复杂的传输环境而又要保证数据处理结果的唯一正确性。</li>
+</ol>
+<p>这是几个特性转换成存储技术的语义对应着：<font color="#FF0000"> <strong>实时性、高性能、无限性、可伸缩性以及恰好一次：持久化、有序、一致性以及事务。</strong></font>从<font color="#FF0000"> <strong>存储的视角</strong></font>来说，每种类型的数据都有其原生的属性和需求，对应有最佳的适用场景以及最合适的存储系统。那么目前又有哪种存储系统最适合用于<font color="#FF0000"> <strong>“流数据”</strong></font>呢？正如当前技术条件下最适合<font color="#FF0000"> <strong>“流数据”</strong></font>计算的是类似Flink这样的分布式流计算应用，最适合“流数据”的我们认为应当是专门针对流数据而设计的<font color="#00CED1"><strong>分布式流存储系统。</strong></font> </p>
+<h5 id="工业大数据处理"><a href="#工业大数据处理" class="headerlink" title="工业大数据处理"></a><font color="#FF00FF">工业大数据处理</font></h5><p>工业物联网平台北向负责大数据的处理，万物互联场景下无限量的数据给数据处理技术带来巨大的挑战与压力，不同的应用场景意味着不同的数据处理要求与复杂度，要把这些不同的甚至矛盾的数据处理要求都很好的综合在一个大数据处理系统里，对现有的大数据处理技术来说是个非常大的挑战，比如无人车的处理要求毫秒甚至纳秒级的数据处理实时性、而有些工业设备数据只需要分析历史数据，要让一个大数据处理系统既能能处理历史数据又能提供毫秒级甚至纳秒级的实时性处理能力还能应对各种不同格式不同传输场景的数据，而且每种数据处理都能达到这些应用场景原生指标的处理需求，相信这样的场景对工程技术人员来说是个很大的挑战。为了解决上述问题，按照现有的成熟的技术能力，通常开发人员采用类似Lambda架构（如下图）这样的大数据处理平台组合了各种复杂的中间件来达成这个数据处理的目标。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/streaming-bigdata-lambda-arch.PNG" alt="Lambda架构"></p>
+<p>Lambda架构即支持批处理也支持实时处理，能应对数据的多样性、具有容错功能、复杂性分离、能处理流式数据也能处理历史数据等优点，但是缺点也很明显：批处理一套独立的数据处理路径，实时处理又一套数据处理路径，然后还要合并结果再输出展示，同时系统里同样的数据存在存储多份的问题，比如同样的数据在Elasticsearch里有、HDFS里有、ceph里有、Kafka里也有，除了这些甚至还存在其他一些复杂的存储组件，而且同样的数据还都是多份冗余的，因此存储成本太高太过于复杂。Lambda架构里为了提供一个功能却引入一个组件，在复杂之上堆积复杂，存储成本、开发与运维成本都太过于复杂。</p>
+<p>那么应当如何解决Lambda架构带来的这些缺点？<font color="#FF0000"><strong>以数据流向为核心</strong></font>重构大数据处理平台是一个比较好的方案，它具体包括数据的采集、聚合、传输、处理、展示等。依据这种设计理念我们可以推出一个端到端的原生的流式大数据处理平台：原生的流式计算加上一个原生的流式存储并且可以平衡商业成本与技术成本。</p>
+<p>流式计算可以采用Flink，然而并没有发现当前有合适的流式存储可以使用，因此，综合思考万物互联场景下的数据处理场景也需要一个原生的分布式流存储系统，<font color="#FF0000"><strong>重构Lambda架构里的存储栈</strong></font>，使得分布式流计算加上分布式流存储即为原生的流式大数据处理系统，同时还能很好的平衡商业成本与技术成本之间的关系。</p>
+<h2 id="设计思路"><a href="#设计思路" class="headerlink" title="设计思路"></a><font color="#FF8C00">设计思路</font></h2><h3 id="数据中台"><a href="#数据中台" class="headerlink" title="数据中台"></a><font color="#00CED1">数据中台</font></h3><p>通常数据中台的目标是：<font color="#FF0000"><strong>“治理与聚合数据，将数据抽象封装成服务提供给前台业务使用”</strong></font>，因此，数据的治理、聚合以及抽象是数据中台的关键点。当前的大数据处理平台，不管是Kappa架构还是lambda架构，数据的存储都是多组件化、多份化的。比如同样的数据在Kafka里有、在HDFS里有、在Elasticsearch里又有，有些用户还使用了更多的存储中间件，而且这些数据还是多份冗余的。这一方面增加了数据的存储成本，另一方面也降低了数据的可信性、可靠性、合规性，给数据标准化以及数据的重复利用带来了困难，不利于数据的分享、合规、降低成本以及安全可靠地支持业务和决策。因此需要对数据进行治理、聚合以及抽象。通过使用分布式流存储，大数据处理平台的架构可以进化成<font color="#FF0000"><strong>”分布式流计算+ 分布式流存储“</strong></font>这样的原生流式数据处理平台架构，这也体现了<font color="#FF0000"><strong>“数据中台”</strong></font>的理念。</p>
+<h3 id="流原生架构"><a href="#流原生架构" class="headerlink" title="流原生架构"></a><font color="#00CED1">流原生架构</font></h3><p>依据<font color="#FF0000"> <strong>“流原生”</strong> </font>的架构设计哲学以及数据中台的理念，这里提出<font color="#FF0000"><strong>”分布式流计算+ 分布式流存储“</strong></font>这样的原生流式工业大数据处理平台的架构理念，不同于Lambda架构与Kappa架构，流原生架构最主要的工作是对数据进行了治理、聚合与抽象，使得工业大数据平台的计算层通过统一的数据API接口调用底层的流存储系统。如下图所示，Spark,Flink以及检索系统等都调用统一的流存储接口，从而减少了平台复杂度以及降低数据存储成本和运维成本。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/stream_native_platform.PNG" alt="流原生架构"></p>
+<h3 id="算子编排"><a href="#算子编排" class="headerlink" title="算子编排"></a><font color="#00CED1">算子编排</font></h3><p>工业大数据处理平台虽然很复杂，然而抽象到最后就一个简单的数学公式：<font color="#FF0000"><strong>“Y = F(X)”</strong></font>，输入数据x，经过F算子计算再输出结果Y，数学表达式并不复杂，如同质能方程E=mc²，但是从理论到落地还有一个浩大的工程，Y=F(x)其复杂度主要来源于：</p>
+<ol>
+<li><p>每个数据算子都认为是一个Y=F(x)，需要对无数个这样的算子进行高性能的计算，算子无限性；</p>
+</li>
+<li><p>需要对无限个随时可能乱序的Y=F(x)算子进行编排、组合、拆分，算子编排。</p>
+</li>
+<li>需要对无限个Y=F(x)算子的中间结果进行持久化、保序，以及保证计算结果的正确性，算子结果确定性；</li>
+</ol>
+<p>因此需要一个专门的数据处理架构来解决这些复杂度。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/stream_platform.PNG" alt="流式架构"></p>
+<p>如上图所示，“流原生”的Flink计算加上“流原生”的存储管道组成了“流原生”的大数据处理平台。数据从分布式流存储输入经过map算子计算，输出中间计算结果到分布式流存储里，数据又从分布式流存储里读入到Filter算子里，再经过计算，中间结果放到了分布式流存储里，再最后的计算结果经过Apply算子的计算放到了目的地的分布式流存储里。这个过程体现了算子编排和管道式编程的设计哲学，在这里分布式流存储起了大数据处理平台里的管道的作用。</p>
+<h2 id="分布式流存储"><a href="#分布式流存储" class="headerlink" title="分布式流存储"></a><font color="#FF8C00">分布式流存储</font></h2><p>分布式流存储的产品定位是给万物互联这样的应用场景服务的，从技术角度来看它具有自身的特点，正如标题里提到的三个关键词：<font color="#FF8C00"> <strong>“分布式”、“流”、“存储”</strong></font>。首先是分布式的，它具有分布式系统本身所具有的一切能力，接着表示是专门给流式数据设计和实现的，最后的存储表示的是一个原生的存储解决方案，它讲究数据的<font color="#FF8C00"> <strong>可靠性、持久化、一致性、资源隔离等</strong></font>，它从<font color="#FF0000"> <strong>存储的视角</strong></font>处理流数据。分布式流存储针对 <strong>“流数据”</strong> 的自身属性以及相应的特殊的业务需求场景做了专门的设计与实现，下面从<font color="#FF8C00"> <strong>命名空间、业务场景、无限性、可伸缩性、恰好一次、字节流、数据管道、租户隔离、海量小文件</strong></font>的角度依据 <strong>最佳实践原则</strong> 讲述了为什么需要专门设计和实现一个流式存储系统。</p>
+<h3 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a><font color="#00CED1">命名空间</font></h3><p>通常，块存储系统以<font color="#FF0000"><strong>分区、目录、文件</strong></font>，文件存储系统以<font color="#FF0000"><strong>目录、文件</strong></font>，以及对象存储以<font color="#FF0000"><strong>租户、桶、对象</strong></font>来定义数据的存储路径以及命名空间，而流存储系统则以<font color="#FF0000"><strong>范围(scope)、流(stream)、段(segment)、事件(event)</strong></font>来描述数据的存储路径以及命名空间。</p>
+<div align="center"> 
+
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>命名空间</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>块存储</td>
+<td>分区、目录、文件</td>
+</tr>
+<tr>
+<td>文件存储</td>
+<td>目录、文件</td>
+</tr>
+<tr>
+<td>对象存储</td>
+<td>租户、桶、对象</td>
+</tr>
+<tr>
+<td>流存储</td>
+<td>范围、流、段、事件</td>
+</tr>
+</tbody>
+</table>
+<div align="left"> 
+
+<p>在流存储系统里，如下图所示，数据的组织形式被抽象成范围、流、段和事件，范围由流组成，流由段组成，段由事件组成，事件由字节(bytes)组成。</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-scope-stream.png" alt="流的组成"></p>
+<div align="left"> 
+
+
+
+<h3 id="业务场景"><a href="#业务场景" class="headerlink" title="业务场景"></a><font color="#00CED1">业务场景</font></h3><p>在自动驾驶的场景里采用分布式流存储，我们可以这样处理自动驾驶的数据：给每一辆无人车定义一个1TB存储空间的范围，车上的每个传感器都归属于一个流，传感器上报的事件都在段内持久化。再假设每辆车都有1000个传感器（实际情况只多不少），那么10万辆车就需要定义1亿个流，可以想象要进行这种规模的隔离也就只有这种专门针对流数据而设计的流存储系统能够支持。</p>
+<p>在工业厂房的场景下，还可以这样定义工业设备的数据：给一个厂房里的每台设备定义一个范围，每台设备里的每个传感器都对应一个流，传感器上传的事件数据保存在流内的段里，这样就很方便的对工业设备进行了大规模的租户数据隔离。</p>
+<p>因此，以<font color="#FF0000"><strong>“范围、流、段、事件”</strong></font>的方式很方便的进行了大规模的租户隔离保证了用户信息安全同时又进行了存储资源配额的隔离。</p>
+<h3 id="数据无限性"><a href="#数据无限性" class="headerlink" title="数据无限性"></a><font color="#00CED1">数据无限性</font></h3><p>无限性是分布式流存储最为重要的设计原则。从流数据的角度来看，数据是大量、快速、连续而又无限的，这就给流存储系统的设计与实现带来极大的困难，无限的数据使得存储系统必须能支持连续且无限规模的数据流，光这一点就对存储系统的可扩展性要求非常的高，同时还要求存储系统能够根据到达的数据量动态而又优雅地进行扩容与缩容。从技术与成本的角度来看，数据无限性意味着冷热数据分离，长期不用的数据淘汰到长期存储系统里，热点数据需要缓存，同时还需要能支持历史数据的读取与实时数据的读取与写入。</p>
+<h3 id="可伸缩性"><a href="#可伸缩性" class="headerlink" title="可伸缩性"></a><font color="#00CED1">可伸缩性</font></h3><p>可伸缩性也是分布式流存储最为重要的设计原则之一，而且流存储里的可伸缩性要求还是自动化的资源细粒度的可伸缩。通常，在云原生的场景下，资源的缩放是以主机、虚机或容器为单位的，这样的缩放对流存储来说粒度太大。在流存储的场景下需要能够以数据的<strong>“流段”</strong>为单位，比如一个流段2MB，那么就需要能支持一次自动扩容或缩容2MB的存储空间。另外在流存储里还要求写入与读取对数据子集的操作是解耦分离的，并且写入与读取二者之间跟数据流段还要有一个合理的平衡。</p>
+<h3 id="恰好一次"><a href="#恰好一次" class="headerlink" title="恰好一次"></a><font color="#00CED1">恰好一次</font></h3><p>恰好一次也是分布式流存储最为重要的设计原则之一，恰好一次意味着数据的可持久化、有序、一致性以及事务性的支持。持久性意味着一旦得到确认，即使存储组件发生故障，写入的数据也不会丢失。有序意味着读客户端将严格按照写入的顺序处理数据。一致性意味着所有的读客户端即使面对存储故障、网络故障也都会看到相同的有序数据视图。事务性写入对于保证Flink这样的计算应用处理结果的完全正确是非常必要的。</p>
+<h3 id="字节流"><a href="#字节流" class="headerlink" title="字节流"></a><font color="#00CED1">字节流</font></h3><p>分布式流存储里采用字节流的格式组织数据而不是像消息系统里采用消息报文的方式，这意味着接口的通用性。二进制的字节流是与数据格式无关的，字节流可以组成事件封装在分布式存储的流段里。而消息系统里数据是消息头消息体的格式封装的，在兼容性上不如字节流。</p>
+<h3 id="数据管道"><a href="#数据管道" class="headerlink" title=" 数据管道"></a><font color="#00CED1"> 数据管道</font></h3><p>在存储界通常喜欢用跑车、卡车、渡轮来比喻块存储、文件存储以及对象存储，打个比方来说块存储类似跑车：极快、极稳、装的人少、成本高；文件存储类似卡车：快、稳、装的人比跑车多，但是没跑车那么快；对象存储类似渡轮：可以装非常多的货，讲究量大、成本低；那么分布式流存储像什么呢？ 在我们的定义里它就像管道：<font color="#FF0000"><strong>数据如同流水一般流过管道，又快又稳源源不断而又永无止境</strong>。</font></p>
+<h3 id="租户隔离"><a href="#租户隔离" class="headerlink" title="租户隔离"></a><font color="#00CED1">租户隔离</font></h3><p>分布式流存储从一开始设计的时候就将”租户隔离“作为其基本特性进行实现，”隔离“是分布式流存储的最基本的特性之一，在分布式流存储里租户隔离不只是租户B绝对不能看的到租户A的任何信息这样的信息安全层面的隔离，它支持范围、流、段、事件层面的隔离还将支持的租户规模作为设计的目标之一，在分布式流存储里单集群需要能支持千万量级起的租户数，另外还有资源、命名、可视空间、权限以及服务质量层面的隔离。</p>
+<h3 id="海量小文件"><a href="#海量小文件" class="headerlink" title="海量小文件"></a><font color="#00CED1">海量小文件</font></h3><p>对巨量小文件的支持是分布式流存储的设计原则之一。正如前面提到的，万物互联下的海量数据来源于传感器，而传感器上传的数据都是类似温度、地理位置、告警信息这样的几个字节几个字节的小数据，这就意味着在万物互联的场景下会有巨量的小数据上传，而且90%以上的数据操作行为都是写入。为了保证数据写入的性能以及可靠性、正确性、持久性以及保证介质的使用寿命降低成本，这也需要存储系统针对这种业务场景进行专门的设计。</p>
+<p>在分布式流存储里每个事件第一步是被仅附加写入一个缓存的段内进行封装的，在段达到一定的尺寸（比如64MB）后会被封闭不再写入，这时再将整个段写入下一级的持久化存储里。通过这样的设计，实现小数据在缓存里封装成大块的数据，再将大块数据写入持久化存储设备的方式保证了存储系统整体的性能。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>电影《一代宗师》里提到习武之人有三个境界：<font color="#00CED1"><strong>“见自己，见天地，见众生”</strong></font>。做技术做产品也同样如是，“三见”如同一体三面不可分割，认知上从关注自己到关注格局创新，再扎根到用户当中替用户解决有价值的实际问题。现有的工业物联网大数据处理平台有创新也有替客户解决了部分工业数据处理的难题，但是还是属于一个”DIY“的系统，离产品化还有距离，因此需要我们继续扎根下去替客户解决新的实际问题。</p>
+<p>综上所述，在万物互联的智能世界里，为了实现将海量数据近实时转化成信息和决策的愿景，除了流式计算应用还需要一个流式存储系统，未来已来，已有开源的分布式流存储系统正走在这条路上。另本文仅为作者愚见，与任何组织机构无关，作者能力也很有限，如有不足之处欢迎留言批评指正。</p>
+<h2 id="问题思考"><a href="#问题思考" class="headerlink" title="问题思考"></a><font color="#FF8C00">问题思考</font></h2><p>最后给大家留一个思考题：<font color="#00CED1"><strong>如果让你来设计一个工业物联网平台产品，你会如何定义它的产品灵魂？</strong></font></p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及工业物联网大数据，现就职于DELL EMC。个人技术博客：<a href="https://changping.me" target="_blank" rel="noopener">https://changping.me</a></p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a> ，可以自由阅读、分享、转发、复制、分发等，限制是需署名、非商业使用（以获利为准）以及禁止演绎。</p>
+</div></div></div></div>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/05/24/distributed-streaming-the-next-storage/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -841,93 +991,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/16/distributed-servicegovernance-circuitbreaker/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/03/16/distributed-servicegovernance-circuitbreaker/" itemprop="url">分布式系统架构设计三十六式之服务治理 – 第2式 - 熔断模式</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-03-16T09:34:18+08:00">2019-03-16 09:34:18</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="导读"><a href="#导读" class="headerlink" title="导读"></a><font color="#FF8C00">导读</font></h2><p>日拱一卒，功不唐捐，分享是最好的学习，一个知识领域里的 <font color="#00CED1"> <strong>“道 法 术 器”</strong> </font> 这四个境界需要从 <font color="#00CED1"> <strong>微观、中观以及宏观</strong> </font>三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计三十六式》，讲诉分布式系统里最重要的三十六个虚数的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
-<p>实现一个分布式系统通常会面临三大难题： <font color="#00CED1"> <strong>故障传播性、业务拆分与聚合以及分布式事务</strong> </font>。本系列中的服务治理章节主要是为了解决故障传播性的难题，它包括：<font color="#00CED1"> <strong>隔离、熔断、降级、限流、容错以及资源管控</strong> </font>，本文将讲诉服务治理里的 <font color="#00CED1"> <strong>“熔断”</strong> </font>模式。</p>
-<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>在分布式系统里经常会遇到这样的场景：</p>
-<ol>
-<li><p>系统负载突然过高，比如突发的访问量、过多的请求并发数以及过多的IO等都会造成某个节点故障，比如节点A，然后节点A挂了，又把负载转给节点B，然后节点B又负载过高，接着B又挂了，就这样一连串的挂过去从单点故障造成系统级的级联故障。</p>
-</li>
-<li><p>当一个服务出现故障时，希望这个服务能在一个时间段内恢复，在请求被拒绝后隔一段时间再自动的去探测服务的可服务性。</p>
-</li>
-</ol>
-<p>对应这两个场景，我们希望在分布式系统里能避免级联故障、提供快速失败快速恢复服务的能力，因此，这里引出 <font color="#00CED1"><strong>“熔断模式”</strong></font> 。</p>
-<h2 id="熔断模式"><a href="#熔断模式" class="headerlink" title="熔断模式"></a><font color="#FF8C00">熔断模式</font></h2><p>熔断模式也称之为断路器模式，英文单词是“circuit breaker”，“circuit breaker”是一个电路开关，其基本功能是检测到电流过载就中断电路，在检测到电流正常时又能自动或手动恢复工作，从而保护断路器背后的电源设备安全。这里需要将”断路器“与 “保险丝”进行区分，断路器可以通过手动或自动的复位从而恢复正常工作，而保险丝是运行一次必须更换。</p>
-<p>实现一个分布式系统通常会面临三大难题： <font color="#00CED1"><strong>业务拆分与聚合，分布式事务以及故障传播性</strong></font>。本系列中的服务治理章节主要是为了解决故障传播性的难题，它包括：隔离、熔断、降级、限流、容错以及资源管控，本文将讲诉服务治理里的 <font color="#00CED1"><strong>“熔断”</strong></font>模式。</p>
-<p>在分布式系统里 <font color="#00CED1"><strong>“熔断模式”</strong></font>的设计思想来源于此，当系统里响应时间或者异常比率或者异常数超过某个阈值时，比如超时次数或重试次数超过某个阈值就会触发熔断，接着所有的调用都快速失败，从而保证下游系统的负载安全，在断开一段时间后，熔断器又打开一点试着让部分请求负载通过，如果这些请求成功那么断路器就恢复正常工作，如果继续失败，则继续关闭服务走快速失败通道，接着继续这个过程直到重试的次数超过一定的阈值从而触发更为严重的<font color="#00CED1"><strong>“降级模式”</strong></font>。</p>
-<h3 id="熔断模式设计思路"><a href="#熔断模式设计思路" class="headerlink" title="熔断模式设计思路"></a><font color="#00CED1">熔断模式设计思路</font></h3><p>下图是一个熔断模式的设计思路：</p>
-<div align="center"> 
-
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/distributed-circuitbreaker.png" alt="熔断器"></p>
-<p>图片来源于引文[2]，版权归原作者所有</p>
-<div align="left"> 
-
-
-<ol>
-<li><p>首先熔断器是处于闭合（closed）状态的，如果请求超时次数，异常数或者异常比率超过一定的阈值则熔断器会被打开；</p>
-</li>
-<li><p>接着熔断器处于打开（Open）状态，所有走到这个路径里的请求会走快速失败通道从而避免负载下行，但是这里不会一直都是打开的，过一个时间周期会自动切换到半打开（Half-open）状态；</p>
-</li>
-<li><p>在接下来是半打开（half-open）状态，在这里认为之前的错误可能被修复了，因此允许通过部分请求试着看看能不能处理成功，如果这些请求处理成功，那么就认为之前导致失败的错误已被修复，此时熔断器就切换到闭合状态并且将错误计数器重置。如果这些试着发送的请求还是处理失败，则认为导致之前失败的问题仍然存在，熔断器切回到打开方式，然后开始重置计时器给系统一定的时间来修复错误。半打开状态能够有效防止正在恢复中的服务被突然而来的大量请求再次打挂；</p>
-</li>
-<li><p>接着重复以上过程，直到半打开状态重复的次数达到一定的阈值发现故障还没被修复，从而触发”降级“状态</p>
-</li>
-</ol>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲诉了服务治理里的 <font color="#00CED1"><strong>“熔断”</strong></font>模式，在前一篇《分布式系统架构设计三十六式之服务治理-隔板模式》里讲诉了分布式系统服务治理的隔板模式。另作者能力与认知都有限，欢迎大家拍砖留念。</p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及大数据，现就职于DELL EMC。</p>
-<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
-<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1] <a href="https://en.wikipedia.org/wiki/Circuit_breaker" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Circuit_breaker</a></p>
-<p>[2] <a href="https://martinfowler.com/bliki/CircuitBreaker.html" target="_blank" rel="noopener">https://martinfowler.com/bliki/CircuitBreaker.html</a></p>
-</div></div>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/3/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -953,7 +1016,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">67</a></div>
+      <div><a href="/archives">68</a></div>
     </div>
     
     
