@@ -115,6 +115,73 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-faq/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravega-faq/" itemprop="url">pravega handbook - 常见问题</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T17:52:37+08:00">2018-09-16 17:52:37</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><p><strong>什么是Pravega？</strong> Pravega是一个开源存储原语，为连续和无界数据实现Streams。</p>
+<p><strong>“Pravega”是什么意思？</strong> “Pravega”是梵文中的一句话，指的是“速度快”的意思。</p>
+<p><strong>Pravega与Kafka和Kinesis等系统类似吗？</strong> Pravega是以企业级存储为目标从头开始构建的流存储系统，支持恰好一次性，持久化等功能.Pravega是一个理想的流存储系统，专门用于流式数据的存储，比如来自实时应用的数据和物联网数据。</p>
+<p><strong>我怎样才能参与这个开源系统？</strong> 开源加速了颠覆性创新。当Pravega创建时，毫无疑问，将它作为开源是有道理的。我们欢迎经验丰富的新开发人员的贡献。查看Github中的代码。有关如何参与的更多细节可以在这里找到。</p>
+<p><strong>我该如何开始使用pravega？</strong>有关更多信息，请阅读入门指南，并访问一些示例应用程序的sample-apps repo。</p>
+<p><strong>如果遇到问题，我在哪里可以获得帮助？</strong> 不要犹豫！如果您需要任何帮助，请联系邮件列表上的开发人员和社区。有关详细信息，请参阅加入社区。</p>
+<p><strong>Pravega支持恰好一次语义吗？</strong> 绝对的支持。有关Pravega如何支持语义的讨论，请参阅主要功能。</p>
+<p><strong>Pravega如何与Apache Flink等流处理器配合使用？</strong> Pravega的很多功能特性使其成为流处理器的理想选择。首先，通过flink connector, Pravega支持开箱即用。更加重要的是，Pravega支持恰好一次语义，使得开发精确的流处理应用变得更加容易。恰好一次语义，持久化和事务的这些特性的组合使得Pravega成为了Flink很好的合作伙伴，通过pravega可以提供端到端的一致性和恰好一次的语义。</p>
+<p><strong>如何在流处理器和Flink之间进行自动缩放？</strong> 自动缩放是Pravega的一项基本功能，其流中的段数根据数据的摄取率的变化而变化。如果负载更高，速度更快，Pravega会通过添加段来增加流的容量。当数据速率或系统负载下降时，Pravega可以减少流的容量。当Pravega扩展和缩小流的容量时，如Flink的应用程序可以观察到此变化并且通过添加或减少使用流的作业实例的数量来响应。有关自动缩放的更多讨论，请参阅主要功能中的“Auto Scaling”部分。</p>
+<p><strong>Pravega提供哪些一致性保证？</strong> Pravega提供了几项保证。持久化 - 一旦客户端确认数据，Pravega保证这个数据是受到保护的。排序 - 具有相同路由密钥的事件将始终按其编写顺序读取。恰好一次 - 写给Pravega的数据不会重复。</p>
+<p><strong>为什么支持一致性和持久化对Pravega等存储系统如此重要？</strong> 主要是因为它使构建应用更容易。一致性和持久性是支持恰好一次语义的关键。如果没有恰好一次语义，就很难构建容错性应用程序，以确保一致性产生准确的结果。有关一致性和持久性保证的讨论，请参阅主要功能 .Pravega支持恰好一次的语义。</p>
+<p><strong>Pravega支持事务吗？</strong> 是的。Pravega API允许应用程序在流上创建事务并将数据写入事务。数据被持久存储，就像写入Pravega的任何其他数据一样。当应用程序选择时，它可以提交或中止事务。提交事务时，事务中的数据将原子地附加到流中。有关Pravega事务支持的更多详细信息，请参见此处。</p>
+<p><strong>Pravega是否支持跨不同路由键的事务？</strong> 是的。Pravega的事务本身就是一个流; 它可以有1个或多个段，写入事务的数据被放入与数据路由键关联的段中。提交事务时，事务数据将附加到流中的相应段。</p>
+<p><strong>我是否需要安装HDFS才能使用Pravega？</strong> 是的。通常，您将为Pravega部署HDFS以用作其第2层存储。但是，对于简单的测试/开发环境，Pravega的所谓standAlone版本实现了自己的模拟HDFS。有关详细信息，请参阅Running Pravega指南。</p>
+<p><strong>Pravega支持哪些第2层存储系统？</strong> Pravega旨在支持各种类型的第2层存储系统。目前，我们已将HDFS作为第2层存储。</p>
+<p><strong>Pravega提供了哪些分布式计算原语？</strong> Pravega提供了一个名为StateSynchronizer的API结构。使用StateSynchronizer，开发人员可以使用Pravega在多个进程之间构建同步共享状态。此原语可用于构建各种分布式计算解决方案，如共享配置，领导者选举等。有关详细信息，请参阅主要功能中的“分布式计算原语”部分。</p>
+<p><strong>Pravega推荐什么硬件配置？</strong> 对比控制面，数据面Segment Store 的要求更高，最少需要1GB内存和2核CPU，存储10GB起。控制面资源消耗少点，推荐的配置是1 CPU和0.5 GB内存起。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-key-features-2/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -733,83 +800,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-usage/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravega-usage/" itemprop="url">pravega handbook - 入门</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T10:49:28+08:00">2018-09-16 10:49:28</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="Pravega入门"><a href="#Pravega入门" class="headerlink" title="Pravega入门"></a>Pravega入门</h2><p>了解Pravega最好方法就是自己动手部署一个，然后跑一把Pravega示例。</p>
-<p>部署Pravega其实很简单，以下是步骤：</p>
-<p>Java版本：Java 8</p>
-<h3 id="下载Pravega"><a href="#下载Pravega" class="headerlink" title="下载Pravega"></a>下载Pravega</h3><p>可以从 <a href="https://github.com/pravega/pravega/releases" target="_blank" rel="noopener">https://github.com/pravega/pravega/releases</a> 下载Pravega编译好的发行版。如果您想自己构建Pravega，也可以自己下载代码并运行:</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$./gradlew distribution<br></code></pre></td></tr></table></figure>
-<p>多细节可以查看Pravega <a href="https://github.com/pravega/pravega/blob/master/README.md" target="_blank" rel="noopener">README.md</a>。</p>
-<p>解压:</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$ tar xfvz pravega-0.1.0.tgz<br></code></pre></td></tr></table></figure>
-<p>然后以standalone模式运行Pravega，这种模式会在本地机器上启动Pravega的所有组件。注意：这仅用于测试/演示目的，请勿在生产环境中使用！更多内容请 <a href="http://pravega.io/docs/latest/deployment/deployment/" target="_blank" rel="noopener">查看</a></p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$ cd pravega-0.1.0<br>$ bin / pravega-standalone<br></code></pre></td></tr></table></figure>
-<p>执行这个命令即可拉起一个本地化的pravega 集群， 这样就可以跑pravega。</p>
-<h3 id="Pravega“Hello-World”示例"><a href="#Pravega“Hello-World”示例" class="headerlink" title="Pravega“Hello World”示例"></a>Pravega“Hello World”示例</h3><p>Pravega为示例维护一个单独的github库：https：//github.com/pravega/pravega-samples</p>
-<p>Pravega依赖关系会自动从maven中心拉下来。注意：示例还可以使用本地编译的Pravega。有关这方面的更多信息，请参阅<a href="https://github.com/pravega/pravega/blob/master/README.md" target="_blank" rel="noopener">README.md</a>中maven发布的注释。</p>
-<p>下载Pravega-Samples git库</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$ git clone https://github.com/pravega/pravega-samples<br>$ cd pravega-samples<br></code></pre></td></tr></table></figure>
-<p>生成示例程序</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$ ./gradlew installDist<br></code></pre></td></tr></table></figure>
-<p>运行示例“HelloWorldWriter”，将“hello world”消息作为事件写入Pravega stream。</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$ cd pravega-samples/standalone-examples/build/install/pravega-standalone-examples<br>$ bin/helloWorldWriter<br></code></pre></td></tr></table></figure>
-<p>HelloWorldWriter的输出</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">...<br>Writing message: &apos;hello world&apos; with routing-key: &apos;helloRoutingKey&apos; to stream &apos;examples / helloStream&apos;<br>...<br></code></pre></td></tr></table></figure>
-<p>若想使用不同的参数运行HelloWorldWriter，更多信息请参阅pravegs-samples中的readme.md文件</p>
-<p>运行示例“HelloWorldReader”</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$ cd pravega-samples/standalone-examples/build/install/pravega-standalone-examples<br>$ bin/helloWorldReader<br></code></pre></td></tr></table></figure>
-<p>示例HelloWorldReader的输出</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs undefined">...<br>Reading all the events from examples/helloStream<br>...<br>Read event &apos;hello world&apos;<br>No more events from examples/helloStream<br>...<br></code></pre></td></tr></table></figure>
-<p>有关HelloWorldReader的更多详细信息，请参阅pravega-samples中的readme.md文件</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/7/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><span class="page-number current">8</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/9/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -835,7 +825,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">66</a></div>
+      <div><a href="/archives">67</a></div>
     </div>
     
     
