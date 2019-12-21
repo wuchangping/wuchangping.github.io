@@ -444,7 +444,7 @@
       <link href="/2019/02/11/person-emc-one-year/"/>
       <url>/2019/02/11/person-emc-one-year/</url>
       
-        <content type="html"><![CDATA[<p>加入新的公司从2018年2月12日到2019年2月11日，刚好满一年，不知不觉间居然写了35770行代码，几乎从零开始设计和开发了一个分布式系统外带几个专利，也没想到原来这么能写。当年在XX厂一天到晚加班被折磨个半死一年也才1万多行代码啊，也许比较轻松的企业组织文化容易激发人的灵性。</p><p><div align="center"><br><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/distributed-development-works.png" alt=""></div></p><div align="left"> </div>]]></content>
+        <content type="html"><![CDATA[<p>2018年2月12日到2019年2月11日，刚好满一年，不知不觉间居然写了35770行代码，</p><p>2018-02-12 ~ 2019-02-11， 刚好入职EMC满一年，里程碑两件：</p><p>1，个人代码量突破3万5千行，排列第一；</p><p>2，专利公司内部通过且美国专利局审核中2个。</p><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/person/emc-201902-codeline.png" alt="codeline"></p><div align="left"> </div>]]></content>
       
       
       <categories>
@@ -1553,15 +1553,6 @@
     </entry>
     
     <entry>
-      <title>categories</title>
-      <link href="/categories/index.html"/>
-      <url>/categories/index.html</url>
-      
-        <content type="html"><![CDATA[]]></content>
-      
-    </entry>
-    
-    <entry>
       <title>tags</title>
       <link href="/tags/index.html"/>
       <url>/tags/index.html</url>
@@ -1574,6 +1565,15 @@
       <title>archives</title>
       <link href="/archives/index.html"/>
       <url>/archives/index.html</url>
+      
+        <content type="html"><![CDATA[]]></content>
+      
+    </entry>
+    
+    <entry>
+      <title>categories</title>
+      <link href="/categories/index.html"/>
+      <url>/categories/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       
