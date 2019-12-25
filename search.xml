@@ -3,11 +3,11 @@
   
     
     <entry>
-      <title>分布式计算中间件 - 信息检索与分析领域知识基础</title>
+      <title>分布式计算中间件 - 信息分析基础</title>
       <link href="/2019/12/21/distributed-product-info-analysis-basic-knowledge/"/>
       <url>/2019/12/21/distributed-product-info-analysis-basic-knowledge/</url>
       
-        <content type="html"><![CDATA[<h3 id="分布式计算中间件之信息检索与分析领域知识基础"><a href="#分布式计算中间件之信息检索与分析领域知识基础" class="headerlink" title="分布式计算中间件之信息检索与分析领域知识基础"></a><font color="#FF8C00">分布式计算中间件之信息检索与分析领域知识基础</font></h3><h4 id="构建与领域设计"><a href="#构建与领域设计" class="headerlink" title="构建与领域设计"></a><font color="#00CED1">构建与领域设计</font></h4><p>通常分布式计算中间件可以从两个层面进行划分：</p><p>1，构建与运维 ： 分布式功能的设计与实现</p><p>2，领域设计 ： 具体领域相关功能的设计与实现</p><ul><li>数据计算与分析中间件，实现数据计算与分析领域功能，比如 Flink, Spark, elasticsearch等</li><li>深度学习计算中间件， 实现深度学习领域功能，比如 tensorflow, caffe等；</li></ul><h4 id="信息检索与分析基础"><a href="#信息检索与分析基础" class="headerlink" title="信息检索与分析基础"></a><font color="#00CED1">信息检索与分析基础</font></h4><p>信息检索与分析基础：下图从功能，质量、模型、定义、本质、视角、职责、相关性、难题以及Lucene 等方面归纳了检索与分析技术领域基础10项。</p><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/analysis/distributed-infomation-analysis-basic-knowledge.PNG" alt="信息检索模型"></p><h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，主要从事分布式产品的交付、架构设计以及开发工作。</p><h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p><p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p><h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1]《信息检索导论》 </p>]]></content>
+        <content type="html"><![CDATA[<h3 id="分布式计算中间件之信息分析基础"><a href="#分布式计算中间件之信息分析基础" class="headerlink" title="分布式计算中间件之信息分析基础"></a><font color="#FF8C00">分布式计算中间件之信息分析基础</font></h3><h4 id="构建与领域设计"><a href="#构建与领域设计" class="headerlink" title="构建与领域设计"></a><font color="#00CED1">构建与领域设计</font></h4><p>通常分布式计算中间件可以从两个层面进行划分：</p><p>1，构建与运维 ： 分布式功能的设计与实现</p><p>2，领域设计 ： 具体领域相关功能的设计与实现</p><ul><li>数据计算与分析中间件，实现数据计算与分析领域功能，比如 Flink, Spark, elasticsearch等</li><li>深度学习计算中间件， 实现深度学习领域功能，比如 tensorflow, caffe等；</li></ul><h4 id="信息分析基础"><a href="#信息分析基础" class="headerlink" title="信息分析基础"></a><font color="#00CED1">信息分析基础</font></h4><p>信息分析基础：下图从功能，质量、模型、定义、本质、视角、职责、相关性、难题以及Lucene 等方面归纳了检索与分析技术领域基础10项。</p><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/analysis/distributed-infomation-analysis-basic-knowledge.PNG" alt="信息检索模型"></p><h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，主要从事分布式产品的交付、架构设计以及开发工作。</p><h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p><p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p><h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1]《信息检索导论》 </p>]]></content>
       
       
       <categories>
@@ -1567,24 +1567,6 @@
     </entry>
     
     <entry>
-      <title>categories</title>
-      <link href="/categories/index.html"/>
-      <url>/categories/index.html</url>
-      
-        <content type="html"><![CDATA[]]></content>
-      
-    </entry>
-    
-    <entry>
-      <title>tags</title>
-      <link href="/tags/index.html"/>
-      <url>/tags/index.html</url>
-      
-        <content type="html"><![CDATA[]]></content>
-      
-    </entry>
-    
-    <entry>
       <title>about</title>
       <link href="/about/index.html"/>
       <url>/about/index.html</url>
@@ -1597,6 +1579,24 @@
       <title>archives</title>
       <link href="/archives/index.html"/>
       <url>/archives/index.html</url>
+      
+        <content type="html"><![CDATA[]]></content>
+      
+    </entry>
+    
+    <entry>
+      <title>categories</title>
+      <link href="/categories/index.html"/>
+      <url>/categories/index.html</url>
+      
+        <content type="html"><![CDATA[]]></content>
+      
+    </entry>
+    
+    <entry>
+      <title>tags</title>
+      <link href="/tags/index.html"/>
+      <url>/tags/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       
