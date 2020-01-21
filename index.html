@@ -115,6 +115,98 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2020/01/21/distributed-ideamodel-cicd-toowheel/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2020/01/21/distributed-ideamodel-cicd-toowheel/" itemprop="url">分布式系统架构设计36式 – 第13式 - toB产品交付之双轮驱动思维模型</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-01-21T22:25:10+08:00">2020-01-21 22:25:10</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>日拱一卒，功不唐捐，一个知识领域里的 “道 法 术 器” 这四个境界需要从 微观、中观以及宏观 三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计36式》，讲诉分布式系统里最重要的三十六个的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
+<p><strong>“兵者，国之大事，死生之地，存亡之道，不可不察也”</strong>，这句话对企业来讲，兵即产品，国即企业，察即研究探讨，产品关系到企业的存亡，所以不可以不慎重地加以研究探讨。本文提出toB产品交付双轮驱动思维模型以探讨toB软件产品的交付方法论。</p>
+<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>架构设计人员是业务与技术之间的桥梁，其既需要保证产品需求合理，也要保证产品交付的功能是对客户、用户有用、有价值的。为了能够准确的落地业务需求同时又能保证产品按时交付，架构设计人员就需要一个可以量化执行的产品业务需求与产品交付的思维模型。</p>
+<h2 id="双轮驱动思维模型"><a href="#双轮驱动思维模型" class="headerlink" title="双轮驱动思维模型"></a><font color="#FF8C00">双轮驱动思维模型</font></h2><p>受 《持续交付2.0》的启发这里提出toB产品交付之双轮驱动思维模型。双轮驱动思维模型以业务需求为出发点，探索业务真实有用的价值，以最节约的成本和最可控的风险，通过持续的业务价值探索和产品迭代交付快速交付价值与市场锲合的产品，其思维模型如下图所示：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ideamodel/idea-model-cicd-twoWheel.PNG" alt="双轮驱动模型"></p>
+<h4 id="总则"><a href="#总则" class="headerlink" title="总则"></a><font color="#00CED1">总则</font></h4><p>产品的交付的是价值，因此双轮驱动思维模型是一个产品价值交付模型，总的理念是以“真北业务价值”为导向，以“产品快速交付”为动力，将“业务价值”与“产品交付”双个环节紧密结合，前轮业务价值把握方向，后轮产品交付提供动力，从而驱动业务与产品一起前进。它以“产品价值与市场锲合”为指导思想，以“以客户为中心”为工作理念，以“指北需求”，“精简过滤”、“量化分解”、“快速反馈”和“演化迭代”为工作原则，是一套持续集成持续交付产品的思维模型。</p>
+<ul>
+<li><p><strong>产品价值与市场锲合</strong>，指的是客户需要什么以及你能提供什么的从而获得产品商业成功的问题。朴素的说法就是产品的价值是市场需要的，是客户的痛点、恐惧点、难点以及挑战点，是客户要什么你就给什么，而不是从自己的角度出发，自我感觉良好地强塞给客户什么，是自身提供的产品能否准确满足市场真实需求的问题，度量的指标是<strong>”客户是否愿意快速的为你的产品买单“</strong>。</p>
+</li>
+<li><p><strong>以客户为中心</strong>，指的是“以客户需求为导向、为客户提供高质量低价格的产品、为客户提供满意的服务以及快速响应客户需求”，以客户为中心不是没有底线的跪添客户或者一些违法的行为，而是走正道为客户提供优质低价的产品或服务，快速响应客户的需求，帮助客户取得商业上的成功的问题。</p>
+</li>
+<li><p><strong>“指北需求”，“精简过滤”、“量化分解”、“快速反馈”和“演化迭代”</strong>，指的是挖掘客户的真需求，需要对客户的需求精简过滤、去伪存真，再通过量化分解客户的需求为可落地执行的行为，这样才能快速交付产品、快速验证、迭代演进。</p>
+</li>
+</ul>
+<h4 id="价值轮"><a href="#价值轮" class="headerlink" title=" 价值轮 "></a><font color="#00CED1"> 价值轮 </font></h4><p>价值轮是一个理解真北需求、去伪存真的过程，具体包括以下四个环节：</p>
+<ul>
+<li><p>需求：通过”客户、用户、团队“三个维度收集需求，将收集到的业务需求信息输入到价值轮；</p>
+</li>
+<li><p>确定：针对输入的需求去伪存真、去粗存精确定真北需求，识别客户的痛点、难点、恐惧点以及挑战点；</p>
+</li>
+<li><p>探讨：团队讨论，深入理解需求，拿出可行的解决方案以及实现方案；</p>
+</li>
+<li><p>精炼：为了节约团队资源，不是所有的方案都需要传递给产品交付环去执行，因此需要精炼过滤这些方案，有些通过常识就可以判断不合理的方案就不需要往交付轮传递，其次要进行价值优先级评估，筛选出最有价值的需求与方案，以作为交付轮的输入，并等待交付轮的交付与反馈。</p>
+</li>
+</ul>
+<h4 id="交付轮"><a href="#交付轮" class="headerlink" title="交付轮"></a><font color="#00CED1">交付轮</font></h4><p>产品或服务在被客户买单之前都是成本，只有被客户采购并且最终能够买单或者被用户使用并且最终兑现，才能证明其价值的存在。因此在价值轮达成共识后要借助“交付轮”快速交付，才能将其传递到客户或用户手中，从而得到真实且可靠的反馈以验证之。</p>
+<p>交付轮它也包含四个环节，分别是（1）开发；（2）测试；（3）运维；（4）反馈：</p>
+<ul>
+<li><p>开发：指以及价值轮的输入需求以及精简过的方案，依据质量要求进行软件架构设计以及进行软件开发并且达到可运行要求；</p>
+</li>
+<li><p>测试：指的是测试以及验证设计开发阶段交付的软件是否达到功能、质量与约束的要求；</p>
+</li>
+<li><p>运维：指的是将开发以及测试好的软件包部署到生产环境中运行或交付给客户为客户提供生产服务；</p>
+</li>
+<li><p>反馈：指的是监测生产运行情况以及收集用户使用情况与反馈的信息，再将收集到的信息反馈给价值轮，作为业务参考以便做出下一步的业务决策与判断。</p>
+</li>
+</ul>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲述”toB产品交付双轮驱动思维模型“，日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这几个思维模型对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“[1]，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，主要从事分布式产品的交付、架构设计以及开发工作。</p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1]《持续交付2.0 - 业务引领的DevOps精要》 乔梁著</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/12/21/distributed-product-info-analysis-basic-knowledge/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -596,7 +688,7 @@
     </div>
     <header class="post-header">
       <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/11/20/distributed-ideamodel-innovation/" itemprop="url">分布式系统架构设计36式之思维模型 – 第9式-创新思维模型</a>
+        <a class="post-title-link post-title-link-external" href="/2019/11/20/distributed-ideamodel-innovation/" itemprop="url">分布式系统架构设计36式之思维模型 – 第9式- 创新思维模型</a>
       </h1>
       <div class="post-meta">
         
@@ -765,60 +857,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/10/21/distributed-product-architecture-daoist/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/10/21/distributed-product-architecture-daoist/" itemprop="url">产品思维奇点图</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-10-21T20:28:20+08:00">2019-10-21 20:28:20</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/product/" itemprop="url" rel="index"><span itemprop="name">product</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="产品思维奇点图"><a href="#产品思维奇点图" class="headerlink" title="产品思维奇点图"></a>产品思维奇点图</h2><p>理解技术、产品与商业是产品架构师的基本职责，架构思维、产品思维与商业思维是架构师的底层思维，就个人领悟来说技术与产品是其实不分家的，二者互补互利。</p>
-<p>这里先放出一张我自己用的产品思维图（如下），接下来会写一篇文章详细解读这个产品思维模型，这张图我称之为产品思维奇点图，结合了“第一性原理”、“奇点理论”以及中国古朴的哲学，口诀是“四点一线五元组”。</p>
-<p>四点分为“产品定位点、价值点、业务点以及奇点”，一线是指“能力线”，五元组是指 “势、道、法、术、器”，对应产品的“趋势、优势、劣势”，“本质、灵魂、规律、价值”，“方法论”，“技能”，“工具”。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/daoist/product-architecture-daoist.PNG" alt="产品架构奇点图"></p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/product/" rel="tag"><i class="fas fa-tags"></i>product</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -844,7 +882,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">68</a></div>
+      <div><a href="/archives">69</a></div>
     </div>
     
     
