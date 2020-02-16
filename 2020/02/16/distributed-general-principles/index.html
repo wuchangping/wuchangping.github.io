@@ -185,7 +185,14 @@
 <h4 id="分布式10功能"><a href="#分布式10功能" class="headerlink" title="分布式10功能:"></a>分布式10功能:</h4><blockquote>
 <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&gt; 提供 注册 配置 调用 路由<br>&gt; 监控 追踪 治理 编排 安全<br>&gt;<br></code></pre></td></tr></table></figure>
 </blockquote>
-<p>在分布式系统里几乎所有的功能与设计思路都可以用这个<strong>“9法10功能”</strong>口诀来解读，例如“时空换同异换” 讲的是性能优化的路数，解读开来说即是：时间换空间、空间换时间、同步换异步、异步换同步。例如：采用cache的功能可以减少计算的时间，这是存储空间换时间从而提升性能；采用批处理的方式提升性能，这是减少计算时间；采用异步换同步的方式提升性能也是减少计算时间；减少IO的数据量从而提升性能，这是存储空间换时间；减少IO路径提升性能，这也是网络空间换时间；采用最新的硬件提升性能，这可以是计算换时间，也可以是存储或网络空间换时间。</p>
+<p>在分布式系统里几乎所有的功能与设计思路都可以用这个<strong>“9法10功能”</strong>口诀来解读，例如：</p>
+<p>1，“业务拆业务合”，其理论依据来源于“康威定律”，即：</p>
+<blockquote>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&gt; 设计系统的组织其产生的设计等价于组织间的沟通结构。<br>&gt;<br></code></pre></td></tr></table></figure>
+</blockquote>
+<p>软件架构的拆合关系来源于团队的组织结构。</p>
+<p>2，“功能拆性能聚”，在分布式系统里有拆有合，那么拆与合的取舍依据在哪里？这句话讲的就是这个拆与合的取舍关系：依据功能进行拆分，但是也要依据性能进行聚合，拆开后会影响性能的地方最好不拆。</p>
+<p>3，“时空换同异换”， 讲的是性能优化的路数，解读开来说即是：时间换空间、空间换时间、同步换异步、异步换同步。例如：采用cache的功能可以减少计算的时间，这是存储空间换时间从而提升性能；采用批处理的方式提升性能，这是减少计算时间；采用异步换同步的方式提升性能也是减少计算时间；减少IO的数据量从而提升性能，这是存储空间换时间；减少IO路径提升性能，这也是网络空间换时间；采用最新的硬件提升性能，这可以是计算换时间，也可以是存储或网络空间换时间。</p>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲述了分布式系统架构设计总决，其可分为设计哲学、设计原则以及设计方法论，从而可以依据这三个方面量化人的设计理念。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“[1]，欢迎大家拍砖留念。</p>
 <h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，主要从事分布式产品的交付、架构设计以及开发工作。</p>
 <h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
