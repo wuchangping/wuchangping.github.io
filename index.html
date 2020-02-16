@@ -170,10 +170,10 @@
 <p>用户的产品质量需求一般称为使用质量需求，其一般包括：合适的性能（Performant）、可用性(Availability)、可靠性(Reliability)、可伸缩性(Scalability)、韧性(resilience)、可观测性(Observability)、可服务性（Serviceability）、安全性（security）、易用性（usability）、可运维性（operability）等，而用户的约束需求包括 用户的业务环境、用户的能力以及用户群的特征等。</p>
 <p>团队的质量需求指的是产品开发周期内的质量需求，高质量的代码几个最重要的要素有：可测试性（ testability）、可维护性（Maintainability）、可扩展性（ extensibility）、可读性（ readability）等，而团队的约束需求有：资源预算、上级要求、开发团队的能力、产品规划、此外还有信息安全以及产品运行环境 的约束等。</p>
 <h2 id="设计方法论"><a href="#设计方法论" class="headerlink" title="设计方法论"></a><font color="#FF8C00">设计方法论</font></h2><p>同设计哲学与设计原则一样，不同的架构设计师有着自己不同的设计方法论，在这里，我认为分布式系统的架构设计方法论可以总结成以下口诀，即<strong>分布式9法10功能口诀</strong>，如下：</p>
-<h5 id="分布式9法："><a href="#分布式9法：" class="headerlink" title="分布式9法："></a>分布式9法：</h5><blockquote>
+<h4 id="分布式9法："><a href="#分布式9法：" class="headerlink" title="分布式9法："></a>分布式9法：</h4><blockquote>
 <font color="#00CED1"><strong>少读少写少依赖</strong></font><br><font color="#00CED1"><strong>业务拆业务合</strong></font><br><font color="#00CED1"><strong>功能拆性能聚</strong></font><br><font color="#00CED1"><strong>时空换同异换</strong></font><br><font color="#00CED1"><strong>硬件顺天性</strong></font><br><font color="#00CED1"><strong>服务需治理</strong></font><br><font color="#00CED1"><strong>数据保一致</strong></font><br><font color="#00CED1"><strong>哪都不可靠</strong></font><br><font color="#00CED1"><strong>事事慎权衡</strong></font>
 </blockquote>
-<h5 id="分布式10功能"><a href="#分布式10功能" class="headerlink" title="分布式10功能:"></a>分布式10功能:</h5><blockquote>
+<h4 id="分布式10功能"><a href="#分布式10功能" class="headerlink" title="分布式10功能:"></a>分布式10功能:</h4><blockquote>
 <font color="#00CED1"><strong>提供 注册 配置 调用 路由</strong></font><br><font color="#00CED1"><strong>监控 追踪 治理 编排 安全</strong></font>
 </blockquote>
 <p>在分布式系统里几乎所有的功能与设计思路都可以用这个<strong>“9法10功能”</strong>口诀来解读，例如“时空换同异换” 讲的是性能优化的路数，解读开来说即是：时间换空间、空间换时间、同步换异步、异步换同步。例如：采用cache的功能可以减少计算的时间，这是存储空间换时间从而提升性能；采用批处理的方式提升性能，这是减少计算时间；采用同步换异步的方式提升性能也是减少计算时间；减少IO的数据量从而提升性能，这是存储空间换时间；减少IO路径提升性能，这也是网络空间换时间；采用最新的硬件提升性能，这可以是计算换时间，也可以是存储或网络空间换时间。</p>
