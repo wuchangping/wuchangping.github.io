@@ -115,6 +115,88 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2020/02/16/distributed-general-principles/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2020/02/16/distributed-general-principles/" itemprop="url">分布式系统架构设计36式 – 第0式 - 设计总决</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-02-16T19:23:38+08:00">2020-02-16 19:23:38</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>在<strong>“不易、简易、变易”</strong>这三个范畴里，技术是属于“变易”范畴的，其千变万化；“方法论”是属于“简易”范畴的，其具有领域普适性的指导能力；而架构设计总决属于“不易”的范畴，其具有第一性原理的本质指导能力。本文的目的之一即是挖掘出分布式系统架构设计的第一性原理，使其可以应用于千变万化的不同的技术领域。</p>
+<p>架构是由人设计出来的，其与设计的人的架构理念强相关，欲彻底了解一个产品的架构必须要能量化它的设计理念，从而才能更好的由现象到本质了解一个技术，因此本文的目的之二即是量化人的架构设计理念。</p>
+<h2 id="设计哲学"><a href="#设计哲学" class="headerlink" title="设计哲学"></a><font color="#FF8C00">设计哲学</font></h2><p>什么是分布式系统的设计哲学？首先这里的设计哲学不是产品的设计哲学，它是一种工程哲学，是分布式系统架构设计原则以及设计方法论的指导思想，是架构师的内功。其目的是为了指导架构设计的过程，克服架构设计难题从而达到最终的架构设计目标。不同的架构师有自己不同的设计哲学观，这里我提出分布式系统架构设计哲学9式，即：</p>
+<blockquote>
+<p> <strong><font color="#00CED1">抽象 分层  解耦 拆分 聚合 治理 模型 取舍 演化</font></strong></p>
+</blockquote>
+<p>这9个词每个词展开来讲都可以是一篇大论，不同的架构设计师有自己不同的设计哲学观，也就形成了不同的架构设计原则以及设计方法论，并不存在一个普适的、统一的架构设计哲学，适合自己的才是最好的，每个人的领悟不同，因此这里也就不展开来讲。</p>
+<h2 id="设计原则"><a href="#设计原则" class="headerlink" title="设计原则"></a><font color="#FF8C00">设计原则</font></h2><p>同设计哲学一样，不同的架构设计师有着自己不同的设计原则观，在这里，我认为最合适的分布式系统的架构设计原则有二，即：</p>
+<ul>
+<li><strong>最佳物种原则</strong></li>
+<li><strong>功能非功能原则</strong></li>
+</ul>
+<h4 id="最佳物种原则"><a href="#最佳物种原则" class="headerlink" title=" 最佳物种原则"></a><font color="#00CED1"> 最佳物种原则</font></h4><p>最佳物种原则其来源是生物的物种进化理论，讲的是产品原则，其可以一分为二：</p>
+<p>1，最佳原则。天上飞的是鸟儿，地上奔跑的是走兽，水里游的是鱼儿。架构设计由大及小，由外及内也是如此。比如计算用的是分布式计算、存储用的是分布式存储，调度用的是分布式调度，其负责的领域各不相同，不存在一个全能的分布式中间件可以最佳的完成计算、存储、调度三合一的功能。从小处来讲也是如此，比如分布式系统内部的注册、路由、成员管理、服务提供、复制、安全、算法模型、存储等各有其自己最佳的设计方案，再依据这些最佳组件、最佳方案组合出一个最佳分布式中间件，从而计算的归计算、存储的归存储、调度的归调度。</p>
+<p>2，进化原则。万物由微而显，由简而繁，物竞天择，优胜劣汰，好的架构是根据业务演化而来，而不是一开始就完美的设计好的。但是不管是微还是显，其最本质的功能还是不变的，一个产品从POC到MVP再到企业级达标其最核心的功能是不变的，比如计算、存储与调度。</p>
+<h4 id="功能非功能原则"><a href="#功能非功能原则" class="headerlink" title=" 功能非功能原则"></a><font color="#00CED1"> 功能非功能原则</font></h4><p>功能非功能原则，讲的是技术原则，<strong>架构的目的是提供该领域的功能，然而功夫却是体现在非功能。</strong>比如常见的几个深度学习框架在功能上都具有深度学习训练与推理的能力，但是让用户决定是否选择这个框架的主要决定性因素却体现在其非功能，比如性能、可用性、可靠性、易用性、服务支持以及版权等。</p>
+<p>从大体上来说，分布式系统的架构设计都是围绕其功能与非功能的<strong>量化</strong>设计来进行的，非功能又可以一分为二，即：质量与约束，比如：</p>
+<p>客户对产品质量的需求一般可以用四个字概括，即”多、快、好、省“，然而客户在产品交付的时间、质量与成本上的取舍，客户原来遗留的系统，当前国家的法律法规，市场上的技术趋势以及竞争对手与行业标准等都属于当前客户需要考虑的约束条件。</p>
+<p>用户的产品质量需求一般称为使用质量需求，其一般包括：合适的性能（Performant）、可用性(Availability)、可靠性(Reliability)、可伸缩性(Scalability)、韧性(resilience)、可观测性(Observability)、可服务性（Serviceability）、安全性（security）、易用性（usability）、可运维性（operability）等，而用户的约束需求包括 用户的业务环境、用户的能力以及用户群的特征等。</p>
+<p>团队的质量需求指的是产品开发周期内的质量需求，高质量的代码几个最重要的要素有：可测试性（ testability）、可维护性（Maintainability）、可扩展性（ extensibility）、可读性（ readability）等，而团队的约束需求有：资源预算、上级要求、开发团队的能力、产品规划、此外还有信息安全以及产品运行环境 的约束等。</p>
+<h2 id="设计方法论"><a href="#设计方法论" class="headerlink" title="设计方法论"></a><font color="#FF8C00">设计方法论</font></h2><p>同设计哲学与设计原则一样，不同的架构设计师有着自己不同的设计方法论，在这里，我认为分布式系统的架构设计方法论可以总结成以下口诀，即<strong>分布式9法10功能口诀</strong>，如下：</p>
+<h5 id="分布式9法："><a href="#分布式9法：" class="headerlink" title="分布式9法："></a>分布式9法：</h5><blockquote>
+<font color="#00CED1"><strong>少读少写少依赖</strong></font><br><font color="#00CED1"><strong>业务拆业务合</strong></font><br><font color="#00CED1"><strong>功能拆性能聚</strong></font><br><font color="#00CED1"><strong>时空换同异换</strong></font><br><font color="#00CED1"><strong>硬件顺天性</strong></font><br><font color="#00CED1"><strong>服务需治理</strong></font><br><font color="#00CED1"><strong>数据保一致</strong></font><br><font color="#00CED1"><strong>哪都不可靠</strong></font><br><font color="#00CED1"><strong>事事慎权衡</strong></font>
+</blockquote>
+<h5 id="分布式10功能"><a href="#分布式10功能" class="headerlink" title="分布式10功能:"></a>分布式10功能:</h5><blockquote>
+<font color="#00CED1"><strong>提供 注册 配置 调用 路由</strong></font><br><font color="#00CED1"><strong>监控 追踪 治理 编排 安全</strong></font>
+</blockquote>
+<p>在分布式系统里几乎所有的功能与设计思路都可以用这个<strong>“9法10功能”</strong>口诀来解读，例如“时空换同异换” 讲的是性能优化的路数，解读开来说即是：时间换空间、空间换时间、同步换异步、异步换同步。例如：采用cache的功能可以减少计算的时间，这是存储空间换时间从而提升性能；采用批处理的方式提升性能，这是减少计算时间；采用同步换异步的方式提升性能也是减少计算时间；减少IO的数据量从而提升性能，这是存储空间换时间；减少IO路径提升性能，这也是网络空间换时间；采用最新的硬件提升性能，这可以是计算换时间，也可以是存储或网络空间换时间。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲述了分布式系统架构设计总决，其可分为设计哲学、设计原则以及设计方法论，从而可以依据这三个方面量化人的设计理念。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“[1]，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，主要从事分布式产品的交付、架构设计以及开发工作。</p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2020/01/21/distributed-ideamodel-cicd-toowheel/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -760,103 +842,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/11/20/distributed-ideamodel-technology/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/11/20/distributed-ideamodel-technology/" itemprop="url">分布式系统架构设计36式之思维模型 – 第8式-技术思维模型</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-11-20T20:40:38+08:00">2019-11-20 20:40:38</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><font color="#FF8C00">注：本思维模型系列文章已被infoq采纳并推荐至首页：<a href="https://www.infoq.cn/article/JjycubQz3YTBgozaZ4G9" target="_blank" rel="noopener">https://www.infoq.cn/article/JjycubQz3YTBgozaZ4G9</a></font>
-
-<p>日拱一卒，功不唐捐，一个知识领域里的 “道 法 术 器” 这四个境界需要从 微观、中观以及宏观 三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计36式》，讲诉分布式系统里最重要的三十六个的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
-<p><strong>“兵者，国之大事，死生之地，存亡之道，不可不察也”</strong>，这句话对企业来讲，兵即产品，国即企业，察即研究探讨，产品关系到企业的存亡，所以不可以不慎重地加以研究探讨。</p>
-<p>我们知道一个产品的成功不只是技术的成功，它还包括商业、创新、管理、资本、运营以及销售等的成功。当打造一个产品的时候，通常来说工程人员往往会比较关注技术层面的东西： 方案、功能、难点、亮点以及如何实现等，深度有余但高度与广度往往不足 。一般有点经验的工程人员都可以从点或线的层面考虑一个产品的实现，但往往缺乏从面及体的层面看待一个产品的能力。</p>
-<p>因此，如果说技术思维是架构师的一根DNA螺旋线，那么产品思维、创新思维以及商业思维等就是架构师的另外一根DNA螺旋线，只有两根DNA螺旋线俱全才能有机会进化出新物种。</p>
-<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>人的知识与能力可以从“时空”这两个角度进行评价，其可分为四个维度：深度、广度、高度以及跨度。空间角度指的是深度、广度、高度，时间角度指的是跨度。深度靠专研，广度靠学习，高度靠抽象，而跨度靠长久地积累经验。这四个维度组合成了一个人的知识与能力的时空度。</p>
-<p>万事万物逃脱不出<strong>“不易、简易、变易”</strong>这三个层次，金庸先生的《天龙八部》里少林寺有72技，其每一技又千变万化，想要样样精通，今生无望，然而练就“小无相功”却可以以这功法催动不同的“技”，甚至可以比原版更具威力，以“不易 简易”之功施展“变易”之术。那么对于技术开发人员来说技术也是“变易”的，更新快，领域多，复杂度高，样样精通也是今生无望，那么需要的就是找出适合自己的“功”，技术思维模型、产品思维模型、创新思维模型、商业思维模型就是这样的“功”。</p>
-<p>因此本系列文章提出了技术、产品、创新与商业这四个思维模型，这一系列文章不是为了解决具体的某个分布式系统设计里的难题，它提出了一种思维框架，从技术、产品、创新以及商业的角度，给工程人员以一种系统性的分析分布式系统设计难题的模型，这也是一种系统思维的体现。</p>
-<h2 id="技术思维模型"><a href="#技术思维模型" class="headerlink" title="技术思维模型"></a><font color="#FF8C00">技术思维模型</font></h2><p>技术思维模型很多，适合自己的才是最好的，这里提出“火箭技术思维模型”以抛砖引玉，如下图：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ideamodel/idea-model-technology.PNG" alt="技术思维模型"></p>
-<h4 id="火箭思维"><a href="#火箭思维" class="headerlink" title=" 火箭思维"></a><font color="#00CED1"> 火箭思维</font></h4><p>在这个技术思维模型里，产品被看作一个圆，技术是一个三角形火箭，它包括“势 道 法 术 器 界”这六个要素。其中技术只是产品当中的一个子集，在产品圆内还有企业文化、企业制度以及组织关系，这也是影响产品的几个非常重要的因素。</p>
-<p>在这个技术思维模型中的火箭也体现了一种产品开发思维，开发产品的时候应该先确定好大概的方向（趋势），这时并不需要非常精确但是方向一定要对，然后发射（开工），在过程中不断矫正迭代更新，使得短期目标与长期目标相符合，在这个火箭模型中每一级都都是上一级的动力，一级一级地推动，直至最终命中目标（产品满足市场需求，从而获取商业上的成功）。</p>
-<h4 id="技术与产品匹配-TPF-Technology-Product-Fit"><a href="#技术与产品匹配-TPF-Technology-Product-Fit" class="headerlink" title=" 技术与产品匹配(TPF: Technology-Product Fit)"></a><font color="#00CED1"> 技术与产品匹配(TPF: Technology-Product Fit)</font></h4><p>在做产品的时候第一步讲的是产品需要与市场匹配 (PMF: Product-Market Fit)，找出与市场匹配的产品，然后进行最小可行性验证(MVP:  Minimal Viable Product)。同样在做技术的时候，技术需要与产品匹配，这里提出一个新的概念TPF：Technology-Product Fit, 即技术与产品匹配。在技术思维模型里，当技术三角大于产品圆时，技术领先与产品需求，当技术三角小于圆时，技术落后于产品需求，但技术三角的三个点与圆刚好相交时，技术与产品达到最佳匹配，匹配合适度的评判标准是看是否符合下面的“五看三定六要素”的商业思维模型里的输出。</p>
-<h4 id="“势、道、法、术、器、界“-六元组"><a href="#“势、道、法、术、器、界“-六元组" class="headerlink" title=" “势、道、法、术、器、界“ 六元组"></a><font color="#00CED1"> “势、道、法、术、器、界“ 六元组</font></h4><p>狭义上的技术通常指的是技能属于“术”的范畴，而广义的技术则是市场趋势、自己的优势与劣势、产品设计理念、工程方法论、技术技能、工程工具以及约束限制这几个方面的组合体，抽象成工程哲学即“势、道、法、术、器、界”这六个字 ，简称技术思维六元组。</p>
-<h5 id="势：时势，是市场趋势、是产品定位同时也是自我的优势与劣势"><a href="#势：时势，是市场趋势、是产品定位同时也是自我的优势与劣势" class="headerlink" title=" 势：时势，是市场趋势、是产品定位同时也是自我的优势与劣势"></a><font color="#00CED1"> 势：时势，是市场趋势、是产品定位同时也是自我的优势与劣势</font></h5><p>“天时、地利、人和”，打造的产品必须符合市场趋势、准确定位客户需求，同时也要看看自己团队的优势与劣势。例如：依据市场的趋势判断，未来IOT 以及 IT运维市场是处于快速增长状态的，这可以成为为这两个市场提供数据存储服务的决策支持。同时，也要看清自我团队的优势与劣势，是否有能力打造这样的产品。</p>
-<h5 id="道：本质，是“不变”的范畴，是一个产品的灵魂、设计理念以及价值观"><a href="#道：本质，是“不变”的范畴，是一个产品的灵魂、设计理念以及价值观" class="headerlink" title=" 道：本质，是“不变”的范畴，是一个产品的灵魂、设计理念以及价值观"></a><font color="#00CED1"> 道：本质，是“不变”的范畴，是一个产品的灵魂、设计理念以及价值观</font></h5><p>“能工摹其形，巧匠摄其魂”，代码本身是没有灵魂、没有设计理念、没有价值观的，由打造它的人铸其形而赋其神。如同雕塑与画画一般，好的匠人与宗师可以赋予作品以灵魂。同样的产品由不同的人打造，不同的设计理念体现了不同的产品灵魂，这跟打造它的人相关、也跟企业制度、企业文化、组织结构等相关。</p>
-<p>分布式流存储从工程哲学以及设计理念的角度定义了自己的产品灵魂，工程哲学体现在“Best of Breed” 即“最佳物种”这句话，专门为物联网以及日志场景下的流式数据而设计，产品与市场适配，技术与产品适配。而它的设计理念又涵盖了：可度量化的高质量，云原生、微服务架构，软件定义存储，资源自动伸缩，消除数据冗余，数据无限存储，开箱即用，安全等。</p>
-<h5 id="法：方法论，是”简变“的范畴，是工程的套路方法"><a href="#法：方法论，是”简变“的范畴，是工程的套路方法" class="headerlink" title=" 法：方法论，是”简变“的范畴，是工程的套路方法"></a><font color="#00CED1"> 法：方法论，是”简变“的范畴，是工程的套路方法</font></h5><p>方法论体现在产品的设计原则、产品创新、产品交付以及功能与非功能特性的定义。 分布式流存储的设计原则是最佳物种的工程哲学方法论以及以客户为中心的设计理念，产品创新依据是 ”奇点创新“三部曲：破坏、下移、重生，这一点在”奇点创新思维模型”这一章里会讲述。产品交付依从“持续交付2.0” ，探索环与验证环互补互利、互为驱动。功能特性：分布式流存储系统的核心功能就一个：提供分布式流存储服务，而非功能特性可以一分为二：质量与约束。</p>
-<h5 id="术：技能，是”易变”的范畴，狭义上的技术，通常指的就是这一点"><a href="#术：技能，是”易变”的范畴，狭义上的技术，通常指的就是这一点" class="headerlink" title=" 术：技能，是”易变”的范畴，狭义上的技术，通常指的就是这一点"></a><font color="#00CED1"> 术：技能，是”易变”的范畴，狭义上的技术，通常指的就是这一点</font></h5><p>术，指的是技术上的设计方案与实现，在产品里占据了最大的一块版图。分布式流存储里的术可分为：</p>
-<ul>
-<li><p>架构视图：通常架构可以分为场景、物理、逻辑、数据处理以及开发这五个架构视图。分布式流存储最为朴素的数据处理架构视图即为抽象缓存与2层存储资源为流资源，实时性的读和写都在缓存里，数据恢复采用分布式日志系统，而长期存储采用了2层分布式文件存储系统，这也是分布式流存储最重要的一个设计理念。</p>
-</li>
-<li><p>控制面：分布式流存储的控制面最重要的两个工作就是：流管理与集群管理。流管理负责流的抽象、流的生命周期管理，而集群管理体现在集群状态管理以及集群的可服务管理。</p>
-</li>
-<li><p>数据面：数据面最重要的职责是数据“段“的抽象与管理：创建、删除、修改、使用。</p>
-</li>
-<li><p>高级企业特性：分布式流存储也提供了多租户、安全、监控告警、事务、读群组、状态同步器以及保序等企业级特性。</p>
-</li>
-</ul>
-<h5 id="器：工具，也是”易变”的范畴-“工欲善其事-必先利其器”"><a href="#器：工具，也是”易变”的范畴-“工欲善其事-必先利其器”" class="headerlink" title=" 器：工具，也是”易变”的范畴, “工欲善其事,必先利其器”"></a><font color="#00CED1"> 器：工具，也是”易变”的范畴, “工欲善其事,必先利其器”</font></h5><p>工具的使用对人类的进化起到至关重要的作用，生产工具是人类进步的一大要素，用好“器”可以事半功倍。在分布式流存储里采用的器可分为：</p>
-<ul>
-<li><p>构建与运维工具：k8s、Docker, 部署，版本回滚、升级、发布，监控、告警等组件；</p>
-</li>
-<li><p>测试验证工具：集成测试的Jenkins, 单元测试的 Mock ， 以及A/B测试的方法论等；</p>
-</li>
-<li><p>此外企业平台提供的资源支持也可以属于器的范畴。</p>
-</li>
-</ul>
-<h4 id="界：是约束，也是限制"><a href="#界：是约束，也是限制" class="headerlink" title=" 界：是约束，也是限制"></a><font color="#00CED1"> 界：是约束，也是限制</font></h4><p>技术思维模型里的三角形的三条边代表着“界” ，是技术边界也是技术约束与技术限制，对市场来说它是技术壁垒，对产品来说它是法律法规、是功能约束，对团队来说它是资源约束、是自我能力约束。分布式流存储的最大的技术优势也是最大的技术约束就是它是为 物联网、IT日志这样的数据格式而设计的，不是所有的数据类型存储都适用。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本系列文章讲述了四个思维模型： “技术思维模型、创新思维模型、商业思维模型以及产品思维模型”，再结合分布式流存储做了简单的举例分析。本文讲述”技术思维模型“，日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这几个思维模型对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“[1]，欢迎大家拍砖留念。</p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，主要从事分布式产品的交付、架构设计以及开发工作。</p>
-<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
-<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1]《第二曲线创新》 李善友</p>
-<p>[2]《如何在一分钟内用5个问题讲清你的商业模式》 中欧商业评论，关苏哲 </p>
-<p>[3] Pravega.io</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -882,7 +867,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">69</a></div>
+      <div><a href="/archives">70</a></div>
     </div>
     
     
