@@ -115,7 +115,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2020/02/22/distributed-ideamodel-architecture/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2020/02/18/distributed-ideamodel-architecture/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
         <meta itemprop="description" content="“分布式系统架构设计师”">
@@ -127,12 +127,12 @@
     </div>
     <header class="post-header">
       <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2020/02/22/distributed-ideamodel-architecture/" itemprop="url">分布式系统架构设计36式 – 第15式 - 架构思维模型</a>
+        <a class="post-title-link post-title-link-external" href="/2020/02/18/distributed-ideamodel-architecture/" itemprop="url">分布式系统架构设计36式 – 第15式 - 架构思维模型</a>
       </h1>
       <div class="post-meta">
         
         <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-02-22T21:30:38+08:00">2020-02-22 21:30:38</time></span>
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-02-18T21:30:38+08:00">2020-02-18 21:30:38</time></span>
         </span>
         
         
@@ -303,22 +303,14 @@
       <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>在<strong>“不易、简易、变易”</strong>这三个范畴里，技术是属于“变易”范畴的，其千变万化；“方法论”是属于“简易”范畴的，其具有领域普适性的指导能力；而架构设计总决属于“不易”的范畴，其具有第一性原理的本质指导能力。本文的目的之一即是挖掘出分布式系统架构设计的第一性原理，使其可以应用于千变万化的不同的技术领域。</p>
 <p>架构是由人设计出来的，其与设计的人的架构理念强相关，欲彻底了解一个产品的架构必须要能量化它的设计理念，从而才能更好的由现象到本质了解一个技术，因此本文的目的之二即是量化人的架构设计理念。</p>
 <h2 id="分布式系统"><a href="#分布式系统" class="headerlink" title="分布式系统"></a><font color="#FF8C00">分布式系统</font></h2><p>软件设计的第一性原理是“定义问题，分析问题，过滤问题以及解决问题。”，其最重要的第一步是“定义问题”，问题定义的准确与否直接决定了后面的分析问题，过滤问题以及解决问题的方向与准确性。那么，什么是分布式系统？各种论文以及书籍都有过自己的定义，比如《分布式系统原理与范型》定义分布式系统为：</p>
-<blockquote>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&gt;分布式系统是若干独立计算机的集合，这计算机对用户来说就像单个相关系统。<br>&gt;<br></code></pre></td></tr></table></figure>
-</blockquote>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">分布式系统是若干独立计算机的集合，这计算机对用户来说就像单个相关系统。<br></code></pre></td></tr></table></figure>
 <p>还有Google出来的定义：</p>
-<blockquote>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&gt; 分布式系统是由自主计算机组成的网络，这些自主计算机使用分布式中间件连接。它们有助于共享不同的资源和功能，从而为用户提供单个集成的一致网络。<br>&gt;<br></code></pre></td></tr></table></figure>
-</blockquote>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">A distributed system is a system whose components are located on different networked computers, which communicate and coordinate their actions by passing messages to one another. The components interact with one another in order to achieve a common goal.<br>分布式系统是一个组件分布在不同的联网的计算机上，彼此之间仅仅通过消息传递进行通信和协调的系统，这些组件相互交互以实现一个共同的目标。<br></code></pre></td></tr></table></figure>
 <p>不同于这些从理论角度的定义，这里，我从工程实现的角度给分布式系统一个新的定义，即：</p>
-<blockquote>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&gt; 分布式系统是面向集群状态的编程。<br>&gt;<br></code></pre></td></tr></table></figure>
-</blockquote>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">分布式系统是面向集群状态的编程, 它是抽象、分层、解耦、拆分、聚合、治理、取舍、模型、演化、边界思维的创造性应用，其要交付的是功能价值，但功夫却体现在非功能。<br></code></pre></td></tr></table></figure>
 <p>从工程的角度来看，分布式系统都是围绕着集群状态表来进行编程的，集群状态表是分布式系统的核心功能中的核心。因此本系列分布式系统文章都是依据理论结合实践的原则，从工程交付的角度来看待分布式系统的。</p>
 <h2 id="设计哲学"><a href="#设计哲学" class="headerlink" title="设计哲学"></a><font color="#FF8C00">设计哲学</font></h2><p>什么是分布式系统的设计哲学？首先这里的设计哲学不是产品的设计哲学，它是一种工程哲学，是分布式系统架构设计原则以及设计方法论的指导思想，是架构师的内功。其目的是为了指导架构设计的过程，克服架构设计难题从而达到最终的架构设计目标。不同的架构师有自己不同的设计哲学观，这里我提出分布式系统架构设计哲学9式，即：</p>
-<blockquote>
- <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&gt;  抽象 分层  解耦 拆分 聚合 治理 模型 取舍 演化<br>&gt;<br></code></pre></td></tr></table></figure>
-</blockquote>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">抽象 分层  解耦 拆分 聚合 治理 模型 取舍 边界 演化<br></code></pre></td></tr></table></figure>
 <p>这9个词每个词展开来讲都可以是一篇大论，不同的架构设计师有自己不同的设计哲学观，也就形成了不同的架构设计原则以及设计方法论，并不存在一个普适的、统一的架构设计哲学，适合自己的才是最好的，每个人的领悟不同，因此这里也就不展开来讲。</p>
 <h2 id="设计原则"><a href="#设计原则" class="headerlink" title="设计原则"></a><font color="#FF8C00">设计原则</font></h2><p>同设计哲学一样，不同的架构设计师有着自己不同的设计原则观，在这里，我认为最合适的分布式系统的架构设计原则有二，即：</p>
 <ul>
@@ -334,12 +326,8 @@
 <p>用户的产品质量需求一般称为使用质量需求，其一般包括：合适的性能（Performant）、可用性(Availability)、可靠性(Reliability)、可伸缩性(Scalability)、韧性(resilience)、可观测性(Observability)、可服务性（Serviceability）、安全性（security）、易用性（usability）、可运维性（operability）等，而用户的约束需求包括 用户的业务环境、用户的能力以及用户群的特征等。</p>
 <p>团队的质量需求指的是产品开发周期内的质量需求，高质量的代码几个最重要的要素有：可测试性（ testability）、可维护性（Maintainability）、可扩展性（ extensibility）、可读性（ readability）等，而团队的约束需求有：资源预算、上级要求、开发团队的能力、产品规划、此外还有信息安全以及产品运行环境 的约束等。</p>
 <h2 id="设计方法论"><a href="#设计方法论" class="headerlink" title="设计方法论"></a><font color="#FF8C00">设计方法论</font></h2><p>同设计哲学与设计原则一样，不同的架构设计师有着自己不同的设计方法论，在这里，我认为分布式系统的架构设计方法论可以总结成以下口诀，即<strong>分布式9法10功能口诀</strong>，如下：</p>
-<h4 id="分布式9法："><a href="#分布式9法：" class="headerlink" title="分布式9法："></a>分布式9法：</h4><blockquote>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&gt; 少读少写少依赖<br>&gt; 业务拆业务合<br>&gt; 功能拆性能聚<br>&gt; 时空换同异换<br>&gt; 硬件顺天性<br>&gt; 服务需治理<br>&gt; 数据保一致<br>&gt; 哪都不可靠<br>&gt; 事事慎权衡<br>&gt;<br></code></pre></td></tr></table></figure>
-</blockquote>
-<h4 id="分布式10功能"><a href="#分布式10功能" class="headerlink" title="分布式10功能:"></a>分布式10功能:</h4><blockquote>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&gt; 提供 注册 配置 调用 路由<br>&gt; 监控 追踪 治理 编排 安全<br>&gt;<br></code></pre></td></tr></table></figure>
-</blockquote>
+<h4 id="分布式9法："><a href="#分布式9法：" class="headerlink" title="分布式9法："></a>分布式9法：</h4><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs undefined">少读少写少依赖<br>业务拆业务合<br>功能拆性能聚<br>时空换同异换<br>硬件顺天性<br>服务需治理<br>数据保一致<br>哪都不可靠<br>事事慎权衡<br></code></pre></td></tr></table></figure>
+<h4 id="分布式10功能"><a href="#分布式10功能" class="headerlink" title="分布式10功能:"></a>分布式10功能:</h4><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">提供 注册 配置 调用 路由<br>监控 追踪 治理 编排 安全<br></code></pre></td></tr></table></figure>
 <p>在分布式系统里几乎所有的功能与设计思路都可以用这个<strong>“9法10功能”</strong>口诀来解读，例如：</p>
 <p>1，“业务拆业务合”，其理论依据来源于“康威定律”，即：</p>
 <blockquote>
