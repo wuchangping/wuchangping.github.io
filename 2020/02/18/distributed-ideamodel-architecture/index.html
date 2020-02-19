@@ -68,7 +68,7 @@
     <script defer type="text/javascript" src="/js/index.js"></script>
     
     <script defer type="text/javascript" src="/js/custom.js"></script>
-    <title>分布式系统架构设计36式 – 第15式 - 架构思维模型 | 常平的技术博客 - 技术是有生命的，因为它可以进化</title>
+    <title>分布式系统架构设计36式 – 第15式 - 架构思维 | 常平的技术博客 - 技术是有生命的，因为它可以进化</title>
   </head>
   <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
     
@@ -125,11 +125,11 @@
       </span>
     </div>
     <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">分布式系统架构设计36式 – 第15式 - 架构思维模型</h1>
+      <h1 class="post-title" itemprop="name headline">分布式系统架构设计36式 – 第15式 - 架构思维</h1>
       <div class="post-meta">
         
         <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-02-18T21:30:38+08:00">2020-02-18 21:30:38</time></span>
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-02-18T22:30:38+08:00">2020-02-18 22:30:38</time></span>
         </span>
         
         
@@ -147,7 +147,7 @@
     <main class="post-main" itemprop="articleBody">
       <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>万事万物逃脱不出<strong>“不易、简易、变易”</strong>这三个层次，演绎法认为“道生一、一生二、二生三、三生万物”，而归纳法也可以认为“万物合三，三合二、二合一、一合道”。本文的目的之一是通过归纳法找出分布式系统架构设计最为本质的“道”，使之可以用于解读各式各样的分布式系统架构设计。</p>
 <p>从应用领域来看分布式系统可以分为三大类：分布式计算、分布式存储以及分布式调度，本文做的是从这三大领域的”变易”中找出“不易、简易”，“以”不变“应”万变“，从而抽象出一种分布式架构思维使之可以应用于这三大领域的架构设计。</p>
-<h2 id="架构思维模型"><a href="#架构思维模型" class="headerlink" title="架构思维模型"></a><font color="#FF8C00">架构思维模型</font></h2><p>在面向对象编程有四个最高的思想，即“抽象、封装、继承与多态”，将这个思想迁移应用到本文，可以解读为架构思维是第8式“火箭技术思维模型”的以及第0式”设计总决“的继承，这里我把它定义为“分布式系统火箭架构思维模型”，如下图：</p>
+<h2 id="架构思维模型"><a href="#架构思维模型" class="headerlink" title="架构思维模型"></a><font color="#FF8C00">架构思维模型</font></h2><p>这里定义了“分布式系统火箭架构思维模型”，如下图：</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ideamodel/idea-model-architecture-1.PNG" alt="架构思维模型"></p>
 <h4 id="火箭架构思维模型"><a href="#火箭架构思维模型" class="headerlink" title=" 火箭架构思维模型"></a><font color="#00CED1"> 火箭架构思维模型</font></h4><p>这个架构思维模型用图形是一个内部分层的三角形，类比为一个5级火箭体，它包括“势 道 法 术 器 界”这六个要素，其下一级为上一级的提供动力的同时又受三条边的约束。</p>
 <p>狭义上的分布式系统架构通常指的是架构的技能，其属于“术”的范畴，而广义的分布式系统架构则是市场趋势、架构理念、架构方法论、架构技能、架构用的工具以及架构的边界这几个方面的组合体，应用抽象思维，即“势、道、法、术、器、界”这六个字 ，简称架构思维六元组。</p>
@@ -169,7 +169,7 @@
 <p>依据分布式系统的第一性原理，本文解读了分布式系统的理论认知，除此之外还可以依据个人对分布式系统的工程经验推理出分布式系统的实践认知，依据工程实践经验，这里我定于分布式系统为：</p>
 <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">分布式系统是面向集群状态的编程, 它是抽象、分层、解耦、拆分、聚合、治理、取舍、模型、演化、边界思维的创造性应用，其要交付的是功能价值，但功夫却体现在非功能。<br></code></pre></td></tr></table></figure>
 <p>不同于教科书以及一些论文对分布式系统的理论定义，这个定义来源于个人工程经验，是认知的创造。</p>
-<h4 id="法：方法论，是架构的套路"><a href="#法：方法论，是架构的套路" class="headerlink" title=" 法：方法论，是架构的套路"></a><font color="#00CED1"> 法：方法论，是架构的套路</font></h4><p>”法“是方法论，是架构设计的方法论，是架构设计的套路，它是认知论的上一级，方法论体现在产品的设计原则、设计心法以及设计功能。从工程经验的角度，本文认为分布式系统设计可以依从以下的”9法10功2原则“ 作为方法论。</p>
+<h4 id="法：方法论，是架构的套路"><a href="#法：方法论，是架构的套路" class="headerlink" title=" 法：方法论，是架构的套路"></a><font color="#00CED1"> 法：方法论，是架构的套路</font></h4><p>”法“是方法论，是架构设计的方法论，是架构设计的套路，它是认知论的上一级，方法论体现在产品的设计原则、设计心法以及设计功能。从工程经验的角度，本文认为分布式系统设计可以依从以下的”9法10项2原则“ 作为方法论。</p>
 <p><strong>9法：</strong></p>
 <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">少读少写少依赖，业务拆业务合，功能拆性能聚，时空换同异换<br><br>硬件顺天性，服务需治理，数据保一致，哪都不可靠，事事慎权衡<br></code></pre></td></tr></table></figure>
 <ul>
@@ -187,19 +187,19 @@
 <li>哪都不可靠：指的是磁盘不可靠、网络不可靠、计算不可靠、运维的人不可靠，何种场景都需要进行系统的韧性设计</li>
 <li>事事慎权衡：指的是架构设计本身的设计方法论，即trade-off</li>
 </ul>
-<p><strong>10功能:</strong></p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">提供 注册 配置 调用 路由<br>监控 追踪 治理 编排 安全<br></code></pre></td></tr></table></figure>
+<p><strong>10项</strong></p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">提供 注册 配置 调用 路由<br>观测 治理 编排 质量 边界<br></code></pre></td></tr></table></figure>
 <ul>
 <li>提供：即服务接入的提供，指的是对外提供restful 接口服务：权限、多组合、监控、审计、计费等，对外提供SQL服务接入接口服务、对外提供自然语言接入接口服务等</li>
 <li>注册：即服务注册，将集群的工作负载注册到集群注册中心</li>
 <li>配置：即配置管理，将集群的配置管理在配置中心；</li>
-<li>调用，即服务调用，各种RPC调用</li>
+<li>调用，即服务调用，各种RPC调用，系统内的消息传递</li>
 <li>路由：即服务路由，目的是集群的负载均衡与扩伸缩性</li>
-<li>监控：指的是集群内部指标的可观测性</li>
-<li>追踪：指的是集群内部请求服务的可观测性</li>
+<li>观测：指的是集群内部指标的可观测性，即监控、告警、追踪、日志</li>
 <li>治理：指的是集群内部的服务治理：熔断、降级、限流、隔离、容错</li>
 <li>编排：即服务编排，基于k8s+ docker，完成安装、升级、扩容、运维、调度等；</li>
-<li>安全：指的是服务安全与认证</li>
+<li>质量：指的是安装部署运维质量、客户质量、用户质量与开发质量</li>
+<li>边界：指的是系统内的约束条件，涵盖 硬件资源、客户约束、用户约束以及团队约束</li>
 </ul>
 <p><strong>2原则：</strong></p>
 <ul>
@@ -225,8 +225,6 @@
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ideamodel/idea-model-architecture-2.PNG" alt="4+1架构模型"></p>
 <p>如上图常用的4+1视图：物理视图、逻辑视图、处理视图、开发视图以及用例视图，其中与用例视图交叉的部分是描述共同的细节，同时每种视图中又有各自的需求，比如物理视图有安装、部署、升级、运维的需求，逻辑视图有功能需求，处理视图有非功能里的用户运行质量需求，开发视图有团队的开发质量需求。</p>
 </li>
-</ul>
-<ul>
 <li><p>分布式系统的基础理论：CAP/PACELC、BASE、ACID、2PC、3PC、PAXOS、RAFT</p>
 </li>
 <li><p>分布式系统的基础数据结构：Array、List、Map、Hash、Tree，及其变种</p>
@@ -241,9 +239,9 @@
 </li>
 </ul>
 <h4 id="器：工具，架构设计用的工具"><a href="#器：工具，架构设计用的工具" class="headerlink" title=" 器：工具，架构设计用的工具"></a><font color="#00CED1"> 器：工具，架构设计用的工具</font></h4><p>”器“是工具，是架构设计用的工具，”工欲善其事必先利其器“，常用的架构设计制图工具有MS Visio、Draw.io，UML制图用的Enterprise Architect、starUML等，当然组织提供的资源支持也可以算是工具之一。</p>
-<h4 id="界：是边界，是架构的约束限制"><a href="#界：是边界，是架构的约束限制" class="headerlink" title=" 界：是边界，是架构的约束限制"></a><font color="#00CED1"> 界：是边界，是架构的约束限制</font></h4><p>”界“是边界，是架构的约束限制，火箭架构思维模型里的三角形的三条边代表着“界” ，是技术边界、也是技术约束与技术限制，也是架构的取舍因素之一，是架构能做什麽不能做什麽的解读，对市场来说它是技术壁垒，对产品来说它是法律法规、是功能约束，对团队来说它是资源约束、是自我能力约束。</p>
+<h4 id="界：是边界，是架构的约束"><a href="#界：是边界，是架构的约束" class="headerlink" title=" 界：是边界，是架构的约束"></a><font color="#00CED1"> 界：是边界，是架构的约束</font></h4><p>”界“是边界，是架构的约束限制，火箭架构思维模型里的三角形的三条边代表着“界” ，是技术边界、也是技术约束与技术限制，也是架构的取舍因素之一，是架构能做什麽不能做什麽的解读，对市场来说它是技术壁垒，对产品来说它是法律法规、是功能约束，对团队来说它是资源约束、是自我能力约束。</p>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲述了分布式系统的架构思维模型，其目的希望以此架构思维模型应用于各种领域的分布式架构系统设计。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，主要从事分布式产品的交付、架构设计以及开发工作。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，曾就职于Marvell、AMD，主要从事Linux内核开发以及分布式产品的交付、架构设计以及开发工作。</p>
 <h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
 <p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
 
@@ -326,7 +324,7 @@
     <hr>
     <div class="post-toc sidebar-item" id="toc-div">
       <div><i class="fas fa-list-ol"></i>文章目录</div>
-      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#动机"><span class="toc-text">动机</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#架构思维模型"><span class="toc-text">架构思维模型</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#火箭架构思维模型"><span class="toc-text"> 火箭架构思维模型</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#势：时势，是架构的方向"><span class="toc-text"> 势：时势，是架构的方向</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#道：理念，是架构的认知"><span class="toc-text"> 道：理念，是架构的认知</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#法：方法论，是架构的套路"><span class="toc-text"> 法：方法论，是架构的套路</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#术：技能，是架构技能"><span class="toc-text"> 术：技能，是架构技能</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#器：工具，架构设计用的工具"><span class="toc-text"> 器：工具，架构设计用的工具</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#界：是边界，是架构的约束限制"><span class="toc-text"> 界：是边界，是架构的约束限制</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#小结"><span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#作者简介"><span class="toc-text">作者简介</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#版权申明"><span class="toc-text">版权申明</span></a></li></ol></div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#动机"><span class="toc-text">动机</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#架构思维模型"><span class="toc-text">架构思维模型</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#火箭架构思维模型"><span class="toc-text"> 火箭架构思维模型</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#势：时势，是架构的方向"><span class="toc-text"> 势：时势，是架构的方向</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#道：理念，是架构的认知"><span class="toc-text"> 道：理念，是架构的认知</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#法：方法论，是架构的套路"><span class="toc-text"> 法：方法论，是架构的套路</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#术：技能，是架构技能"><span class="toc-text"> 术：技能，是架构技能</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#器：工具，架构设计用的工具"><span class="toc-text"> 器：工具，架构设计用的工具</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#界：是边界，是架构的约束"><span class="toc-text"> 界：是边界，是架构的约束</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#小结"><span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#作者简介"><span class="toc-text">作者简介</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#版权申明"><span class="toc-text">版权申明</span></a></li></ol></div>
     </div>
     
     
