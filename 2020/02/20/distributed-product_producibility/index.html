@@ -68,7 +68,7 @@
     <script defer type="text/javascript" src="/js/index.js"></script>
     
     <script defer type="text/javascript" src="/js/custom.js"></script>
-    <title>黑客马拉松 2019 | 常平的技术博客 - 技术是有生命的，因为它可以进化</title>
+    <title>分布式系统架构设计36式 – 第17式 - 如何将开源项目产品化v1版 | 常平的技术博客 - 技术是有生命的，因为它可以进化</title>
   </head>
   <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
     
@@ -114,7 +114,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/04/12/person-emc-hackson-2019/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2020/02/20/distributed-product_producibility/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
        <meta itemprop="name" content="常平">
        <meta itemprop="description" content="“分布式系统架构设计师”">
@@ -125,11 +125,11 @@
       </span>
     </div>
     <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">黑客马拉松 2019</h1>
+      <h1 class="post-title" itemprop="name headline">分布式系统架构设计36式 – 第17式 - 如何将开源项目产品化v1版</h1>
       <div class="post-meta">
         
         <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-04-12T20:45:43+08:00">2019-04-12 20:45:43</time></span>
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-02-20T21:23:38+08:00">2020-02-20 21:23:38</time></span>
         </span>
         
         
@@ -138,22 +138,43 @@
         
         <span class="post-categories">
           
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/person/" itemprop="url" rel="index"><span itemprop="name">person</span></a></span>
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
         </span>
         
         
       </div>
     </header>
     <main class="post-main" itemprop="articleBody">
-      <p>参加公司的hackathson 2019 获奖了。。。。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/person/hackson-2019.png" alt="hackson"></p>
+      <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>架构设计人员需要有产品的商业意识，需要具备将技术产品化的能力，作为软件开发人员在工作过程中往往离不开开源项目，但是能回答好开源项目为什么不如商业产品以及如何将开源项目产品化的人员其实不多，因此本文解读了两个问题：1，为什么开源的项目不如商业产品？2，如何将一个开源的项目产品化？本文将迭代演化，当前为v1版。</p>
+<h2 id="为什么开源的项目不如商业产品"><a href="#为什么开源的项目不如商业产品" class="headerlink" title="为什么开源的项目不如商业产品"></a><font color="#FF8C00">为什么开源的项目不如商业产品</font></h2><p>以TensorFlow2.0为例，tensorFlow是一个开源的机器学习平台，虽然其强调了自身的易用与强大但是离产品化还有一段距离。通常来讲开源的项目从产品化的角度来看可分为三个层次：</p>
+<p>1，项目于社区锲合，即开源项目在社区内的锲合程度，度量指标是点赞数、fork数、社区的技术文章阅读量，提升项目于社区的锲合度需要通过运营推广的方式，比如参加技术大会、发布技术文章以及发布完整的项目文档等；</p>
+<p>2，产品与市场锲合，即开源产品在市场的锲合程度，是否满足市场的真正需求，度量指标是下载量、使用量。通常来说开源项目能做到这一步就非常成功了，tensorflow也是如此；</p>
+<p>3，价值与市场锲合，一般指的是开源项目里的增值功能以及企业级特性，即项目自身的商业价值，例如：更好的性能、更加易用的部署与升级功能，更加易用的可视化功能、安全、可观测、质量的可度量性以及解决方案化。</p>
+<p>开源的项目若是完成了第一层次与第二层次就可以认为是非常成功的一个项目，如果把第3层次也完成了反而是个失败的开源项目，因为这不利于项目的商业化，开发团队赚不到钱没有存活下去的可能性。但是商业化的产品必须涵盖这三个层次，开源的tensorFlow只能算是一个项目还不是产品，它只完成了第1、第2两个层次，因此商业化就要求我们需要把开源的tensorFlow产品化。</p>
+<h2 id="如何将一个开源的项目产品化"><a href="#如何将一个开源的项目产品化" class="headerlink" title="如何将一个开源的项目产品化"></a><font color="#FF8C00">如何将一个开源的项目产品化</font></h2><p>通常来讲开源项目的产品化可以从以下五个方面将开源的技术产品化：</p>
+<ul>
+<li><p>复杂简单化：指的是把复杂的体验简单化，更易用的部署、升级、可视化以及运维；</p>
+</li>
+<li><p>个性标准化：指的是将“DIY”的项目转成标准化的、可复制的，依据资源的规格约束进行标准化；</p>
+</li>
+<li><p>质量度量化：指的是质量要可以量化，可预测的性能、可靠性、可用性等；</p>
+</li>
+<li><p>软件硬件化/云化：软件硬件化或者云化指的是产品的物理属性，当当一个软件包是难以让用户买单的，需要把它硬件化，打包到服务器里才能销售出去，或者云化后才能提供服务化的销售形态。</p>
+</li>
+<li><p>解决方案化：有时候产品化已经不大能满足客户的需求，那么就需要更进一步的解决方案化，针对行业需求做端到端的解决方案。</p>
+</li>
+</ul>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文解读了两个问题：1，为什么开源的项目不如商业产品？2，如何将一个开源的项目产品化？。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，曾就职于Marvell、AMD，主要从事Linux内核以及分布式产品的交付、架构设计以及开发工作。</p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
 
     </main>
     <footer class="post-footer">
       
       <div class="post-tags">
         
-        <a class="post-tag button" href="/tags/person/" rel="tag"><i class="fas fa-tags"></i>person</a>
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
         
       </div>
       
@@ -164,12 +185,10 @@
   <nav class="page-nav">
     <div class="page-nav-next page-nav-item">
       
-      <a href="/2019/04/06/distributed-servicegovernance-failure-handling/" rel="next" title="分布式系统架构设计三十六式之服务治理 – 第6式 - 5F容错模式"><i class="fas fa-angle-left"></i><span class="nav-title">分布式系统架构设计三十六式之服务治理 – 第6式 - 5F容错模式</span></a>
+      <a href="/2020/02/18/distributed-ideamodel-example_tensorflow/" rel="next" title="分布式系统架构设计36式 – 第16式 - TensorFlow2.0架构解读示例"><i class="fas fa-angle-left"></i><span class="nav-title">分布式系统架构设计36式 – 第16式 - TensorFlow2.0架构解读示例</span></a>
       
     </div>
     <div class="page-nav-prev page-nav-item">
-      
-      <a href="/2019/04/21/distributed-servicegovernance-systemadaptive/" rel="prev" title="分布式系统架构设计三十六式之服务治理 – 第7式 - 系统自适应模式"><span class="nav-title">分布式系统架构设计三十六式之服务治理 – 第7式 - 系统自适应模式</span><i class="fas fa-angle-right"></i></a>
       
     </div>
   </nav>
@@ -225,6 +244,12 @@
     
     
     
+    
+    <hr>
+    <div class="post-toc sidebar-item" id="toc-div">
+      <div><i class="fas fa-list-ol"></i>文章目录</div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#动机"><span class="toc-text">动机</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#为什么开源的项目不如商业产品"><span class="toc-text">为什么开源的项目不如商业产品</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#如何将一个开源的项目产品化"><span class="toc-text">如何将一个开源的项目产品化</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#小结"><span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#作者简介"><span class="toc-text">作者简介</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#版权申明"><span class="toc-text">版权申明</span></a></li></ol></div>
+    </div>
     
     
     
