@@ -152,10 +152,10 @@
 <p>还有Google出来的定义：</p>
 <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">A distributed system is a system whose components are located on different networked computers, which communicate and coordinate their actions by passing messages to one another. The components interact with one another in order to achieve a common goal.<br>分布式系统是一个组件分布在不同的联网的计算机上，彼此之间仅仅通过消息传递进行通信和协调的系统，这些组件相互交互以实现一个共同的目标。<br></code></pre></td></tr></table></figure>
 <p>这是分布式系统理论的第一性原理，不同于这些从理论角度的定义，这里，我从工程实现的角度给分布式系统一个新的定义，即：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">分布式系统是面向集群状态的编程, 它是抽象、分层、解耦、拆分、聚合、治理、取舍、模型、演化、边界思维的创造性应用，其要交付的是功能价值，但功夫却体现在非功能。<br></code></pre></td></tr></table></figure>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">分布式系统是面向集群状态的编程, 它是抽象、分层、解耦、拆分、聚合、治理、取舍、模型、演化、质量、边界思维的创造性应用，其要交付的是功能价值，但功夫却体现在非功能。<br></code></pre></td></tr></table></figure>
 <p>从工程的角度来看，这个定义是分布式系统实践的第一性原理，分布式系统都是围绕着集群状态表来进行编程的，集群状态表是分布式系统的核心功能中的核心。因此本系列分布式系统文章都是依据理论结合实践的原则，从工程交付的角度来看待分布式系统的。</p>
 <h2 id="设计哲学"><a href="#设计哲学" class="headerlink" title="设计哲学"></a><font color="#FF8C00">设计哲学</font></h2><p>什么是分布式系统的设计哲学？首先这里的设计哲学不是产品的设计哲学，它是一种工程哲学，是分布式系统架构设计原则以及设计方法论的指导思想，是架构师的内功。其目的是为了指导架构设计的过程，克服架构设计难题从而达到最终的架构设计目标。不同的架构师有自己不同的设计哲学观，这里我提出分布式系统架构设计哲学9式，即：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">抽象 分层  解耦 拆分 聚合 治理 模型 取舍 边界 演化<br></code></pre></td></tr></table></figure>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">抽象 分层  解耦 拆分 聚合 治理 模型 取舍 质量、边界 演化<br></code></pre></td></tr></table></figure>
 <p>这9个词每个词展开来讲都可以是一篇大论，不同的架构设计师有自己不同的设计哲学观，也就形成了不同的架构设计原则以及设计方法论，并不存在一个普适的、统一的架构设计哲学，适合自己的才是最好的，每个人的领悟不同，因此这里也就不展开来讲。</p>
 <h2 id="设计原则"><a href="#设计原则" class="headerlink" title="设计原则"></a><font color="#FF8C00">设计原则</font></h2><p>同设计哲学一样，不同的架构设计师有着自己不同的设计原则观，在这里，我认为最合适的分布式系统的架构设计原则有二，即：</p>
 <ul>
