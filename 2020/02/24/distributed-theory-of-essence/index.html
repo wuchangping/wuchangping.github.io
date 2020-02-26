@@ -344,7 +344,7 @@
 <h3 id="数据守恒"><a href="#数据守恒" class="headerlink" title="数据守恒"></a>数据守恒</h3><p>能量守恒定律也是物理学的基本定律之一，其被定义为：</p>
 <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">1，能量既不会凭空产生，也不会凭空消失，它只会从一种形式转化为另一种形式，或者从一个物体转移到其它物体，<br>   而能量的总量保持不变；<br>2，孤立系统的总能量保持不变。<br></code></pre></td></tr></table></figure>
 <p>在分布式系统里<strong>“数据”</strong>即是分布式系统的能量，因此参照“能量守恒”定义，这里我给分布式系统一个<strong>“数据守恒”</strong>定义：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">1，数据既不会凭空产生，也不会凭空消失，它只会从一种形式转化为另一种形式，或者从一个物体转移到其它物体，<br>   而数据的总量保持不变；<br>2，孤立系统的总数据量保持不变。<br></code></pre></td></tr></table></figure>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">孤立系统的总数据量保持不变。数据既不会凭空产生，也不会凭空消失，它只会从一种形式转化为另一种形式，或者从一个物体转移到其它物体， 而数据的总量保持不变；<br></code></pre></td></tr></table></figure>
 <p>依据上节的定理推导，我们知道分布式系统里网络是不可靠的、消息传递是不可靠的、计算机节点是不可靠的、磁盘是不可靠的、内存是不可靠的、软件组件是不可靠的等等，这些过程都会丢数据，因此为了保证分布式系统里的<strong>“数据守恒”</strong>就需要对分布式系统进行数据可靠性设计：即：</p>
 <ul>
 <li>分区设计、冗余设计、幂等性设计、端到端的校验设计、日志设计、事务处理设计，缓存的MESI设计等。</li>
