@@ -186,7 +186,7 @@
 <p>有状态服务在功能上可以保证数据的恰好一次，可以保证数据服务的强正确性，但是有状态服务需要维护大量的信息和状态，因此又引入了数据存储的复杂性，并且多了数据存储加载的过程，在性能方面要弱于无状态服务。而无状态服务不能保证数据的恰好一次处理，但是易于处理实例规模的伸缩性。tensorflow是有状态的设计理念，表明了tensorFlow可以保证数据处理的恰好一次的强正确性，但是又引入了数据存储与IO性能上的复杂性，需要平衡有状态服务下的正确性与复杂性就需要针对数据存储进行专门的设计。</p>
 </li>
 <li><p>数据流图（dataFlow graphs）: 数据流图指的是用节点和有向边描述数学运算的有向无环图，其要素有数据源或宿、数据流、数据处理节点以及数据存储，其中节点代表数学运算等，而有向边代表节点之间的输入与输出关系、数据在边上流动。依据这个设计理念，TensorFlow依据下图的工作过程计算数据：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/tensorflow/tf_arch_dataflow.gif" alt="计算流图示例"></p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/tensorflow/tf_arch_dataflow.gif" alt="计算流图示例"> {:height=”500px” width=”300px”}</p>
 <p>在这个数据流图里，tensorFlow里需要事先准备数据，接着定义运算操作，然后计算单元被同步或者异步地分配到不同的计算设备上比如CPU、GPU、TPU进行计算，其在边上流动的数据叫tensors。</p>
 </li>
 <li><p>编程（programming）：可编程性，“编程就是指导计算机执行任务的行为”，编程是个动词，是为了让计算机干你想要干的事情。在面向对象编程里，程序=算法+数据结构+方法，依据这个设计理念，即用户可以依据一定的数据结构通过输入算法以及相应的工程方法，就可以指导tensorFlow执行用户想干的事情，其可以二次开发，具有灵活性以及开放性的特征。</p>
