@@ -187,8 +187,9 @@
 <li>质量是分布式系统在约束条件下的度量方式，其涵盖：合适的性能（Performant）、可用性(Availability)、可靠性(Reliability)、可伸缩性(Scalability)、韧性(resilience)、可观测性(Observability)、安全性（security）、易用性（usability）、可运维性（operability）、可测试性(testability)、可维护性(maintainability)、可扩展性(extensibility)、可读性(readability)等。</li>
 <li>约束是分布式系统的资源限制：网络物理容量与计算机节点的物理容量，以及客户、用户、团队的边界约束。</li>
 </ul>
-<p>分布式系统的质量是分布式系统的度量方式，分布式系统要可度量就需要具有“可解释、可复制、可预测”的质量保证。</p>
-<h2 id="分布式系统的第一性原理"><a href="#分布式系统的第一性原理" class="headerlink" title="分布式系统的第一性原理"></a><font color="#FF8C00">分布式系统的第一性原理</font></h2><p>依据李善友老师的定义： <font color="#00CED1"><strong>“第一性原理思维 = 逻辑奇点 + 公理化方法 ”</strong></font>，逻辑奇点即基石假设，公理化方法我认为是”定公理、推定理、再公式化应用”。因此欲找出分布式系统的第一性原理，就需要先挖掘出分布式系统的公理化定义及其逻辑奇点。</p>
+<font color="#00CED1"><strong>分布式系统交付的目的是功能的价值，但是产品的功夫却体现在非功能</strong></font>，分布式系统的质量是分布式系统的度量方式，分布式系统要可度量就需要具有“可解释、可复制、可预测”的质量保证。<br><br><br><br>## <font color="#FF8C00">分布式系统的第一性原理</font>
+
+<p>依据李善友老师的定义： <font color="#00CED1"><strong>“第一性原理思维 = 逻辑奇点 + 公理化方法 ”</strong></font>，逻辑奇点即基石假设，公理化方法我认为是”定公理、推定理、再公式化应用”。因此欲找出分布式系统的第一性原理，就需要先挖掘出分布式系统的公理化定义及其逻辑奇点。</p>
 <p>首先把分布式系统概念化，Google 出来的对分布式系统的定义有：</p>
 <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">A distributed system is a system whose components are located on different networked computers, which communicate and coordinate their actions by passing messages to one another. The components interact with one another in order to achieve a common goal.<br></code></pre></td></tr></table></figure>
 <p>即：</p>
@@ -224,10 +225,7 @@
 </ul>
 </blockquote>
 <p>再进一步抽象，可以推断出“分布式系统就是通过计算机网络进行协同工作的系统”， 至此，可以推出分布式的公理化定义公式：</p>
-<font color="#00CED1"> <strong>分布式 = 网络 + 计算机 + 协同</strong>，其以 <strong>”质量“</strong>为度量 </font>
-
-
-
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">分布式 = 网络 + 计算机 + 协同，其以质量为度量。<br></code></pre></td></tr></table></figure>
 <p>这个公式就是分布式的第一性原理公式，是分布式的本质理论定义，从这公式里可以看出分布式系统的3个原生的难题：</p>
 <ul>
 <li><p>分布式系统是基于网络的系统，那么网络自身所具有的所有的优点与缺点它都有，那么如何提高服务的可靠性？如何保证服务的可用性？如何保证网络可运维？</p>
@@ -347,12 +345,9 @@
 </ul>
 <p>因此在分布式系统里将需要将可运维、可服务、可治理、可智能化的思想融合到架构设计与开发中。</p>
 <h3 id="数据守恒"><a href="#数据守恒" class="headerlink" title="数据守恒"></a>数据守恒</h3><p>能量守恒定律也是物理学的基本定律之一，其被定义为：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">1，能量既不会凭空产生，也不会凭空消失，它只会从一种形式转化为另一种形式，或者从一个物体转移到其它物体，而能量的总量保持不变；<br>2，孤立系统的总能量保持不变。<br></code></pre></td></tr></table></figure>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">1，能量既不会凭空产生，也不会凭空消失，它只会从一种形式转化为另一种形式，或者从一个物体转移到其它物体，<br>   而能量的总量保持不变；<br>2，孤立系统的总能量保持不变。<br></code></pre></td></tr></table></figure>
 <p>在分布式系统里<strong>“数据”</strong>即是分布式系统的能量，因此参照“能量守恒”定义，这里我给分布式系统一个<strong>“数据守恒”</strong>定义：</p>
-<blockquote>
-<p>1，数据既不会凭空产生，也不会凭空消失，它只会从一种形式转化为另一种形式，或者从一个物体转移到其它物体，而数据的总量保持不变；</p>
-<p>2，孤立系统的总数据量保持不变。</p>
-</blockquote>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">1，数据既不会凭空产生，也不会凭空消失，它只会从一种形式转化为另一种形式，或者从一个物体转移到其它物体，<br>   而数据的总量保持不变；<br>2，孤立系统的总数据量保持不变。<br></code></pre></td></tr></table></figure>
 <p>依据上节的定理推导，我们知道分布式系统里网络是不可靠的、消息传递是不可靠的、计算机节点是不可靠的、磁盘是不可靠的、内存是不可靠的、软件组件是不可靠的等等，这些过程都会丢数据，因此为了保证分布式系统里的<strong>“数据守恒”</strong>就需要对分布式系统进行数据可靠性设计：即：</p>
 <ul>
 <li>分区设计、冗余设计、幂等性设计、端到端的校验设计、日志设计、事务处理设计，缓存的MESI设计等。</li>
@@ -489,7 +484,7 @@
     </header>
     <main class="post-main" itemprop="articleBody">
       
-      <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>依据李善友老师的定义“第一性原理思维 = 基石假设 + 公理化方法”。根据这个第一性原理思维 ，本文解读了tensorFlow 2.0的架构设计，其涵盖了tensorFlow2.0的第一性原理、设计原则以及架构视图，本文的动机是展示第一性原理的架构设计思想在分布式系统架构设计中的应用。</p>
+      <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>依据李善友老师的定义“第一性原理思维 = 逻辑奇点 + 公理化方法”，逻辑奇点即基石假设。根据这个第一性原理思维 ，本文解读了tensorFlow 2.0的架构设计，其涵盖了tensorFlow2.0的第一性原理、设计原则以及架构视图，本文的动机是展示第一性原理的架构设计思想在分布式系统架构设计中的应用。</p>
 <h2 id="TensorFlow-的第一性原理"><a href="#TensorFlow-的第一性原理" class="headerlink" title="TensorFlow 的第一性原理"></a><font color="#FF8C00">TensorFlow 的第一性原理</font></h2><p>欲从本质上理解Tensorflow，那么就需要找出tensorflow的第一性原理定义，再依据演绎法，从这个公理性质的定义演化出tensorFlow的设计理念、设计原则以及功能实现。这里首先把tensorFlow概念化，找出它的公理化定义以及基石假设，即TensorFlow是什么的定义。</p>
 <p>通过tensorFlow官网以及Google，得到的6条关于tensorFlow的定义：</p>
 <blockquote>
@@ -508,7 +503,7 @@
 <blockquote>
 <p>tensorFlow是一个可伸缩的端到端的面向有状态的数据流图编程的机器学习平台,其具有一个全面而灵活的生态系统。</p>
 </blockquote>
-<p>以及两个<strong>基石假设</strong></p>
+<p>以及两个<strong>基石假设</strong>，即逻辑奇点：</p>
 <ul>
 <li>可伸缩(scalable)：可伸缩性是分布式的目的，分布式能力是TensorFlow的构建与运维能力，分布式能力是tensorFlow的隐性基石假设；</li>
 <li>机器学习(machine learning)：机器学习是Tensorflow的领域功能，是tensorFlow的显性基石假设。</li>
