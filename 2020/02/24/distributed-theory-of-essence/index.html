@@ -145,7 +145,7 @@
       </div>
     </header>
     <main class="post-main" itemprop="articleBody">
-      <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>本文的动机在于应用物理学思维模型破解分布式背后不变的本质，并以此解读分布式系统里的各种算法设计、功能设计以及非功能设计。在“分布式系统” 这个词语里，关键词可以分为“分布式”及“系统”，其中“分布式”是分布式系统的能力修饰关键词，挖掘分布式系统背后的本质即是挖掘“分布式”背后的本质。</p>
+      <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>本文的动机在于应用物理学思维模型破解分布式背后不变的本质，并以此解读分布式系统里的各种算法设计、功能设计以及非功能设计。在“分布式系统” 这个词语里，关键词可以分为“分布式”及“系统”，其中“分布式”是分布式系统的能力修饰关键词，“系统 = 要素 + 连接 + 目标/功能”，那么可以推理出分布式系统 = 分布式要素 + 分布式连接 + 分布式目标/功能“，其中连接与目标/功能是最为关键的，挖掘分布式系统背后的本质即是挖掘“分布式”的本质。</p>
 <p>物理学的价值观在于追求所有物理现象背后的共同的底层规律，并以此解读各种物理现象，并且其具有“可解释、可重复、可预测”的可度量性，这种共同的底层规律，被称之为元认知，即第一性原理：“任何变化的背后都有不变的本质”。将这种思维模型应用于挖掘分布式的本质，需要解决两个问题，即：“ 什么是分布式系统的第一性原理？以及如何度量分布式系统？”</p>
 <h2 id="分布式系统的价值与目的"><a href="#分布式系统的价值与目的" class="headerlink" title="分布式系统的价值与目的"></a><font color="#FF8C00">分布式系统的价值与目的</font></h2><p>分布式系统的出现是为了解决一个主要矛盾，即：“日益增长的数据计算、传输与存储的需求与当前单点计算机能力无法满足这个需求之间的矛盾”。分布式系统可以通过伸展集群规模解决这个矛盾，因此这就是分布式系统的价值，而可伸缩性(Scalability，避免与可扩展性extensibility混淆)也是分布式系统的根本目的。</p>
 <h2 id="分布式系统必知的基础理论与算法"><a href="#分布式系统必知的基础理论与算法" class="headerlink" title="分布式系统必知的基础理论与算法"></a><font color="#FF8C00">分布式系统必知的基础理论与算法</font></h2><p>分布式系统必须理解、必须会的基础理论算法有：CAP/PACELC、BASE、2PC、3PC、TCC、ACID、PAXOS、RAFT这9个：</p>
@@ -193,7 +193,7 @@
 <blockquote>
 <p>分布式系统是指其组件位于不同的网络计算机上的系统，这些组件通过相互传递消息来进行通信和协调其动作，且彼此相互交互以完成一个共同的任务目标。</p>
 </blockquote>
-<p>拆解这句话，从中可以看到分布式系统里的4个要点：</p>
+<p>拆解这句话，从中可以看到分布式系统里的要素即为组件，连接即网络，目标是共同的任务，并且还可以看出4个要点：</p>
 <ul>
 <li><p>分布式系统的组件是位于不同的网络计算机上；</p>
 </li>
@@ -215,15 +215,15 @@
 <p>以及分布式系统的逻辑起点：</p>
 <blockquote>
 <ul>
-<li><p>分布式系统是指其组件位于不同的网络计算机上的系统：即网络计算机；</p>
+<li><p>分布式系统是指其组件位于不同的网络计算机上的系统：即计算机网络；</p>
 </li>
 <li><p>这些组件通过相互传递消息来进行通信和协调其动作，且彼此相互交互以完成一个共同的任务目标：即协同：“谐调一致，和合共同，协调两个或者两个以上的不同资源或者个体，一致地完成某一共同目标”；</p>
 </li>
 </ul>
 </blockquote>
 <p>再进一步抽象，可以推断出“分布式系统就是通过计算机网络进行协同工作的系统”， 至此，可以推出分布式的公理化定义公式：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">分布式 = 网络 + 计算机 + 协同，其以质量为度量。<br></code></pre></td></tr></table></figure>
-<p>这个公式就是分布式的第一性原理公式，是分布式的本质理论定义，从这公式里可以看出分布式系统的3个原生的难题：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">分布式 = 计算机 + 网络 + 协同，其以质量为度量。<br></code></pre></td></tr></table></figure>
+<p>这个公式就是分布式的第一性原理公式，是分布式的本质理论定义，其中“计算机”是分布式系统的要素，“网络”是分布式系统的连接，“协同”是分布式系统的目标，从这公式里可以看出分布式系统的3个原生的难题：</p>
 <ul>
 <li><p>分布式系统是基于网络的系统，那么网络自身所具有的所有的优点与缺点它都有，那么如何提高服务的可靠性？如何保证服务的可用性？如何保证网络可运维？</p>
 </li>
@@ -233,7 +233,26 @@
 </li>
 </ul>
 <p>因此还需要依据分布式系统的公理化定义推导出定理化定义。</p>
-<h2 id="分布式系统的定理化推导"><a href="#分布式系统的定理化推导" class="headerlink" title="分布式系统的定理化推导"></a><font color="#FF8C00">分布式系统的定理化推导</font></h2><p>“公理是不证自明的，而定理是以若干的公理或其他定理为基础而推导的”。由公理推定理，从分布式的公理化公式<font color="#00CED1"><strong>“分布式 = 网络 + 计算机 + 协同”</strong></font>，可知分布式系统是组件位于“不同的网络计算机”上一起“协同”工作的系统，这句话得出分布式三要素：<font color="#00CED1">“网络，计算机、协同”</font>。</p>
+<h2 id="分布式系统的定理化推导"><a href="#分布式系统的定理化推导" class="headerlink" title="分布式系统的定理化推导"></a><font color="#FF8C00">分布式系统的定理化推导</font></h2><p>“公理是不证自明的，而定理是以若干的公理或其他定理为基础而推导的”。由公理推定理，从分布式的公理化公式<font color="#00CED1"><strong>“分布式 =  计算机  + 网络 + 协同”</strong></font>，可知分布式系统是组件位于“不同的计算机网络”上一起“协同”工作的系统，这句话得出分布式三要素：<font color="#00CED1">“计算机、网络，协同”</font>。</p>
+<h3 id="计算机"><a href="#计算机" class="headerlink" title="计算机"></a>计算机</h3><p>分布式系统是基于不同的计算机上的系统，计算机也是分布式系统的要素之一，因此分布式系统也继承了计算机的原生缺点，</p>
+<ul>
+<li>计算机节点是会出故障的，主板、CPU、网卡、硬盘、内存、电源等都会出故障，比如老化、失效等；</li>
+<li>计算机节点内的操作系统是会突然奔溃不能提供服务的；</li>
+<li>计算机节点是会突然掉电的；</li>
+<li>计算机节点里的内存下电是不保数据的；</li>
+<li>计算机节点的资源是有限的：CPU是有算力上限的、内存是有大小限制的、网卡有吞吐量限制、硬盘有空间大小限制以及速率限制；</li>
+</ul>
+<p>这几个计算机的原生缺点意味着分布式系统需要能够知道计算机节点是失效的，以及在计算机节点失效的同时保证服务质量设计，那么就应当进行以下几点保证：</p>
+<ul>
+<li><p>可观测性（observability）设计：监控、告警、日志、追踪；</p>
+</li>
+<li><p>可靠性（Reliability）设计：冗余设计、分区分配设计、复制算法设计、幂等性设计、一致性算法设计；</p>
+</li>
+<li><p>容量（capacity）规划设计：计算机节点资源资源有限，就需要分布式系统进行进行容量规划；</p>
+</li>
+<li><p>服务治理（Service governance）设计：CPU算力有限、内存有限、网卡吞吐量有限、磁盘IO有限，因此需要进行服务治理之隔板设计以及限流、限并发设计。</p>
+</li>
+</ul>
 <h3 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h3><p>分布式系统是基于不同的网络上的系统，网络是分布式系统的要素之一，因此分布式系统也继承了网络的原生缺点，即：</p>
 <ul>
 <li>网络是不可靠的；</li>
@@ -260,23 +279,6 @@
 <li><p>网络是会抖动的，因此分布式系统需要进行服务治理容错之超时处理设计。</p>
 </li>
 </ul>
-<h3 id="计算机"><a href="#计算机" class="headerlink" title="计算机"></a>计算机</h3><p>分布式系统是基于不同的计算机上的系统，计算机也是分布式系统的要素之一，因此分布式系统也继承了计算机的原生缺点，</p>
-<ul>
-<li>计算机节点是会出故障的，主板、CPU、网卡、硬盘、内存、电源等都会出故障，比如老化、失效等；</li>
-<li>计算机节点内的操作系统是会突然奔溃不能提供服务的；</li>
-<li>计算机节点是会突然掉电的；</li>
-<li>计算机节点里的内存下电是不保数据的；</li>
-<li>计算机节点的资源是有限的：CPU是有算力上限的、内存是有大小限制的、网卡有吞吐量限制、硬盘有空间大小限制以及速率限制；</li>
-</ul>
-<p>这几个计算机的原生缺点意味着分布式系统需要能够知道计算机节点是失效的，以及在计算机节点失效的同时保证服务质量设计，那么就应当进行以下几点保证：</p>
-<ul>
-<li><p>可观测性（observability）设计：监控、告警、日志、追踪；</p>
-</li>
-<li><p>可靠性（Reliability）设计：冗余设计、分区分配设计、复制算法设计、幂等性设计、一致性算法设计；</p>
-</li>
-<li>容量（capacity）规划设计：计算机节点资源资源有限，就需要分布式系统进行进行容量规划；</li>
-<li>服务治理（Service governance）设计：CPU算力有限、内存有限、网卡吞吐量有限、磁盘IO有限，因此需要进行服务治理之隔板设计以及限流、限并发设计。</li>
-</ul>
 <h2 id="协同"><a href="#协同" class="headerlink" title="协同"></a>协同</h2><blockquote>
 <p>协同是指：“谐调一致，和合共同，协调两个或者两个以上的不同资源或者个体，一致地完成某一共同目标“，这些组件通过相互传递消息来进行通信和协调其动作，且彼此相互交互以完成一个共同的任务目标</p>
 </blockquote>
@@ -301,7 +303,7 @@
 <li>任务又可以分为计算任务与存储任务，如果是存储任务，为了保证数据的可用性以及可靠性，就需要对分区进行冗余设计，即节点副本设计，如果需要节点副本设计又引入了选主算法设计、数据一致性复制算法设计与幂等性设计；</li>
 <li>为了解决选主与复制一致性问题，又出现了PAXOS,RAFT,2PC,3PC 等，这样的基础一致性协议算法。</li>
 </ul>
-<p>至此，依据分布式的公理化公式：<font color="#00CED1"><strong>“分布式 = 网络 + 计算机 + 协同”</strong></font>，推导出了分布式的定理化推论，解读了分布式系统里为什么需要进行这些功能与非功能设计的问题，接下来还需要讲述分布式系统的度量。</p>
+<p>至此，依据分布式的公理化公式：<font color="#00CED1"><strong>“分布式 = 计算机 + 网络 + 协同”</strong></font>，推导出了分布式的定理化推论，解读了分布式系统里为什么需要进行这些功能与非功能设计的问题，接下来还需要讲述分布式系统的度量。</p>
 <h2 id="分布式系统的度量"><a href="#分布式系统的度量" class="headerlink" title="分布式系统的度量"></a><font color="#FF8C00">分布式系统的度量</font></h2><p>分布式系统是依据分布式公理定义的质量进行度量的，其涵盖以下几项内容：</p>
 <ul>
 <li><p>合适的性能（Performant），性能指标一般包括 TPS, QPS, Latency, IOPS， response time等，这里用”合适的性能“作为表达，指的是性能合适即可、够用即可，高性能当然好，但是高性能也意味着更高的成本，有些场景高性能反而是一种浪费行为，性能需求需要理解业务场景适可而止；</p>
@@ -338,9 +340,10 @@
 <li>可运维设计：软硬件的部署与升级设计、可视化设计、可观测性（监控、告警、日志、追踪）设计；</li>
 <li>可服务设计：由团队解决故障以及提供服务的支持；</li>
 <li>服务治理设计：熔断、限流、降级、隔离、容错，触使分布式系统保持在有序状态；</li>
-<li>智能化设计：参数自我优化、故障自我判断、工作负载自我预测等。</li>
+<li>智能化设计：参数自我优化、故障自我判断、工作负载自我预测等；</li>
+<li>动态平衡设计：动态平衡是一种设计理念，有进有出；</li>
 </ul>
-<p>因此在分布式系统里将需要将可运维、可服务、可治理、可智能化的思想融合到架构设计与开发中。</p>
+<p>因此在分布式系统里将需要将可运维、可服务、可治理、可智能化、动态平衡的思想融合到架构设计与开发中。</p>
 <h3 id="数据守恒"><a href="#数据守恒" class="headerlink" title="数据守恒"></a>数据守恒</h3><p>能量守恒定律也是物理学的基本定律之一，其被定义为：</p>
 <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">1，能量既不会凭空产生，也不会凭空消失，它只会从一种形式转化为另一种形式，或者从一个物体转移到其它物体，<br>   而能量的总量保持不变；<br>2，孤立系统的总能量保持不变。<br></code></pre></td></tr></table></figure>
 <p>在分布式系统里<strong>“数据”</strong>即是分布式系统的能量，因此参照“能量守恒”定义，这里我给分布式系统一个<strong>“数据守恒”</strong>定义：</p>
@@ -434,7 +437,7 @@
     <hr>
     <div class="post-toc sidebar-item" id="toc-div">
       <div><i class="fas fa-list-ol"></i>文章目录</div>
-      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#动机"><span class="toc-text">动机</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#分布式系统的价值与目的"><span class="toc-text">分布式系统的价值与目的</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#分布式系统必知的基础理论与算法"><span class="toc-text">分布式系统必知的基础理论与算法</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#分布式系统的功能与非功能"><span class="toc-text">分布式系统的功能与非功能</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#功能"><span class="toc-text">功能</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#非功能"><span class="toc-text">非功能</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#分布式系统的第一性原理"><span class="toc-text">分布式系统的第一性原理</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#分布式系统的定理化推导"><span class="toc-text">分布式系统的定理化推导</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#网络"><span class="toc-text">网络</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#计算机"><span class="toc-text">计算机</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#协同"><span class="toc-text">协同</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#协调动作"><span class="toc-text">协调动作</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#共同完成任务"><span class="toc-text">共同完成任务</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#分布式系统的度量"><span class="toc-text">分布式系统的度量</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#分布式系统的反熵增与数据守恒"><span class="toc-text">分布式系统的反熵增与数据守恒</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#熵增"><span class="toc-text">熵增</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#数据守恒"><span class="toc-text">数据守恒</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#小结"><span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#作者简介"><span class="toc-text">作者简介</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#版权申明"><span class="toc-text">版权申明</span></a></li></ol></div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#动机"><span class="toc-text">动机</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#分布式系统的价值与目的"><span class="toc-text">分布式系统的价值与目的</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#分布式系统必知的基础理论与算法"><span class="toc-text">分布式系统必知的基础理论与算法</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#分布式系统的功能与非功能"><span class="toc-text">分布式系统的功能与非功能</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#功能"><span class="toc-text">功能</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#非功能"><span class="toc-text">非功能</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#分布式系统的第一性原理"><span class="toc-text">分布式系统的第一性原理</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#分布式系统的定理化推导"><span class="toc-text">分布式系统的定理化推导</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#计算机"><span class="toc-text">计算机</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#网络"><span class="toc-text">网络</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#协同"><span class="toc-text">协同</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#协调动作"><span class="toc-text">协调动作</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#共同完成任务"><span class="toc-text">共同完成任务</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#分布式系统的度量"><span class="toc-text">分布式系统的度量</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#分布式系统的反熵增与数据守恒"><span class="toc-text">分布式系统的反熵增与数据守恒</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#熵增"><span class="toc-text">熵增</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#数据守恒"><span class="toc-text">数据守恒</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#小结"><span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#作者简介"><span class="toc-text">作者简介</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#版权申明"><span class="toc-text">版权申明</span></a></li></ol></div>
     </div>
     
     
