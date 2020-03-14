@@ -115,77 +115,6 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/04/21/distributed-servicegovernance-systemadaptive/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/04/21/distributed-servicegovernance-systemadaptive/" itemprop="url">分布式系统架构设计三十六式之服务治理 – 第7式 - 系统自适应模式</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-04-21T19:33:30+08:00">2019-04-21 19:33:30</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="导读"><a href="#导读" class="headerlink" title="导读"></a><font color="#FF8C00">导读</font></h2><p>日拱一卒，功不唐捐，分享是最好的学习，一个知识领域里的 <font color="#00CED1"> <strong>“道 法 术 器”</strong> </font> 这四个境界需要从 <font color="#00CED1"> <strong>微观、中观以及宏观</strong> </font>三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计三十六式》，讲诉分布式系统里最重要的三十六个虚数的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
-<p>实现一个分布式系统通常会面临三大难题： <font color="#00CED1"> <strong>故障传播性、业务拆分与聚合以及分布式事务</strong> </font>。本系列中的服务治理章节主要是为了解决故障传播性的难题，它包括： <font color="#00CED1"> <strong>隔离、熔断、降级、限流、容错以及资源管控-系统自适应算法</strong> </font>，本文将讲述服务治理里的 <font color="#00CED1"> <strong>“系统自适应模式”</strong> </font>模式。</p>
-<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><font color="#00CED1"> <strong>分布式系统的灵魂</strong>  </font>：从产品思维的角度来看，好的产品都是有自己灵魂的。比如微信的产品灵魂被定位成“善良”，善有大善、上善、小善。《道德经》有言：“上善若水，水善利万物而不争，处众人之所恶（wù），故几于道。”，水善利万物而不与万物争，水无处不在，万物感觉不到水的存在又离不开水，不争故天下莫能与之争。每种好的产品背后都隐藏着自己的设计哲学，有自己的灵魂。而一个分布式系统的灵魂又应该怎么定义呢？认知层次不同，对分布式系统的理解也不同，度量一个分布式系统的灵魂，在我看来可以采用分布式系统的SLO图形指标来表达。好的分布式系统SLO指标也是很有规律很漂亮的，如下图所示，左图波形上跳下串，很明显不如右边波形来的漂亮。<br><br><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/systemadaptive/system-jitter.PNG" alt="系统抖动"><br><br>波形上跳下串带来的后果是什么呢？想象一下在高速路开车的场景，如果一辆车一会快，一会慢，后面的车会发生什么事？这样开车是很容易出事故的，而开得很稳的车出故障的概率就较小。波形上跳下串，说明该系统里头没有解决好资源竞用性以及服务治理的问题。<br><br><font color="#00CED1"> <strong>可靠性与高性能的平衡</strong>  </font>：我们知道要让一个水管里的水流的又快又多，一是给水管灌满水，二是水管通畅同时保证不炸裂水管。同样的道理，在分布式系统里要让系统跑出最好的性能和最可靠的效果，一方面压榨整个系统的资源，另一方面又要保证系统不出故障，在系统不出故障的前提下，尽量榨尽系统资源。<br><br>因此为了解决以上问题，这里提出了系统自适应模式。<br><br><font></font>
-
-<h2 id="系统自适应模式设计思路"><a href="#系统自适应模式设计思路" class="headerlink" title="系统自适应模式设计思路"></a><font color="#FF8C00">系统自适应模式设计思路</font></h2><h3 id="资源平衡"><a href="#资源平衡" class="headerlink" title="资源平衡"></a><font color="#00CED1">资源平衡</font></h3><p>服务治理与其说是分布式下的套路，不如说是控制论下的套路，其本质是资源的细粒度管控，精巧的平衡整个系统里的资源竞用，从而保证分布式系统对外提供高质量的服务。如下图《一根羽毛的力量》所示，其将平衡的思想用到极致，我们也希望在分布式系统里体现有限资源下的平衡。</p>
-<div align="center"> 
-
-<p> <img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/systemadaptive/balance.jpg" alt=" 图片来源于网络版权归原作者所有"></p>
-<div align="left"> 
-
-<p>我们将平衡的思想融入分布式系统，在系统健康的前提下，极致的压榨系统的能力(capacity)，同时又保证不会主动造成系统故障，如果发现系统内部出现故障，又会自动调整下发的压力，这就是系统自适应保护。</p>
-<h3 id="最佳衡量指标"><a href="#最佳衡量指标" class="headerlink" title="最佳衡量指标"></a><font color="#00CED1"><strong>最佳衡量指标</strong></font></h3><p>如何确定最佳的衡量指标？通常比较的原始情况下，是以工作负载比如1分钟、5分钟、15分钟的CPU负载作为系统衡量指标，但是这并不大正确。比如假设 CPU load &gt; 2 就 触发一个系统保护，如果这个 时候系统的CPU load是在下降的，它虽然此时刻大于2， 但是趋势却是下降，因此没必要触发系统保护。还有就是干扰性，比如 按 1分钟负载&amp;&amp; 5分钟负载&amp;&amp;15分钟负载，全都是满足大于2的条件就触发系统保护。但是实际上，也许 5分钟负载是不大于2的，因此这个条件就不成立，并不会触发系统过载保护， 这种行为我称之为负载干扰性。</p>
-<p>参考水管的流量算法只依赖于管的截面大小以及流速，我们定义系统的自适应算法依赖的参数为系统入口处的 QPS或TPS ，以及请求的返回时间（RT），这里我将这个公式定义为 System Balance Capacity = QPS * RT。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/systemadaptive/qps-and-rt.PNG" alt="最佳值"></p>
-<p>如上图，最好的情况就是即满足 最大的QPS 又满足最小的RT，通过一个时间窗口计算QPS 和 RT ，自适应调整整个系统。</p>
-<h3 id="系统自适应算法"><a href="#系统自适应算法" class="headerlink" title="系统自适应算法"></a><font color="#00CED1"><strong>系统自适应算法</strong></font></h3><p>下图表示了一个自适应算法，造成系统负载过高以及故障传播的因素很多，比如不合适的线程数、TPS或QPS过大、返回时间过长都有可能，通过合适的算法可以自动调整下发的压力从而保持系统的内部资源平衡。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/systemadaptive/systemadaptive.PNG" alt="自适应算法"></p>
-<p>通过采用系统自适应算法在系统的入口处，实时采集QPS/TPS 以及RT， 然后跟最佳样本值进行比较，依据调节系数进行计算，再调节发送的请求量，发送请求后又采集造成的影响，再反馈在系统入口处。其中，样本值可以在系统启动时按动态采样的方式计算，逐渐增加QPS ，当发现时延发生转折时，我们就确定这个转折点为分布式系统自适应最佳平衡点，记下该值作为当前样本。 </p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲诉了服务治理里的 <font color="#00CED1"><strong>“系统自适应”</strong></font>模式，在前一篇《分布式系统架构设计三十六式之服务治理-5F容错模式》里讲诉了分布式系统服务治理的容错模式。另作者能力与认知都有限，欢迎大家拍砖留念。</p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及大数据，现就职于DELL EMC。个人技术博客：<a href="https://changping.me" target="_blank" rel="noopener">https://changping.me</a></p>
-<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a> ，可以自由阅读、分享、转发、复制、分发等，限制是需署名、非商业使用（以获利为准）以及禁止演绎。</p>
-</div></div>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/04/12/person-emc-hackson-2019/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -885,6 +814,101 @@
     </footer>
   </article>
   
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/09/distributed-ceph-bluestore-filestore/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/03/09/distributed-ceph-bluestore-filestore/" itemprop="url">ceph fileStore与blueStore架构简单对比</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-03-09T14:03:10+08:00">2019-03-09 14:03:10</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="ceph逻辑架构图"><a href="#ceph逻辑架构图" class="headerlink" title=" ceph逻辑架构图  "></a><font color="#FF8C00"> ceph逻辑架构图  </font></h2><p>ceph后端支持多种存储引擎，以插件化的形式来进行管理使用，目前支持filestore，kvstore，memstore以及bluestore，目前默认使用的是filestore，但是目前bluestore也可以上生产。下图是ceph的逻辑架构图：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ceph/distributed-ceph-blusetore-1.png" alt="ceph-bluestore"></p>
+<p><strong>Firestore存在的问题是：</strong></p>
+<ol>
+<li><p>在写数据前需要先写journal，会有一倍的写放大；</p>
+</li>
+<li><p>若是另外配备SSD盘给journal使用又增加额外的成本；</p>
+</li>
+<li><p>filestore一开始只是对于SATA/SAS这一类机械盘进行设计的，没有专门针对SSD这一类的Flash介质盘做考虑。</p>
+</li>
+</ol>
+<p><strong>而Bluestore的优势在于：</strong></p>
+<ol>
+<li><p>减少写放大；</p>
+</li>
+<li><p>针对FLASH介质盘做优化；</p>
+</li>
+<li><p>直接管理裸盘，进一步减少文件系统部分的开销。</p>
+</li>
+</ol>
+<p>但是在机械盘场景Bluestore与firestore在性能上并没有太大的优势，bluestore的优势在于flash介质盘。</p>
+<h2 id="FileStore逻辑架构"><a href="#FileStore逻辑架构" class="headerlink" title=" FileStore逻辑架构 "></a><font color="#FF8C00"> FileStore逻辑架构 </font></h2><p>下图为ceph filestore逻辑架构图：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ceph/distributed-ceph-blusetore-2.png" alt="ceph-bluestore"></p>
+<ol>
+<li><p>首先，为了提高写事务的性能，FileStore增加了fileJournal功能，所有的写事务在被FileJournal处理以后都会立即callback(上图中的第2步)。日志是按append only的方式处理的，每次都是被append到journal文件末尾，同时该事务会被塞到FileStore op queue；</p>
+</li>
+<li><p>接着，FileStore采用多个thread的方式从op queue 这个 thread pool里获取op，然后真正apply事务数据到disk（文件系统pagecache）。当FileStore将事务落到disk上之后，后续的读请求才会继续(上图中的第5步)。</p>
+</li>
+<li><p>当FileStore完成一个op后，对应的Journal才可以丢弃这部分Journal。对于每一个副本都有这两步操作，先写journal，再写到disk，如果是3副本，就涉及到6次写操作，因此性能上体现不是很好。</p>
+</li>
+</ol>
+<h2 id="Bluestore逻辑架构"><a href="#Bluestore逻辑架构" class="headerlink" title=" Bluestore逻辑架构 "></a><font color="#FF8C00"> Bluestore逻辑架构 </font></h2><p>下图为ceph bluestore逻辑架构图：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ceph/distributed-ceph-blusetore-3.png" alt="ceph-bluestore"></p>
+<ol>
+<li><p>Bluestore实现了直接管理裸设备的方式，抛弃了本地文件系统，BlockDevice实现在用户态下使用linux aio直接对裸设备进行I/O操作，去除了本地文件系统的消耗，减少系统复杂度，更有利于Flash介质盘发挥性能优势；</p>
+</li>
+<li><p>为了惯例裸设备就需要一个磁盘的空间管理系统，Bluestore采用Allocator进行裸设备的空间管理，目前支持StupidAllocator和BitmapAllocator两种方式；</p>
+</li>
+<li><p>Bluestore的元数据是以KEY-VALUE的形式保存到RockDB里的，而RockDB又不能直接操作裸盘，为此，bluestore实现了一个BlueRocksEnv，继承自EnvWrapper，来为RocksDB提供底层文件系统的抽象接口支持；</p>
+</li>
+<li><p>为了对接BlueRocksEnv，Bluestore自己实现了一个简洁的文件系统BlueFS，只实现RocksDB Env所需要的接口，在系统启动挂在这个文件系统的时候将所有的元数据都加载到内存中，BluesFS的数据和日志文件都通过BlockDevice保存到底层的裸设备上；</p>
+</li>
+<li><p>BlueFS和BlueStore可以共享裸设备，也可以分别指定不同的设备，比如为了获得更好的性能Bluestore可以采用 SATA SSD 盘，BlueFS采用 NVMe SSD 盘。</p>
+</li>
+</ol>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/2/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/4/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -910,7 +934,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">74</a></div>
+      <div><a href="/archives">73</a></div>
     </div>
     
     

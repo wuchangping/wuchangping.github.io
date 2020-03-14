@@ -290,11 +290,12 @@
 <h4 id="协调动作"><a href="#协调动作" class="headerlink" title="协调动作"></a>协调动作</h4><p>分布式系统的组件通过传递消息进行通信及协调其动作，即：因此依据消息传递的特性以及缺点需要进行相应的协调动作设计：</p>
 <ul>
 <li>传递消息特性意味着需要进行RPC调用设计；</li>
-<li>消息传递具有乱序、丢消息的弊端，为了解决这个弊端就需要进行 ：幂等性设计、事务处理设计、日志设计；</li>
+<li>网络里传递的消息是经常不一样的，因此需要序列化编解码设计；</li>
+<li>消息传递具有丢消息、丢处理的弊端，为了解决这个弊端就需要进行 ：幂等性设计、事务处理设计、日志设计；</li>
 <li>消息的传递是会超时的，因此就需要服务治理容错之超时处理设计；</li>
 <li>消息是基于网络传输的，而网络是可能随时出故障的，因此需要对消息进行可观测性设计即消息追踪设计；</li>
 <li>需要知道消息从哪里来，往哪里去就需要一个配置中心管理集群各个计算机的信息，比如IP，因此需要进行配置中心设计；</li>
-<li>光知道可以发往哪里还不够，还要知道发往的节点是活着的可服务的，需要知道计算机节点的服务状态，因此这就就需要一个协调的服务注册中心，进行服务组件的注册与心跳检测，以及按集群视图变更算法管理集群状态表，那么就需要注册中心设计、注册算法设计、心跳算法设计、集群视图变更算法设计以及集群状态表管理设计。</li>
+<li>光知道可以发往哪里还不够，还要知道发往的节点是活着的可服务的，需要知道计算机节点的服务状态，还需要保证消息路由的负载均衡，因此这就就需要一个协调的服务注册中心，进行服务组件的注册与心跳检测、消息路由以及按集群视图变更算法管理集群状态表，那么就需要注册中心设计、注册算法设计、负载均衡算法设计，心跳算法设计、集群视图变更算法设计以及集群状态表管理设计。</li>
 </ul>
 <h4 id="共同完成任务"><a href="#共同完成任务" class="headerlink" title="共同完成任务"></a>共同完成任务</h4><p>分布式系统的组件是通过相互交互以完成一个共同的任务目标，因此需要解决共同完成任务并且保证任务完成质量带来的难题：</p>
 <ul>
@@ -359,91 +360,6 @@
 <p>因此在分布式系统里将也需要将<strong>“数据守恒”</strong>的思想融合到架构设计与开发中。</p>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文以物理学思维挖掘分布式系统的本质，推导出了分布式系统为什么需要这样的设计的缘由，并且文中阐述了分布式系统的基础理论、功能非功能、反熵增与数据守恒。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
 <h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，曾就职于Marvell、AMD，主要从事Linux内核以及分布式产品的交付、架构设计以及开发工作。</p>
-<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
-<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2020/02/20/distributed-product_producibility/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2020/02/20/distributed-product_producibility/" itemprop="url">分布式系统架构设计36式 – 第17式 - 如何将开源项目产品化V2版</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-02-20T21:23:38+08:00">2020-02-20 21:23:38</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>架构设计人员需要有产品的商业意识，需要具备将技术产品化的能力，作为软件开发人员在工作过程中往往离不开开源项目，但是能回答好开源项目为什么不如商业产品以及如何将开源项目产品化的人员其实不多，因此本文解读了两个问题：1，为什么开源的项目不如商业产品？2，如何将一个开源的项目产品化？本文将迭代演化。</p>
-<h2 id="为什么开源的项目不如商业产品"><a href="#为什么开源的项目不如商业产品" class="headerlink" title="为什么开源的项目不如商业产品"></a><font color="#FF8C00">为什么开源的项目不如商业产品</font></h2><p>以TensorFlow2.0为例，tensorFlow是一个开源的机器学习平台，虽然其强调了自身的易用与强大但是离产品化还有一段距离。通常来讲开源的项目从产品化的角度来看可分为三个层次：</p>
-<h3 id="项目与社区锲合"><a href="#项目与社区锲合" class="headerlink" title="项目与社区锲合"></a><font color="#00CED1">项目与社区锲合</font></h3><p>项目与社区锲合，即开源项目在社区内的锲合程度，度量指标是点赞数、fork数、社区的技术文章阅读量，提升项目于社区的锲合度需要通过运营推广的方式，比如参加技术大会、发布技术文章以及发布完整的项目文档等；</p>
-<h3 id="产品与市场锲合"><a href="#产品与市场锲合" class="headerlink" title="产品与市场锲合"></a><font color="#00CED1">产品与市场锲合</font></h3><p>产品与市场锲合，即开源产品在市场的锲合程度，是否满足市场的真正需求，度量指标是下载量、使用量。通常来说开源项目能做到这一步就非常成功了，tensorflow也是如此；</p>
-<h3 id="价值与市场锲合"><a href="#价值与市场锲合" class="headerlink" title="价值与市场锲合"></a><font color="#00CED1">价值与市场锲合</font></h3><p>价值与市场锲合，即客户愿意买单的点，度量指标是收入。其一般指的是开源项目里的增值功能以及企业级特性，即项目自身的商业价值，例如：更好的性能、更好的可用性、可靠性、更加易用的部署与升级功能，更加易用的可视化功能、安全、可观测、质量的可度量性、额外的服务支持以及解决方案化。</p>
-<p>开源的项目若是完成了第一层次与第二层次就可以认为是非常成功的一个项目，如果把第3层次也完成了反而是个失败的开源项目，因为这不利于项目的商业化，开发团队赚不到钱没有存活下去的可能性。但是商业化的产品必须涵盖这三个层次，开源的tensorFlow只能算是一个项目还不是产品，它只完成了第1、第2两个层次，因此商业化就要求我们需要把开源的tensorFlow产品化。</p>
-<h2 id="如何将一个开源的项目产品化"><a href="#如何将一个开源的项目产品化" class="headerlink" title="如何将一个开源的项目产品化"></a><font color="#FF8C00">如何将一个开源的项目产品化</font></h2><p>通常来讲开源项目的产品化可以从以下6个方面将开源的技术产品化：</p>
-<h3 id="技术服务化"><a href="#技术服务化" class="headerlink" title=" 技术服务化"></a><font color="#00CED1"> 技术服务化</font></h3><p>技术服务化指的是从技术上支持可服务化，ToB产品常常是半产品半服务的，而且一般会签约服务质量保证协议SLA，因此除了团队需要有替客户背锅的能力外，还需要从技术与流程上支持可服务化，其中包括：</p>
-<ul>
-<li>可运维性：易用的部署（步骤量化）、升级（AB测试、in-place、replace、rolling-back等）、数据迁移、k8s operator自动化运维支持等;</li>
-<li><p>可观测性：监控、告警、日志、追踪；</p>
-</li>
-<li><p>可操作性：支持远程接入、开放服务接口、后台管理UI、CLI、特性参数配置开关；</p>
-</li>
-<li><p>健康管理：健康检查支持、健康报告支持、自动提交故障问题单支持；</p>
-</li>
-<li><p>安全性：安全性是企业级产品必备，数据保护、密码安全、连接检查、LIB库授权协议等；</p>
-</li>
-<li><p>多租户：多租户可以支持多团队、多部门小规模部署，进行业务隔离，也是非常重要的企业级特性；</p>
-</li>
-<li><p>可视化：提供易用的用户UI、CLI;</p>
-</li>
-<li><p>可服务：如何指定进行客户支持规则？如何升级成工程师团队介入提供服务定位问题或者排除问题？</p>
-</li>
-</ul>
-<h3 id="质量度量化"><a href="#质量度量化" class="headerlink" title=" 质量度量化"></a><font color="#00CED1"> 质量度量化</font></h3><p>质量度量化指的是质量要可以量化，可预测的性能、可靠性、可用性、可伸缩性、稳定性、容错性、可测试性等这几个指标要可以量化，在产品功能同质化的场景下，质量是最重要的差异化竞争力。性能、可靠性、可用性、可伸缩性这四者之间互相制约，而质量与成本、时间也互相制约，同时在云化的场景下客户又有SLA要求，不满足SLA要求的服务，除了要赔钱，还严重影响商业信誉，因此质量指标之间也需要合理取舍。</p>
-<h3 id="复杂简单化"><a href="#复杂简单化" class="headerlink" title=" 复杂简单化"></a><font color="#00CED1"> 复杂简单化</font></h3><p>复杂简单化指的是把复杂的体验简单化， 抽象及简化API、量化的安装步骤、高内聚低耦合的设计、易用的UI等，这里涉及到产品设计哲学;</p>
-<h3 id="个性标准化"><a href="#个性标准化" class="headerlink" title=" 个性标准化"></a><font color="#00CED1"> 个性标准化</font></h3><p>个性标准化指的是将个性化的、“DIY”化的开源项目转成标准化的、可复制的、可量化的，同时依据资源的规格约束进行标准化，比如依据服务器规格、虚机规格，机架规格等进行标准化；</p>
-<h3 id="软件硬件化或云化"><a href="#软件硬件化或云化" class="headerlink" title=" 软件硬件化或云化"></a><font color="#00CED1"> 软件硬件化或云化</font></h3><p>软件硬件化或云化软件硬件化或者云化指的是产品的物理属性，单单一个软件包是难以让用户买单的，需要把它硬件化，打包到服务器里才能销售出去，或者云化后才能提供服务化的销售形态。</p>
-<h3 id="解决方案化"><a href="#解决方案化" class="headerlink" title=" 解决方案化"></a><font color="#00CED1"> 解决方案化</font></h3><p>解决方案化是指有时候产品化已经不大能满足客户的需求，那么就需要更进一步的解决方案化，针对行业需求做端到端的解决方案。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文解读了两个问题：1，为什么开源的项目不如商业产品？2，如何将一个开源的项目产品化？。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，曾就职于Marvell、AMD，主要从事Linux内核以及分布式产品的交付、架构设计以及开发工作。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1] <a href="https://a16z.com/2019/10/04/commercializing-open-source/" target="_blank" rel="noopener">https://a16z.com/2019/10/04/commercializing-open-source/</a></p>
 <h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
 <p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
 
@@ -1215,6 +1131,62 @@
     </footer>
   </article>
   
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/12/21/person-emc-codeline-and-awarded/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/12/21/person-emc-codeline-and-awarded/" itemprop="url">进EMC马上两年，里程碑两件</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-12-21T10:30:01+08:00">2019-12-21 10:30:01</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/person/" itemprop="url" rel="index"><span itemprop="name">person</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>进EMC马上两年，12月份里程碑两件。</p>
+<p>一是硬技能，项目里个人提交的代码突破6万行，产品第一个版本月底发布；</p>
+<p>二是软技能，专利公司内过审3个，写文章推广产品以及提升团队的技术影响力获得公司副总裁认可给了个奖。</p>
+<h2 id="代码行数突破6万行"><a href="#代码行数突破6万行" class="headerlink" title="代码行数突破6万行"></a>代码行数突破6万行</h2><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/person/emc-20191220-codeline.png" alt="codeline"></p>
+<h4 id="专利过三"><a href="#专利过三" class="headerlink" title="专利过三"></a>专利过三</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/person/emc-2019-patent-1.PNG" alt="patent"></p>
+<h4 id="GEEK-BANG-技术文章活动奖"><a href="#GEEK-BANG-技术文章活动奖" class="headerlink" title="GEEK BANG 技术文章活动奖"></a>GEEK BANG 技术文章活动奖</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/person/emc-201912-award-1.JPG" alt="award"></p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/person/" rel="tag"><i class="fas fa-tags"></i>person</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
   
   <nav class="pagination">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -1240,7 +1212,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">74</a></div>
+      <div><a href="/archives">73</a></div>
     </div>
     
     
