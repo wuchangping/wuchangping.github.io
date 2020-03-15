@@ -151,6 +151,8 @@
       
       <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>编程是一种创造性解决问题的能力， 其本质上是一种思维体操，可以大大的提升人的逻辑能力、推理能力以及解决问题的能力， 那么什么是分布式系统的编程思维呢？</p>
 <h2 id="编程思维模型"><a href="#编程思维模型" class="headerlink" title="编程思维模型"></a><font color="#FF8C00">编程思维模型</font></h2><p>具体来看分布式系统的编程思维包含11大内容：抽象、分层、解耦、拆分、聚合、治理、取舍、模型、演化、质量、边界。</p>
+<font color="#FF8C00">这个主题的解读，留待以后完善了再补充</font>
+
 <p>//TODO</p>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文解读了分布式系统的编程思维模型。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
 <h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，曾就职于Marvell、AMD，主要从事Linux内核以及分布式产品的交付、架构设计以及开发工作。</p>
@@ -208,7 +210,7 @@
     <main class="post-main" itemprop="articleBody">
       
       <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>懂得很多道理，仍旧过不好这一生。懂得很多分布式系统的概念以及设计方法，依旧做不好分布式系统。分布式系统设计是一门实践软件工程，只有你PK过设计方案，手把手的敲过一行行的代码，才能知道细节在哪里，难点在哪里，痛点、挑战点在哪里，不是看书或者看文章就可以完全掌握的。因此，宏观处着眼，微观处着手，才能完全掌握分布式系统设计的道理。本文抽象出分布式系统的思维模型，当你看到这个模型里的字眼与图画，就可以从脑海里分解出一个个设计方案、一行行代码的时候，那才是真的掌握了分布式系统的精髓。</p>
-<h2 id="分布式系统八卦思维模型"><a href="#分布式系统八卦思维模型" class="headerlink" title="分布式系统八卦思维模型"></a><font color="#FF8C00">分布式系统八卦思维模型</font></h2><p>这里我提出一个分布式系统八卦思维模型，本文简单介绍一下这个思维模型的要义。</p>
+<h2 id="分布式系统八卦思维模型"><a href="#分布式系统八卦思维模型" class="headerlink" title="分布式系统八卦思维模型"></a><font color="#FF8C00">分布式系统八卦思维模型</font></h2><p>这里我提出一个分布式系统八卦思维模型，如下图，其要义如下：</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ideamodel/idea-model-distributed-system.PNG" alt="分布式系统思维模型"></p>
 <h3 id="方法论"><a href="#方法论" class="headerlink" title="方法论"></a><font color="#00CED1">方法论</font></h3><p>核心：在前面的文章里讲到可以用一句话来描述分布式系统：</p>
 <blockquote>
