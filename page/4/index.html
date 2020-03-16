@@ -115,6 +115,93 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/16/distributed-servicegovernance-circuitbreaker/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/03/16/distributed-servicegovernance-circuitbreaker/" itemprop="url">分布式系统架构设计三十六式之服务治理 – 第2式 - 熔断模式</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-03-16T09:34:18+08:00">2019-03-16 09:34:18</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="导读"><a href="#导读" class="headerlink" title="导读"></a><font color="#FF8C00">导读</font></h2><p>日拱一卒，功不唐捐，分享是最好的学习，一个知识领域里的 <font color="#00CED1"> <strong>“道 法 术 器”</strong> </font> 这四个境界需要从 <font color="#00CED1"> <strong>微观、中观以及宏观</strong> </font>三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计三十六式》，讲诉分布式系统里最重要的三十六个虚数的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
+<p>实现一个分布式系统通常会面临三大难题： <font color="#00CED1"> <strong>故障传播性、业务拆分与聚合以及分布式事务</strong> </font>。本系列中的服务治理章节主要是为了解决故障传播性的难题，它包括：<font color="#00CED1"> <strong>隔离、熔断、降级、限流、容错以及资源管控</strong> </font>，本文将讲诉服务治理里的 <font color="#00CED1"> <strong>“熔断”</strong> </font>模式。</p>
+<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>在分布式系统里经常会遇到这样的场景：</p>
+<ol>
+<li><p>系统负载突然过高，比如突发的访问量、过多的请求并发数以及过多的IO等都会造成某个节点故障，比如节点A，然后节点A挂了，又把负载转给节点B，然后节点B又负载过高，接着B又挂了，就这样一连串的挂过去从单点故障造成系统级的级联故障。</p>
+</li>
+<li><p>当一个服务出现故障时，希望这个服务能在一个时间段内恢复，在请求被拒绝后隔一段时间再自动的去探测服务的可服务性。</p>
+</li>
+</ol>
+<p>对应这两个场景，我们希望在分布式系统里能避免级联故障、提供快速失败快速恢复服务的能力，因此，这里引出 <font color="#00CED1"><strong>“熔断模式”</strong></font> 。</p>
+<h2 id="熔断模式"><a href="#熔断模式" class="headerlink" title="熔断模式"></a><font color="#FF8C00">熔断模式</font></h2><p>熔断模式也称之为断路器模式，英文单词是“circuit breaker”，“circuit breaker”是一个电路开关，其基本功能是检测到电流过载就中断电路，在检测到电流正常时又能自动或手动恢复工作，从而保护断路器背后的电源设备安全。这里需要将”断路器“与 “保险丝”进行区分，断路器可以通过手动或自动的复位从而恢复正常工作，而保险丝是运行一次必须更换。</p>
+<p>实现一个分布式系统通常会面临三大难题： <font color="#00CED1"><strong>业务拆分与聚合，分布式事务以及故障传播性</strong></font>。本系列中的服务治理章节主要是为了解决故障传播性的难题，它包括：隔离、熔断、降级、限流、容错以及资源管控，本文将讲诉服务治理里的 <font color="#00CED1"><strong>“熔断”</strong></font>模式。</p>
+<p>在分布式系统里 <font color="#00CED1"><strong>“熔断模式”</strong></font>的设计思想来源于此，当系统里响应时间或者异常比率或者异常数超过某个阈值时，比如超时次数或重试次数超过某个阈值就会触发熔断，接着所有的调用都快速失败，从而保证下游系统的负载安全，在断开一段时间后，熔断器又打开一点试着让部分请求负载通过，如果这些请求成功那么断路器就恢复正常工作，如果继续失败，则继续关闭服务走快速失败通道，接着继续这个过程直到重试的次数超过一定的阈值从而触发更为严重的<font color="#00CED1"><strong>“降级模式”</strong></font>。</p>
+<h3 id="熔断模式设计思路"><a href="#熔断模式设计思路" class="headerlink" title="熔断模式设计思路"></a><font color="#00CED1">熔断模式设计思路</font></h3><p>下图是一个熔断模式的设计思路：</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/distributed-circuitbreaker.png" alt="熔断器"></p>
+<p>图片来源于引文[2]，版权归原作者所有</p>
+<div align="left"> 
+
+
+<ol>
+<li><p>首先熔断器是处于闭合（closed）状态的，如果请求超时次数，异常数或者异常比率超过一定的阈值则熔断器会被打开；</p>
+</li>
+<li><p>接着熔断器处于打开（Open）状态，所有走到这个路径里的请求会走快速失败通道从而避免负载下行，但是这里不会一直都是打开的，过一个时间周期会自动切换到半打开（Half-open）状态；</p>
+</li>
+<li><p>在接下来是半打开（half-open）状态，在这里认为之前的错误可能被修复了，因此允许通过部分请求试着看看能不能处理成功，如果这些请求处理成功，那么就认为之前导致失败的错误已被修复，此时熔断器就切换到闭合状态并且将错误计数器重置。如果这些试着发送的请求还是处理失败，则认为导致之前失败的问题仍然存在，熔断器切回到打开方式，然后开始重置计时器给系统一定的时间来修复错误。半打开状态能够有效防止正在恢复中的服务被突然而来的大量请求再次打挂；</p>
+</li>
+<li><p>接着重复以上过程，直到半打开状态重复的次数达到一定的阈值发现故障还没被修复，从而触发”降级“状态</p>
+</li>
+</ol>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲诉了服务治理里的 <font color="#00CED1"><strong>“熔断”</strong></font>模式，在前一篇《分布式系统架构设计三十六式之服务治理-隔板模式》里讲诉了分布式系统服务治理的隔板模式。另作者能力与认知都有限，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及大数据，现就职于DELL EMC。</p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1] <a href="https://en.wikipedia.org/wiki/Circuit_breaker" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Circuit_breaker</a></p>
+<p>[2] <a href="https://martinfowler.com/bliki/CircuitBreaker.html" target="_blank" rel="noopener">https://martinfowler.com/bliki/CircuitBreaker.html</a></p>
+</div></div>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/10/distributed-servicegovernance-bulkhead/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -955,119 +1042,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/11/17/pravega-blog-streams-in-and-out/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/11/17/pravega-blog-streams-in-and-out/" itemprop="url">pravega blog - streams in 与 streams out</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-11-17T11:09:20+08:00">2018-11-17 11:09:20</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>读和写是Pravega提供的最基本的功能。应用程序通过写入一个或多个Pravega流来摄取数据，并通过从一个或多个流中读取数据来使用数据。但是，要使用Pravega正确实现应用程序，开发人员必须了解一些核心的写入和读取的附加功能。例如，写入可以是事务性的，reader可以被Group织成Group。</p>
-<p>在本文中，我们将介绍开发人员在使用Pravega开发应用程序时必须注意的一些基本概念和功能，重点是读和写。我们鼓励reader在“开发Pravega应用程序”部分中另外查看Pravega文档站点，了解一些代码和更多细节。</p>
-<h2 id="写入流"><a href="#写入流" class="headerlink" title="写入流"></a>写入流</h2><p>我们当前公开的用于编写的API使应用程序能够将事件附加到流中。事件是一个应用程序概念，应用程序可以定义事件是什么以及它代表什么。就Pravega而言，事件是字节序列，而Pravega并不试图理解事件。我们希望应用程序传递一个串行器，使  Pravega  能够接收任意类型的事件并将它们转换为字节序列。最终，  Pravega  在流段中存储字节序列，并且不知道事件类型。</p>
-<p>存储字节序列而不是事件使得Pravega能够支持除API中的事件之外的抽象，例如，我们计划公开对读取和写入字节流的调用。当应用程序有其他包含不可变数据的大对象要存储时（例如Apache Flink中的检查点），此功能将非常有用。使用这样的API，应用程序能够直接在Pravega中存储这些对象，而不是依赖于单独的存储。<br>回想一下，Pravega流由段Group成，任何给定的流都可以在任何时间点打开许多并行段。为了将事件映射到段，应用程序会传递  路由键  以及事件本身。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-blog-streams-inout-1.png" alt="路由键到段图"></p>
-<p>路由键是一个字符串，经过哈希处理以确定要将事件追加到哪个段。 Pravega  保证将路由密钥分配给段是一致的。请注意，由于流缩放，路由密钥到段的映射并不总是相同，但它是一致的。在两个缩放事件之间，写入具有相同路由密钥的流的所有事件都映射到同一个段。跨比例事件的分段根据缩放排序。为了使其具体化，例如示例，我们从一个区段S1向上扩展到区段S2和S3。S1的关键空间与S2和S3的关键空间重叠，但是S2和S3没有交集，所以可以简单地附加到S2和S3，但不要同时附加说S1和S2，因为具有相同路由键的事件可以转到两个不同的段。为了防止后一种情况发生，在S1被密封之前，S2和S3不会发生附加，这会在缩放事件之前和之后推广到任意数量的段。因此，一旦由于缩放事件而将段密封，则将未来事件附加到密封段的后继者，从而保留路由键顺序。</p>
-<p>将事件写入流很简单，有两个选项：  常规 和  事务。通过常规写入，writer可以简单地触发写入事件的调用：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>// Set up a new scope and stream with a single segment (no scaling)<br>StreamManager streamManager = StreamManager.create(controllerURI);<br>StreamConfiguration streamConfig = StreamConfiguration.builder()<br>    .scope(scope).streamName(streamName)<br>    .scalingPolicy(ScalingPolicy.fixed(1))<br>    .build();<br>streamManager.createScope(scope);<br>streamManager.createStream(scope, streamName, streamConfig);<br> <br>// Create a client factory, a writer and append events<br>try(ClientFactory clientFactory = <br>      ClientFactory.withScope(scope, controllerURI) &#123;<br>    EventStreamWriter&lt;String&gt; writer = clientFactory<br>         .createEventWriter(streamName, <br>                            new JavaSerializer&lt;String&gt;(),<br>                            EventWriterConfig.builder().build()); <br>    writer.writeNext(&quot;Key 1&quot;, &quot;Hola&quot;); <br>    writer.writeNext(&quot;Key 2&quot;, &quot;Mundo!&quot;);<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>通过事务，writer开始一个事务并根据需要调用事件来进行多次调用：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>Transaction&lt;String&gt; txn = writer.beginTxn();<br>txn.writeEvent(&quot;Key 1&quot;, &quot;Hola&quot;);<br>txn.writeEvent(&quot;Key 2&quot;, &quot;Mundo!&quot;);<br>txn.commit();<br></code></pre></td></tr></table></figure>
-<p>一旦完成，它就会提交事务，这使得事务中的写入可供读取。应用程序还可以选择中止事务，在这种情况下，作为事务的一部分编写的事件不可见。</p>
-<p>关于writer的一些非常有趣的观点值得一提：重复和分段顺序。</p>
-<h2 id="避免重复"><a href="#避免重复" class="headerlink" title="避免重复"></a>避免重复</h2><p>流中的重复可能是有问题的：它们通常会导致不正确的结果或不正确的行为。例如，重复可能导致实例的计数错误或状态机中的错误转换。一些应用程序对这种偏差非常敏感。</p>
-<p>为避免重复，writer内部具有一个ID，用于确定重新连接时写入的最后一个事件。当writer有要追加的事件时，它会启动一个事件块的写入。一旦完成附加块，writer就会发送一个  块结束  命令，其中  包含写入  的事件数和  最后一个事件编号。writer附加块以便能够从批处理中受益。</p>
-<p>段存储必须记住任何给定writerID的最后一个事件编号。否则，它无法发现重复。要记住给定writerID的最后一个事件编号，它会将writerID，事件编号对保留为该段的属性，作为处理追加请求的一部分。在writer断开连接并创建新连接的情况下，段存储将获取此属性并返回作为与客户端握手的一部分写入的最后一个事件编号。来自分段存储的响应使writer能够在其附加未完成的情况下从正确的事件中恢复。</p>
-<p>但是，writer不会持久存在甚至暴露其writerID。如果writer崩溃并且实例化了新的writer，则新writer将使用新的writerID。尽管writer崩溃，为避免重复，我们需要将此writerID重复数据删除与事务相结合。通过事务性写入，如果写入程序在提交一批写入之前崩溃，那么它可以让事务超时并中止，在这种情况下，新写入程序可以从上一个写入程序停止的最后一个提交点恢复。</p>
-<p>总而言之，  Pravega  通过检查与writerID相关联的事件编号以及使用事务写入来容忍writer崩溃来避免写入时的重复。在writer在事务中间崩溃的情况下，应用程序可以简单地让事务超时并中止。此类事务的部分写入不会向reader公开。</p>
-<h2 id="段顺序"><a href="#段顺序" class="headerlink" title="段顺序"></a>段顺序</h2><p>流缩放导致流的段数随着时间而改变。流的段数的变化会导致随着时间的推移，路由关键字范围到段的映射发生变化。但是，如果映射发生变化，我们如何保证reader按照附加顺序接收具有相同路由键的事件？</p>
-<p>为了保证具有相同路由密钥的事件的顺序，客户端与控制器一起根据它们的创建顺序读取段。例如，假设流以一个我们称为S1的段开始  。在时间  T1，段  S1  分成  S2  和  S3。因此，如缩放流的一部分，我们分离的键范围  S1  之间  S2  和  S3。为了简化讨论，让我们说我们将它分开，所以  S2  最终得到[0.0,0.5]，而  S3 以[0.5,1.0]结束。为了保证可以按附加顺序读取具有相同路由键的所有事件，我们需要确保在密封S1之前，writer不能附加到S2或S3。事实上，这正是writer的操作方式：当它发现一个段密封时，它会向控制器询问后继者。在这个例子中，当它到达S1的末尾   （表示段密封的返回代码）时，writer询问控制器并接收S2  和  S3  是后继者的响应  。下图说明了这种情况：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-blog-streams-inout-2.png" alt="读取和缩放"></p>
-<p>在reader方，我们还必须遵循段的顺序，接下来当我们介绍reader和reader group时，我们将更详细地讨论它。</p>
-<h2 id="从流中读取"><a href="#从流中读取" class="headerlink" title="从流中读取"></a>从流中读取</h2><p>流可以有多个段，writer可以并行追加。这种并行性不仅对于实现更高的摄取能力而且在读取和处理事件时实现并行性也很重要。</p>
-<p>将事件附加到流时，我们可以让许多writer同时访问流的所有段。writer彼此独立，处理事件而无需进一步协调。我们也可以在读取方面有很多reader，但reader却不同。通常，事件只需要处理一次，因此一Groupreader需要协调段的工作负载分布，以便在整个Group中进行分割。</p>
-<p>为了使reader能够有效地共享一个或多个流的工作负载，我们使用reader Group的概念  ：</p>
-<p><strong>Reader Group</strong>：一reader Group是一Group RG 的  Pravega  reader和流S的一Group相关联，使得对于每个 ř ∈ RG，S（R）＆SubsetEqual; ⋃s∈ S C（S） 。在任何时间和任何两个不同的reader R，R ‘ ∈ RG ， S（R）∩ S（R’）是空的。</p>
-<p>在该定义中，s（r）是分配给reader r的段的集合，并且c（s）是流的当前活动段的集合（用于读取的非密封段）。注意，这个定义并不意味着在所有的段 ⋃ 小号 ∈ 小号 C（S）在任何时间分配给一些reader。reader可能已经发布了一个片段，而其他人尚未获得该片段，或者尚未获得某些新片段。Reader Group的合约是，最终分配给⋃ 小号∈ 小号 C（S）中的任何段。因此，readerGroup不保证在任何时候 ⋃ 小号∈ 小号C（S）= ⋃ [R ∈ RG S（R） ，虽然我们保证了活性，所有 X ∈ ⋃ s∈ S C（S） ，最终x被分配到一些reader。 </p>
-<p>每个reader都必须属于readerGroup。以下代码段说明了如何设置 reader：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>// Set up a new scope and stream with a single segment (no scaling)<br>StreamManager streamManager = StreamManager.create(controllerURI);<br>StreamConfiguration streamConfig = StreamConfiguration.builder()<br>    .scope(scope).streamName(streamName)<br>    .scalingPolicy(ScalingPolicy.fixed(1))<br>    .build();<br>streamManager.createScope(scope);<br>streamManager.createStream(scope, streamName, streamConfig);<br> <br>try (ReaderGroupManager manager =<br>              ReaderGroupManager.withScope(scope, controllerURI)) &#123;<br>    manager.createReaderGroup(readerGroup, <br>                              readerGroupConfig, <br>                              Collections.singleton(streamName));<br>&#125;<br> <br>try(ClientFactory clientFactory = <br>      ClientFactory.withScope(scope, controllerURI) &#123;<br>    EventStreamReader&lt;String&gt; reader = <br>             clientFactory.createReader(&quot;reader&quot;,<br>                                        readerGroup,<br>                                        new JavaSerializer&lt;String&gt;(),<br>                                        ReaderConfig.builder().build());<br>   while(!stop) &#123;<br>        EventRead&lt;String&gt; event = <br>                  reader.readNextEvent(READER_TIMEOUT_MS);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>将段分配给Group中的reader取决于使用我们在Pravega中称为stateSynchronizer的机制的reader的分布式协调  。stateSynchronizer使reader能够获得分布状态的一致视图，他们使用这些视图来协商Group状态的变化，  例如，分配了哪些分段以及分配给哪些分Group。我们用来确定分配的特定启发式算法很简单，但我们会对另一篇文章进行详细讨论。</p>
-<p>reader和Group体有四个方面值得强调。</p>
-<h2 id="段顺序-1"><a href="#段顺序-1" class="headerlink" title="段顺序"></a>段顺序</h2><p>为了保证reader在附加顺序中读取具有相同键的事件，reader遵循与writer类似的过程。当readerGroup 中的reader遇到密封段时，它会提取后继者，以便该Group可以从这些段中读取。如果后继者对应于分割密封片段的结果，那么reader可以立即开始阅读后继者。下图说明了这种情况：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-blog-streams-inout-3.png" alt="读取和缩放"></p>
-<p>最初，流具有单个段  S1 ， 并且它最终扩展，导致S1分裂成  S2  和  S3。一旦reader 到达S1的末尾  ，它就会从控制器请求后继者，并开始从新的段中读取。</p>
-<p>但是，如果密封段实际上与另一段合并而另一段尚未完全读取，该怎么办？让我们通过一个例子使这个方面更加具体。<br>假设我们有一个readerGroup  G，  有两个reader，  R1  和  R2。方案如下：</p>
-<ul>
-<li>Group  G  正在读取当前具有两个段  S1  和  S2的流。</li>
-<li>R1  正在读取  S1，而  R2  正在读取  S2。</li>
-<li>段合并为  S3  （S1  和  S2  是密封的，它们不接受进一步的附加）。</li>
-<li>Reader  R1  命中S1结束   并请求其后继者。</li>
-<li>reader  R1  回来说  S3  是S1的继承者  。</li>
-<li>reader  R2  尚未完成  S2。</li>
-</ul>
-<p>如果  R1  或  R2  在R2  完成读取  S2之前   继续读取  S3，那么我们可能会违背我们在附加顺序中使用相同键读取事件的承诺。因此，为了满足我们的顺序属性，我们将  S3  置于保持状态，直到  R2标记它已完成  S2。只有这样   才能分配和读取S3。</p>
-<p>为了协调分段的分配和顺序，我们再次依赖状态同步器。当reader获得段的后继者时，它会相应地更新状态，并且该状态将在ReaderGroup之间同步。具体到该示例，Reader  R1  将段S3添加   到未来 段的列表中  ，并且仅在完全读取S2的所有前任之后才分配段。</p>
-<h2 id="检查点"><a href="#检查点" class="headerlink" title="检查点"></a>检查点</h2><p>我们目前不会通过reader GroupAPI向应用程序公开任何段信息。这是故意的。为了保证流的读取遵循正确的顺序，我们选择隐藏应用程序中后继者，前任和未来段的复杂性。即使应用程序没有明确地看到段，它仍然需要某种方式来确定流中在所有活动段中保持一致的点，并使应用程序从此点恢复。例如，如果应用程序想要从流中的较早点重新启动并恢复，则需要一种机制来引用此前一点。</p>
-<p>检查点是我们提供的一种机制，使应用程序能够请求一个对象，该对象包含当前正在读取或可供读取的每个段的偏移量。检查点在内部使用状态同步器实现。一旦触发，reader就会协调生成一个不透明的检查点对象，该对象包含当前正在读取或可供读取的每个段的偏移量。</p>
-<p>每个reader将其指定段的当前位置记录到状态一次：</p>
-<p>1.它了解到有一个检查点在继续;<br>2.它已经发布了一个  检查点事件。</p>
-<p>检查点事件通过reader 通知应用程序检查点正在进行中，并且应用程序应该采取任何适当的步骤（如果有的话）。例如，作为检查其状态的一部分，应用程序可能需要获取其输入的位置（  Pravega 流），为执行Reader的每个进程收集任何本地状态，并向下游刷新输出。因此，应用程序可能希望通过收集任何状态检查点信息并刷新下游的任何输出来对检查点事件作出反应，以避免重复。</p>
-<p>如果需要，我们还利用检查点的机会重新平衡分段的分配。必须在检查点时执行此操作，以便应用程序有机会刷新任何挂起的状态更改，消息和事件，以避免任何重复。</p>
-<h2 id="下游故障与重复"><a href="#下游故障与重复" class="headerlink" title="下游故障与重复"></a>下游故障与重复</h2><p>readerGroup使一组reader可以集中读取流。Reader Group逻辑以试图保持负载平衡的方式在Reader之间分配段。<br>一个重要的问题是当reader崩溃时会发生什么。具体来说，分配给该reader 的段会发生什么？显然，要在这些段存储取得进展，我们需要将它们重新分配给新的reader。在重新分配这些段时，我们需要从某个偏移量恢复。理想情况下，此偏移量是前一个Reader未读取的第一个偏移量。从第一个段偏移（偏移零）开始可能导致重复处理事件。如果应用程序对重复项敏感，则这是不可取的。</p>
-<p>为了使应用程序在从Pravega读取时避免重复  ，我们执行以下操作。对于应用程序读取的每个事件，我们提供一个  位置 对象。position对象是一个可序列化的不透明对象，它包含reader当前分配的段的偏移量。此对象类似于检查点对象，但缩小为单个Reader。reader应该将此对象作为处理事件的一部分来持久化。如果Reader 崩溃，  Pravega  希望应用程序通过调用readerGroup API的方法并传递Reader 的最后一个位置对象来使Reader 脱机。此位置对象确定剩余Reader需要从指定段中的位置。</p>
-<p>到目前为止，我们已选择将崩溃检测推送到应用程序。Reader Group API提供reader Offline调用，但它不提供任何检测崩溃的机制。因此，应用程序需要提供检测并相应地调用reader Offline。</p>
-<p>请注意，使用位置对象背后没有任何魔力。我们要求应用程序合作：完全取决于应用程序持久保存这样的位置对象并在Reader崩溃时检索最新的位置对象。如果维护这些对象的成本很高或不合需要，那么根据所执行的处理的性质，应用程序在其输出中存在重复的风险。</p>
-<h2 id="批读取"><a href="#批读取" class="headerlink" title="批读取"></a>批读取</h2><p>有时候应用程序想要简单地处理存储在流中的所有事件而不依赖于顺序。例如，假设应用程序想要收集流中的所有用户ID，事件中的单词，甚至执行经典的单词计数。在这种情况下，段的顺序并不重要。</p>
-<p>对于这种情况，我们公开了一个批处理API，它使应用程序能够利用并行性并以任何顺序迭代流的各个段并使用它所需的任何程度的并行性。</p>
-<p>要执行批量读取，应用程序会通过段请求迭代器：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>Iterator&lt;SegmentInfo&gt; segments = client.listSegments(stream);<br>SegmentInfo segmentInfo = segments.next();<br></code></pre></td></tr></table></figure>
-<p>一旦它有了这个迭代器，它就可以继续单独遍历各个段：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>SegmentIterator&lt;T&gt; events = client.readSegment(segmentInfo.getSegment(),<br>                   deserializer);<br> <br>while (events.hasNext()) &#123;<br>    processEvent(events.next());<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>如果应用程序选择，它可以并行读取所有段。请注意，在撰写本文时，此API是实验性的，并且可能会发生变化。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>在这里，我们介绍了一些关于Pravega摄取和读的基本概念，和不是那么基本的一些概念  。这些是了解Pravega需要理解的一些主要概念 ， 基本功能易于使用和理解，但关于顺序和重复，在我们公开的属性中有一些细微差别，这对于开发人员来说是很重要的。更多的信息，我们建议读者们查看 Pravega.io网站  文档 和github上的代码库。</p>
-<p><strong>原文</strong> ： <a href="http://blog.pravega.io/2018/02/12/streams-in-and-out-of-pravega/" target="_blank" rel="noopener">http://blog.pravega.io/2018/02/12/streams-in-and-out-of-pravega/</a></p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/3/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/5/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -1093,7 +1067,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">75</a></div>
+      <div><a href="/archives">76</a></div>
     </div>
     
     
