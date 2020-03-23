@@ -150,27 +150,19 @@
 <h2 id="分布式系统的价值与目的"><a href="#分布式系统的价值与目的" class="headerlink" title="分布式系统的价值与目的"></a><font color="#FF8C00">分布式系统的价值与目的</font></h2><p>分布式系统的出现是为了解决一个主要矛盾，即：“日益增长的数据计算、传输与存储的需求与当前单点计算机能力无法满足这个需求之间的矛盾”。分布式系统可以通过伸展集群规模解决这个矛盾，因此这就是分布式系统的价值，而可伸缩性(Scalability，避免与可扩展性extensibility混淆)也是分布式系统的根本目的。</p>
 <h2 id="分布式系统必知的基础理论与算法"><a href="#分布式系统必知的基础理论与算法" class="headerlink" title="分布式系统必知的基础理论与算法"></a><font color="#FF8C00">分布式系统必知的基础理论与算法</font></h2><p>分布式系统必须理解、必须会的基础理论算法有：CAP/PACELC、BASE、2PC、3PC、TCC、ACID、PAXOS、RAFT这9个：</p>
 <ul>
-<li><p>CAP: CAP理论认为以下三者不能同时满足：</p>
-<ul>
+<li>CAP: CAP理论认为以下三者不能同时满足：<ul>
 <li>一致性(Consistency): 所有的节点在同一时刻数据是完全一样的；</li>
 <li>可用性(Availability): 节点失效不会影响系统的IO；</li>
 <li>分区容忍性(Partition Tolerance): 系统能支持网络分区（网络连接故障），即使分区之间的消息丢失系统也正常工作。</li>
 </ul>
 </li>
-<li><p>PACELC: PACELC理论是CAP理论的扩展，如果有分区partition (P)，系统就必须在availability 和consistency (A and C)之间取得平衡; 否则else (E) 当系统运行在无分区情况下,系统需要在 latency (L) 和 consistency (C)之间取得平衡”；</p>
-</li>
-<li><p>BASE: BASE是基本可用（Basically Available）、软状态（Soft state）和最终一致性（Eventually consistent）三个短语的缩写；</p>
-</li>
-<li><p>2PC：two-phase commit protocol，两阶段提交；</p>
-</li>
-<li><p>3PC: three-phase commit protocol ，三阶段提交，其在两阶段提交的基础上增加了CanCommit阶段，并引入了超时机制；</p>
-</li>
-<li><p>TCC: Try-Confirm-Cancel，又称补偿事务，其核心思想是：”针对每个操作都要注册一个与其对应的确认和补偿（撤销操作）”；</p>
-</li>
-<li><p>ACID: 原子性（Atomicity）、一致性（Consistency）、隔离性（Isolation）、持久性（Durablity）；</p>
-</li>
-<li><p>PAXOS/RAFT ：PAXOS与RAFT算法都是最有效的解决分布式一致性问题的算法。</p>
-</li>
+<li>PACELC: PACELC理论是CAP理论的扩展，如果有分区partition (P)，系统就必须在availability 和consistency (A and C)之间取得平衡; 否则else (E) 当系统运行在无分区情况下,系统需要在 latency (L) 和 consistency (C)之间取得平衡”；</li>
+<li>BASE: BASE是基本可用（Basically Available）、软状态（Soft state）和最终一致性（Eventually consistent）三个短语的缩写；</li>
+<li>2PC：two-phase commit protocol，两阶段提交；</li>
+<li>3PC: three-phase commit protocol ，三阶段提交，其在两阶段提交的基础上增加了CanCommit阶段，并引入了超时机制；</li>
+<li>TCC: Try-Confirm-Cancel，又称补偿事务，其核心思想是：”针对每个操作都要注册一个与其对应的确认和补偿（撤销操作）”；</li>
+<li>ACID: 原子性（Atomicity）、一致性（Consistency）、隔离性（Isolation）、持久性（Durablity）；</li>
+<li>PAXOS/RAFT ：PAXOS与RAFT算法都是最有效的解决分布式一致性问题的算法。</li>
 </ul>
 <p>这几条基础理论与算法需要自己深入学习理解，其是分布式系统的必备知识点。</p>
 <h2 id="分布式系统的功能与非功能"><a href="#分布式系统的功能与非功能" class="headerlink" title="分布式系统的功能与非功能"></a><font color="#FF8C00">分布式系统的功能与非功能</font></h2><h4 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h4><p>功能可按职责划分为服务功能与算法功能:</p>
@@ -233,7 +225,7 @@
 </li>
 </ul>
 <p>因此还需要依据分布式系统的公理化定义推导出定理化定义。</p>
-<h2 id="分布式系统的定理化推导"><a href="#分布式系统的定理化推导" class="headerlink" title="分布式系统的定理化推导"></a><font color="#FF8C00">分布式系统的定理化推导</font></h2><p>“公理是不证自明的，而定理是以若干的公理或其他定理为基础而推导的”。由公理推定理，从分布式的公理化公式<font color="#00CED1"><strong>“分布式系统 =  计算机  + 网络 + 协同”</strong></font>，可知分布式系统是组件位于“不同的计算机网络”上一起“协同”工作的系统，这句话得出分布式系统三要素：<font color="#00CED1">“计算机、网络，协同”</font>。其中计算机是系统要素，改变计算机为虚机或者容器，不会改变分布式系统的本质。网络是系统的连接，改变连接就会改变系统的本质，当连接一台计算机时，就是单机系统，当连接两台计算机时就是镜像系统，当连接 大于等于三台计算机时就是分布式系统。协同是系统的目标，当改变协同的目标也就改变了系统的功能，比如共同计算与共同存储、共同调度，其功能目标是不一样的。</p>
+<h2 id="分布式系统的定理化推导"><a href="#分布式系统的定理化推导" class="headerlink" title="分布式系统的定理化推导"></a><font color="#FF8C00">分布式系统的定理化推导</font></h2><p>“公理是不证自明的，而定理是以若干的公理或其他定理为基础而推导的”。由公理推定理，从分布式的公理化公式<font color="#00CED1"><strong>“分布式系统 =  计算机  + 网络 + 协同”</strong></font>，可知分布式系统是组件位于“不同的计算机网络”上一起“协同”工作的系统，这句话得出分布式系统三要素：<font color="#00CED1">“计算机、网络，协同”</font>。其中计算机是系统要素，改变计算机为虚机或者容器，不会改变分布式系统的本质。网络是系统的连接，改变连接就会改变系统的本质，当连接一台计算机时，就是单机，当连接两台计算机时就是镜像，当连接 多于两台计算机时就是分布式。协同是系统的目标，当改变协同的目标也就改变了系统的功能，比如共同计算与共同存储、共同调度，其功能目标是不一样的。</p>
 <h3 id="计算机"><a href="#计算机" class="headerlink" title="计算机"></a>计算机</h3><p>分布式系统是基于不同的计算机上的系统，计算机也是分布式系统的要素之一，因此分布式系统也继承了计算机的原生缺点，</p>
 <ul>
 <li>计算机节点是会出故障的，主板、CPU、网卡、硬盘、内存、电源等都会出故障，比如老化、失效等；</li>
@@ -333,7 +325,7 @@
 <li><p>边界约束：集群规模、计算机的容量等物理资源的限制，以及客户、用户、团队的约束需求。</p>
 </li>
 </ul>
-<p>依据这几项质量度量指标，可以保证分布式的“可解释、可复制、可预测”。</p>
+<p>依据这几项质量度量指标，可以保证分布式的“可解释、可复制、可预测”。其中要保证质量的核心思想是<strong>“消除资源竞用性，共享资源以及平衡负载。”</strong></p>
 <h2 id="分布式系统的反熵增与数据守恒"><a href="#分布式系统的反熵增与数据守恒" class="headerlink" title="分布式系统的反熵增与数据守恒"></a><font color="#FF8C00">分布式系统的反熵增与数据守恒</font></h2><h3 id="熵增"><a href="#熵增" class="headerlink" title="熵增"></a>熵增</h3><p>熵增定律是物理学的基本定律之一，其被定义为：</p>
 <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">1, 熵（Entropy）是用以度量一个系统“内在的混乱程度”，即系统中的无效能量；<br>2, 熵增定律：在一个孤立系统里，如果没有外力做功，其总混乱度（熵）会不断增大；<br>3，熵增过程是一个自发的由有序向无序发展的过程并且具有必然性，为了保证有序就必须逆熵增做功。<br></code></pre></td></tr></table></figure>
 <p>分布式系统也是一个孤立的系统，其中的网络与计算机节点（涵盖电源、主板、CPU、内存、网卡、硬盘等）等硬件会老化、会出故障，组件之间协同工作也会遇到负载过高、软件系统出现BUG等问题，这也是一个熵增的过程，并且因为熵增的必然性，分布式系统总是自发地或非自发地不断由有序走向无序，最终不可逆地走向失效不可用。为了保证分布式系统是有序可用的就必须逆熵增做功，即对其反熵增，分布式系统的反熵增过程与方法是：</p>
@@ -344,7 +336,7 @@
 <li>智能化设计：参数自我优化、故障自我判断、工作负载自我预测等；</li>
 <li>动态平衡设计：动态平衡是一种设计理念，有进有出；</li>
 </ul>
-<p>因此在分布式系统里将需要将可运维、可服务、可治理、可智能化、动态平衡的思想融合到架构设计与开发中。</p>
+<p>因此其中在分布式系统里将需要将可运维、可服务、可治理、可智能化、动态平衡的思想融合到架构设计与开发中。</p>
 <h3 id="数据守恒"><a href="#数据守恒" class="headerlink" title="数据守恒"></a>数据守恒</h3><p>能量守恒定律也是物理学的基本定律之一，其被定义为：</p>
 <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">1，能量既不会凭空产生，也不会凭空消失，它只会从一种形式转化为另一种形式，或者从一个物体转移到其它物体，<br>   而能量的总量保持不变；<br>2，孤立系统的总能量保持不变。<br></code></pre></td></tr></table></figure>
 <p>在分布式系统里<strong>“数据”</strong>即是分布式系统的能量，因此参照“能量守恒”定义，这里我给分布式系统一个<strong>“数据守恒”</strong>定义：</p>
