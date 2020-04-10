@@ -115,6 +115,100 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/21/distributed-servicegovernance-degraded/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/03/21/distributed-servicegovernance-degraded/" itemprop="url">分布式系统架构设计 – 第3式 -  服务治理之降级模式</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-03-21T20:45:55+08:00">2019-03-21 20:45:55</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="导读"><a href="#导读" class="headerlink" title="导读"></a><font color="#FF8C00">导读</font></h2><p>日拱一卒，功不唐捐，分享是最好的学习，一个知识领域里的 <font color="#00CED1"> <strong>“道 法 术 器”</strong> </font> 这四个境界需要从 <font color="#00CED1"> <strong>微观、中观以及宏观</strong> </font>三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计三十六式》，讲诉分布式系统里最重要的三十六个虚数的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
+<p>实现一个分布式系统通常会面临三大难题： <font color="#00CED1"> <strong>故障传播性、业务拆分与聚合以及分布式事务</strong> </font>。本系列中的服务治理章节主要是为了解决故障传播性的难题，它包括： <font color="#00CED1"> <strong>隔离、熔断、降级、限流、容错以及资源管控</strong> </font>，本文将讲诉服务治理里的 <font color="#00CED1"> <strong>“降级”</strong> </font>模式。</p>
+<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><ol>
+<li><p>某些时候系统会遇到负载过高的问题，当系统外来的或内部的负载过高超过预先定义的阈值，为了保证更重要的更紧急的业务的服务质量，希望将一些非核心的、不紧急的业务降低服务质量，从而释放一些额外的资源给紧急业务使用。比如一个分布式系统里的读、写、数据校验、空间回收都比较消耗资源，在白天为了保证读和写的服务质量，可以把数据校验的服务通过限流或减少线程数之类的方式使得可以调用的资源配额减少，从而释放部分资源给读和写使用，保证读写的服务质量。同样在读和写业务不繁忙的时候，降低读和写的资源配额，从而释放资源给空间回收使用，通过这种方式动态调整局部业务的服务质量从而保证关键业务的服务质量，提升用户体验。</p>
+</li>
+<li><p>在云服务里“可用性”指标是一个非常重要的SLA指标，在可用性出现不达标的情况下需要根据SLA进行赔偿，因此，我们希望分布式系统不管出现怎么样的故障，比如服务器故障，磁盘故障，网络故障都能保持可用性，起码要保证单点故障不会造成系统故障，比如，在系统出现严重故障的时候，可以停止负载较高的写操作从而保证“读”或者“查询“服务。</p>
+</li>
+</ol>
+<h2 id="降级模式"><a href="#降级模式" class="headerlink" title="降级模式"></a><font color="#FF8C00">降级模式</font></h2><p>从故障处理角度来讲，服务降级简单来说就是这一功能或服务直接不能用，而在动态调整系统整体的服务质量的时候，降级是降低某些当前非重要或非核心业务的资源，从而释放部分资源给重要的或紧急的业务使用。</p>
+<p>在故障处理的时候，对比“熔断”，降级是更严重的故障处理方式，最后拿来兜底用的。比如某个功能出故障，“熔断”是不管怎么样，都希望这个功能还能救活，降级是发现试着救了几次发现还是救不活，就下狠心砍掉这个部分，断臂求生，起码要保证整体是活的，这样整体还有救活的希望。</p>
+<p>从系统的角度来说降级有 读功能降级，写功能降级以及级联组件降级，还有自动降级或者人工降级。比如，在云服务里，为了保证高可用性，在出现系统级的故障后，可以把写功能降级，就是这个服务只能读，只能查询不能写了，因此在设计的比较好的云服务里，按时间的维度来度量可用性已经没有太大的意义，因为不管怎么样它都是服务可用的，系统都是活着的，起码部分服务可用，因此在云服务里更合理的新的衡量可用性的指标方式是请求失败比率。</p>
+<h2 id="降级模式设计思路"><a href="#降级模式设计思路" class="headerlink" title="降级模式设计思路"></a><font color="#FF8C00">降级模式设计思路</font></h2><h3 id="降级触发策略"><a href="#降级触发策略" class="headerlink" title="降级触发策略"></a><font color="#00CED1">降级触发策略</font></h3><ul>
+<li>超时降级：在超时重试的次数达到一个阈值后就触发降级；</li>
+<li>失败比率降级：当某个服务的失败的比率达到一定比率后就开始降级；</li>
+<li>系统故障降级：比如网络故障，硬盘故障，电源故障，服务器故障，数据中心故障等；</li>
+<li>限流降级：某些访问量太大的场景会触发限流，当达到限流阈值后，请求也会被降级；</li>
+<li>重要业务救急降级：比如为了保证读或者查询的功能，降低写或者数据校验的资源配额，从而实现读服务的质量保证。</li>
+</ul>
+<h3 id="降级处理措施"><a href="#降级处理措施" class="headerlink" title="降级处理措施"></a><font color="#00CED1">降级处理措施</font></h3><ul>
+<li>资源配额调度，调度不紧急的业务支援紧急的重要的业务；</li>
+<li>抛出异常，直接抛出异常，打印出出错日志，然后就不管了，请求会丢失，这在需要保证幂等性的请求里不合适；</li>
+<li>直接返回， 直接返回拒绝服务，这里请求也会丢失，这在需要保证幂等性的请求里不合适；</li>
+<li>调用回退方法，调用出现服务降级时对应的业务处理逻辑，不同场景降级处理的逻辑不同，比如可以把请求再挂到等待队列里继续重试之类，这里需要根据业务场景合理设计回退方法；</li>
+</ul>
+<h3 id="降级分级策略"><a href="#降级分级策略" class="headerlink" title="降级分级策略"></a><font color="#00CED1">降级分级策略</font></h3><p>一般可以把降级的等级分为几个层次，比如P0级，P1级，P2级，P3级，级别越高表示问题越严重， 比如：</p>
+<ol>
+<li>重要业务救急降级可以定义为P0级降级，只是调度次要的资源去救急，并不会出现故障；</li>
+<li>限流降级可以定义为P1级降级，只是为了保证服务质量，而且如果不限流可能会出现系统负载过高从而出现故障；</li>
+<li>超时降级以及失败比率降级可以定义为P2级降级，出现小范围故障，触发P2级降级，保证小故障不蔓延不传播从而造成大范围的故障；</li>
+<li>系统故障降级可以定义为P3级降级，系统出现大范围故障，从而触发P3级降级，比如，此时可以只保证最低资源的的读请求服务，写和其他业务全部被禁止。</li>
+</ol>
+<h3 id="配置中心"><a href="#配置中心" class="headerlink" title="配置中心"></a><font color="#00CED1">配置中心</font></h3><p>如下图所示是一个简单的配置中心物理架构图：</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/distributed-degraded-config-center.png" alt="配置中心"></p>
+<div align="left"> 
+
+<p>在分布式系统里每个服务的配置信息会给保存在一个配置中心里，这个配置中心里有每个服务的开关信息以及一些重要的资源配置信息。通过动态调整服务的配置信息，比如降级触发策略、降级处理措施、降级分级策略或者开关信息可以实现服务降级功能。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲诉了服务治理里的 <font color="#00CED1"><strong>“降级”</strong></font>模式，在前一篇《分布式系统架构设计三十六式之服务治理-熔断模式》里讲诉了分布式系统服务治理的熔断模式。另作者能力与认知都有限，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及大数据，现就职于DELL EMC。</p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1] <a href="https://medium.com/@felipedutratine/microservices-should-be-design-for-failure-b58bccdce0b6" target="_blank" rel="noopener">https://medium.com/@felipedutratine/microservices-should-be-design-for-failure-b58bccdce0b6</a></p>
+<p>[2] <a href="https://blog.risingstack.com/designing-microservices-architecture-for-failure" target="_blank" rel="noopener">https://blog.risingstack.com/designing-microservices-architecture-for-failure</a></p>
+</div></div>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/16/distributed-servicegovernance-circuitbreaker/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -127,7 +221,7 @@
     </div>
     <header class="post-header">
       <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/03/16/distributed-servicegovernance-circuitbreaker/" itemprop="url">分布式系统架构设计三十六式之服务治理 – 第2式 - 熔断模式</a>
+        <a class="post-title-link post-title-link-external" href="/2019/03/16/distributed-servicegovernance-circuitbreaker/" itemprop="url">分布式系统架构设计 – 第2式 - 服务治理之熔断模式</a>
       </h1>
       <div class="post-meta">
         
@@ -214,7 +308,7 @@
     </div>
     <header class="post-header">
       <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/03/10/distributed-servicegovernance-bulkhead/" itemprop="url">分布式系统架构设计36式之服务治理 – 第1式 - 隔板模式</a>
+        <a class="post-title-link post-title-link-external" href="/2019/03/10/distributed-servicegovernance-bulkhead/" itemprop="url">分布式系统架构设计 – 第1式 - 隔板模式</a>
       </h1>
       <div class="post-meta">
         
@@ -931,104 +1025,6 @@
 <p>Pravega提供了事务功能，事务是写客户端可以“批处理”一堆事件并将它们作为一个处理单元原子性地提交到流中。这一堆事件要么所有都处理成功，要么所有都处理失败。在提交事务之前，发布到事务中的事件永远不会被读客户端看到。如上图所示，第一步，先将一堆事件封装在一个事务里；第二步，提交这个事务。这个事务里所有的事件要么全部都处理成功要么全部都处理失败。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a><font color="#FF8C00">总结</font></h2><p>本文分析了物联网场景下的数据存储商业现状以及技术现状，为平衡商业成本与技术成本推出了分布式流存储系统Pravega，同时本文还介绍了流存储的特殊需求点以及与Kafka做了简要对比，此外还介绍了一些Pravega的关键架构以及一些关键特性。有关Pravega的更多详细信息，请参阅官方网站。另作者能力有限，如有不足之处欢迎留言批评指正。</p>
 </div>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/11/25/pravega-blog-i-have-a-stream/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/11/25/pravega-blog-i-have-a-stream/" itemprop="url">pravega blog - 原生的流存储解决方案</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-11-25T11:11:37+08:00">2018-11-25 11:11:37</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="现阶段的Pravega"><a href="#现阶段的Pravega" class="headerlink" title="现阶段的Pravega"></a>现阶段的Pravega</h2><p>流处理在数据分析领域备受关注，其原因相当明显：在短时间内就能够对连续生成的数据产生洞察力，而不是等待它在批处理中累积和处理。从摄取到结果的低延迟是流处理技术向其各种应用程序领域提供的关键优势之一。在某些情况下，低延迟不仅是可取的，而且对于保证正确行为的绝对必要条件。在物联网中等待数小时处理火警或煤气泄漏事件是没有意义的。</p>
-<p>处理流数据的典型应用程序具有一些核心组件。它有一个生产事件、消息、数据样本的源，这些事件的大小通常很小，从几百字节到几千字节。源不必是单个元素，它可以是多个传感器、移动终端、用户或服务器。该数据最终被送入流处理器，该处理器对其进行处理并产生中间或最终输出。最终输出可以具有各种形式，通常被持久存储在一些数据存储中以供消费（例如，针对数据集的查询）。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/praveg-blog-ihaveastream-1.png" alt="用于处理事件的典型管道的概要视图"></p>
-<p>这种通用架构的存储分为两部分：摄取和输出。用于摄取的存储组件将数据的生成与处理解耦，解耦源和处理很重要，因为不同的应用程序需要处理相同的数据，但是以不同的速度处理数据。对于这些应用程序中的一些，要求它们对最近的数据做出快速反应，这要求存储组件从摄取到服务的存储组件上有低延迟的要求。对存储的写入通常很小，例如，来自传感器和应用程序的小样本事件单独读取写入的项目。</p>
-<p>当从存储组件读取连续生成的数据时，随着应用程序顺序读取项目，存在强大的空间组件。然而，除了这个空间维度之外，还存在时间维度，现有系统并未完全强调这一点。应用程序可能希望出于各种原因在不同时间处理相同的数据，例如，在修复BUG之后，加入新数据和历史数据时，或者仅在稍后处理大量累积数据时。提供此功能的存储组件在摄取后不久消耗连续生成的数据，以及随后高吞吐量地消费连续生成的数据，以进行历史处理。</p>
-<p>Pravega是一个存储系统，具有一个流的概念。Pravega使应用程序能够连续摄取数据并按顺序（遵循摄取顺序）或批量处理（并行读取数据，而不必遵循流顺序）处理此类数据流。Pravega为流处理提供了许多非常理想的功能：低延迟、流弹性、无限流以及事务。</p>
-<p>Pravega的核心是一个简单而强大的概念：段。段是仅附加字节序列; 它们可以通过多种方式组成，以形成流并启用强大的功能，例如事务和流缩放。Pravega最终是一个带有控制平面的段的数据存储，该控制平面代表应用程序跟踪和操作这些段以形成流。</p>
-<p>在这篇文章中，我们将解释Pravega的一些核心概念以及我们如何认为它将改变我们处理流数据的方式。第一个早期alpha版本为：Pravega 0.1。这个早期版本包含一些令人兴奋的功能：</p>
-<ul>
-<li><p>持久写入：  Pravega的附加在被确认之前是持久的，就是这样; 没有可配置的选项来放松持久性。我们选择了这条路径，因为我们想要提供的其他一些属性需要强持久性，例如订单和一次。有了这个选择，Pravega开发人员面临的挑战就是在满足预期性能的同时满足这种保证。谁知道 - 我们将来也许需要放宽这个限制，但目前我们会坚持这一点。</p>
-</li>
-<li><p>流缩放：流缩放是一项令人印象深刻的功能，它可以根据写入流量自动增长和收缩。当然，我们也允许用户手动缩放，但看Pravega为您做自动伸缩会更舒服。</p>
-</li>
-<li><p>事务： 流写入器可以通过开始事务并附加在该事务的上下文中，以原子方式附加到Pravega流。只有在事务提交的情况下，才会在事务上下文中附加的数据变为可见。</p>
-</li>
-<li><p>状态同步器：状态同步器将日志复制与状态复制解耦。它允许在Pravega段之上实现任何复制状态机。例如，可以在Pravega段存储之上实施领导者选举或组成员资格。</p>
-</li>
-</ul>
-<p>在下一版本中还会出现更多令人兴奋的功能，例如启用下游动态扩展和数据保留的信令。开源参与人员的贡献也是非常受欢迎的，因为它是我们在Pravega周围建立社区的战略和努力的一部分。我们主网站上提供了如何使用Pravega的指导。</p>
-<h2 id="在Pravega之前的流数据处理"><a href="#在Pravega之前的流数据处理" class="headerlink" title="在Pravega之前的流数据处理"></a>在Pravega之前的流数据处理</h2><p>在大数据繁荣的早期阶段，当MapReduce成为热点时，主要目标是使用通常包含数千台服务器的集群快速处理大量数据集。在一个或多个大数据集上运行的这种计算通常被称为批处理作业。批处理作业使各种应用程序能够从原始数据中获得洞察力，这对于在线Web领域的许多成长型公司来说非常重要。例如，在Yahoo!这样的公司中，很多早期的Hadoop工作已经发生，有很多生产工作用于网络搜索、定向广告、推荐和其他应用程序。</p>
-<p>对于大型数据集的批处理作业通常在最佳情况下具有几分钟的完成时间，根据作业的大小和复杂性而达到多个小时。如此长的延迟对于许多应用程序来说并不理想，很快我们开始观察到处理数据的愿望，而不是等待积累大块然后才处理数据。例如，在Web上进行目标广告时，不希望等待数小时或数天来获得对数据的任何洞察。对于需要向用户执行推荐的任何系统都是如此。使用最新数据至关重要，但与此同时，即使推荐中最小程度的不准确也可能最终导致用户离开。在这里，我们观察到低延迟流处理的兴起，并开始揭开其挑战。我们将其称为流处理，因为传入的数据基本上是事件、消息或样本的连续流。</p>
-<p>许多对数据分析感兴趣的公司已经部署了大型Hadoop集群，他们并不一定愿意放弃MapReduce模型。为了解决延迟限制，一些应用程序开始使用微批处理方法：不是等待收集大量数据，而是在较短时间内累积的较小块上运行作业。使用微批次的想法并不一定是坏事，事实上，它确实使应用程序能够在更短的时间内获得洞察力。</p>
-<p>微批处理在当时是一个很好的调用，但它是有限的。校准微批次的大小不一定是微不足道的，从摄取到输出的等待时间通常为几分钟。低于此水平是很困难的，因为单独开始工作需要几秒钟。作为对无法以较低延迟处理数据的反应，最初尝试开发处理数据流的系统。用于流处理的Web空间中的公司出现的几个早期系统是S4 [1]和Apache Storm [2]。S4实际上早于Storm出现，但Storm变得越来越流行，它仍然被广泛使用。其他系统也遵循：Apache Spark [3]通过微批处理支持流; Apache Flink [4]从根本上统一了批处理和流处理，不需要微批处理; Heron [5]是一个流处理引擎，旨在与Storm兼容。最近，Apache Samza [6]和Kafka Streams被开发用于利用Apache Kafka [7]来实现高效的流处理。<br>所有这些系统的共同点之一是它们需要一些捕获数据的方法。直接从源中提取数据是一个坏主意，至少有几个原因：</p>
-<ol>
-<li>处理传入数据的多个应用程序可能共享数据，每个应用程序可能有自己的处理速度和频率。</li>
-<li>耦合源和应用程序通常是错误的，因为源通常具有另一个主要角色，即不为后端应用程序提供服务。例如，Web服务<br>器在应用程序中的中心目的是与最终用户交互，而不是可靠地缓冲数据，例如在后端运行的推荐应用程序。</li>
-</ol>
-<p>由于这些原因，数据的摄取通常通过分布式文件系统（例如，HDFS）在批处理时发生，或者通过临时缓冲用于流处理的输入事件、消息或样本的一些消息传递基底发生。对数据感兴趣的应用程序可以在任何需要的时间使用它，并且它希望以任何频率消耗它，仅受为传入数据设置的保留策略的约束。</p>
-<p>Pravega认为，成功的流处理应用程序能够有效地提取和提供数据至关重要。不过，Pravega偏离了传统的消息传递系统，可以通过几种方式提取数据。Pravega旨在成为流的存储解决方案。应用程序将数据摄取到Pravega中，并且这样的流可以在其长度上无限制并且存储任意长时间。在流Pravega具有弹性：流的摄取能力可以随着时间的推移自动增长和收缩。它的API目标流应用程序，因此，它借用了空间中成功系统的许多概念，如Apache Kafka [7]。例如，Pravega使应用程序能够以仅附加方式编写事件，并按照它们被附加的顺序读取这些事件。</p>
-<p>在下一节中，我们将介绍Pravega的一些核心概念  ，重点介绍我们的第一个alpha版本中的功能：Pravega 0.1.0。</p>
-<h2 id="流和段"><a href="#流和段" class="headerlink" title="流和段"></a>流和段</h2><p>Pravega向应用程序公开的核心抽象是流。客户端可以将数据写入流并从同一流中读取数据。考虑在线应用程序的用户或某些物联网应用程序中的传感器事件生成的事件，以便写入要从Pravega流中读取的数据。我们将这两种类型的客户区分开来，分别称它们为  writer 和 reader。</p>
-<p>Writer将数据附加到Pravega流。writer可以选择在附加到流时提供路由密钥。Pravega使用键将附加映射到 形成流的一个段。该段是形成流的基本单元，当writer将数据附加到流时，它实际上是附加到段。具有包括多个可打开以便附加的段的流对于并行性是需要的。更多的段打开意味着更高的写入容量，因为writer可以并行追加到段。</p>
-<p>流可以具有任意数量的段打开，使得可以根据路由密钥对这些段中的任何段执行附加。Pravega的一个重要特征是流的段数不一定是固定的，并且开放段的数量可以根据负载而变化，我们将此功能称为缩放。当给定的段变热时，我们将键范围分成多个新段。当多个邻居段变冷时，我们反转该过程并合并键范围。</p>
-<p>下图说明了由于缩放而对流的更改：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/praveg-blog-ihaveastream-2.png" alt="流的片段如何随着时间的推移随着流缩放而演变"></p>
-<p>轴是时间（x轴）和路由键范围（y轴）。流以单个段开始（S1）。在时间t1，流向上扩展并且段S1分裂成段S2  和S3。在时间t2，它再次向上扩展，并且段S2分裂成S4和S5。请注意，S3没有任何反应。在时间t3，段S4和S5 合并到段S6中。</p>
-<p>为了实现流缩放，Pravega具有密封段的概念。密封至关重要，以确保一旦有新的段附加，段就不会再发生任何追加。防止对已拆分或合并的段进行进一步写入对于保证使用相同键的追加顺序非常重要。例如，假设我们最初有一个流，其中单个段S1的范围为[0,1）。在某个时间T，我们将该段分成两个新的段S2、S3，其范围为：[0,0.5），[0.5,1]。如果稍后将 某些密钥k附加到S2的数据的应用程序能够将数据  附加到S1使用相同的密钥k，然后我们违反了顺序，因为逻辑上来自S1的所有数据都已附加在S2中的数据之前。</p>
-<p>密封对交易也至关重要。Pravega允许writer以事务方式附加到流。要以事务方式编写，writer会开始一个事务并定期附加到流。一旦完成写入，它就会提交事务。在内部，在单独的事务段中附加事务。这些段只是常规段，但在提交之前它们不会作为任何流的一部分公开。当事务提交时，事务段被密封，并且它们被合并回主流段。此时，交易数据对于读者而言变得可见。如果事务中止，则仅丢弃事务段，并且它们根本不可见。重要的是要强调，当事务未定时，其数据与主段的数据分开。</p>
-<p>利用这种实现事务的方法，流段中不存在正在进行的事务的干扰。为了论证，我们直接写入流段而不是创建事务段。在这种情况下，我们将至少通过以下几种方式为读者创造一个问题：</p>
-<ol>
-<li>当事务保持打开时，读取器不能提供来自打开事务的段数据，并且事务可以任意长时间地提交或中止。</li>
-<li>在事务中止的情况下，流段仍包含来自中止事务的数据。段仅被附加，不能真正从段的中间消除数据。</li>
-</ol>
-<p>对事务的这种观察增强了我们基于能够实现这些特性的段的灵活方案的地位</p>
-<h2 id="下一步是什么？"><a href="#下一步是什么？" class="headerlink" title="下一步是什么？"></a>下一步是什么？</h2><p>Pravega功能非常丰富。这篇文章刚刚介绍了Pravega所做的和提供的内容。在以后的文章中，我们将深入讨论特定主题：reader和writerAPI，Pravega体系结构，分段存储、控制器、使用修改后的流复制状态和部署Pravega。</p>
-<p>我们目前正在研究即将发布的0.2版本。0.2的大多数功能已经合并，我们主要致力于稳定。如果您有兴趣提供贡献和帮助，我们一定会欢迎您加入我们的社区。</p>
-<h3 id="About-the-Author"><a href="#About-the-Author" class="headerlink" title="About the Author:"></a>About the Author:</h3><p>Flavio Junqueira leads the Pravega team at Dell EMC. He holds a PhD in computer science from the University of California, San Diego and is interested in various aspects of distributed systems, including distributed algorithms, concurrency, and scalability. Previously, Flavio held a software engineer position with Confluent and research positions with Yahoo! Research and Microsoft Research. Flavio has contributed to a few important open-source projects. Most of his current contributions are to the Pravega open-source project, and previously he contributed and started Apache projects such as Apache ZooKeeper and Apache BookKeeper. Flavio coauthored the O’Reilly ZooKeeper: Distributed process coordination book.</p>
-<p>原文: <a href="http://blog.pravega.io/2017/12/14/i-have-a-stream/" target="_blank" rel="noopener">http://blog.pravega.io/2017/12/14/i-have-a-stream/</a></p>
-
       
     </main>
     <footer class="post-footer">

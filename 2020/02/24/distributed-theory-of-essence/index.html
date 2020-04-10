@@ -68,7 +68,7 @@
     <script defer type="text/javascript" src="/js/index.js"></script>
     
     <script defer type="text/javascript" src="/js/custom.js"></script>
-    <title>分布式系统架构设计36式 – 第18式 - 以物理学思维破解分布式的本质 | 常平的技术博客 - 技术是有生命的，因为它可以进化</title>
+    <title>分布式系统架构设计 – 第18式 - 以物理学思维破解分布式系统的本质 | 常平的技术博客 - 技术是有生命的，因为它可以进化</title>
   </head>
   <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
     
@@ -125,7 +125,7 @@
       </span>
     </div>
     <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">分布式系统架构设计36式 – 第18式 - 以物理学思维破解分布式的本质</h1>
+      <h1 class="post-title" itemprop="name headline">分布式系统架构设计 – 第18式 - 以物理学思维破解分布式系统的本质</h1>
       <div class="post-meta">
         
         <span class="post-date">
@@ -145,7 +145,7 @@
       </div>
     </header>
     <main class="post-main" itemprop="articleBody">
-      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>本文的动机在于应用物理学思维模型破解分布式背后不变的本质，并以此解读分布式系统里的各种算法设计、功能设计以及非功能设计。在“分布式系统” 这个词语里，关键词可以分为“分布式”及“系统”，而“系统 = 要素 + 连接 + 目标”，在这个公式里，要素的变化不会影响系统的本质，而“连接或目标”的变化就会改变系统的本质，其中“分布式”是系统的连接方式，挖掘分布式系统背后的本质即是挖掘“分布式系统”的要素、连接以及目标的本质。</p>
+      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>本文的动机在于应用物理学思维模型破解分布式系统背后不变的本质，并以此解读分布式系统里的各种算法设计、功能设计以及非功能设计。在“分布式系统” 这个词语里，关键词可以分为“分布式”及“系统”，而<strong>“系统 = 要素 + 连接 + 目标”</strong>，在这个公式里，要素的变化不会影响系统的本质，而“连接或目标”的变化就会改变系统的本质，其中“分布式”是系统的连接方式，挖掘分布式系统背后的本质即是挖掘“分布式系统”的要素、连接以及目标的本质。</p>
 <p>物理学的价值观在于追求所有物理现象背后的共同的底层规律，并以此解读各种物理现象，并且其具有“可解释、可重复、可预测”的可度量性，这种共同的底层规律，被称之为元认知，即第一性原理：“任何变化的背后都有不变的本质”。将这种思维模型应用于挖掘分布式系统的本质，需要解决两个问题，即：“ 什么是分布式系统的第一性原理？以及如何度量分布式系统？”</p>
 <h2 id="分布式系统的价值与目的"><a href="#分布式系统的价值与目的" class="headerlink" title="分布式系统的价值与目的"></a><font color="#FF8C00">分布式系统的价值与目的</font></h2><p>分布式系统的出现是为了解决一个主要矛盾，即：“日益增长的数据计算、传输与存储的需求与当前单点计算机能力无法满足这个需求之间的矛盾”。分布式系统可以通过伸展集群规模解决这个矛盾，因此这就是分布式系统的价值，而可伸缩性(Scalability，避免与可扩展性extensibility混淆)也是分布式系统的根本目的。</p>
 <h2 id="分布式系统必知的基础理论与算法"><a href="#分布式系统必知的基础理论与算法" class="headerlink" title="分布式系统必知的基础理论与算法"></a><font color="#FF8C00">分布式系统必知的基础理论与算法</font></h2><p>分布式系统必须理解、必须会的基础理论算法有：CAP/PACELC、BASE、2PC、3PC、TCC、ACID、PAXOS、RAFT这9个：</p>
@@ -325,7 +325,7 @@
 <li><p>边界约束：集群规模、计算机的容量等物理资源的限制，以及客户、用户、团队的约束需求。</p>
 </li>
 </ul>
-<p>依据这几项质量度量指标，可以保证分布式的“可解释、可复制、可预测”。其中要保证质量的核心思想是<strong>“消除资源竞用性，共享资源以及平衡负载。”</strong></p>
+<p>依据这几项质量度量指标，可以保证分布式的“可解释、可复制、可预测”。其中要保证质量的核心思想是<strong>“共享资源、消除资源竞用性以及平衡负载。”</strong>，共享资源需要注册中心，消除资源竞用性就需要服务治理，平衡负载需要好的路由算法。</p>
 <h2 id="分布式系统的反熵增与数据守恒"><a href="#分布式系统的反熵增与数据守恒" class="headerlink" title="分布式系统的反熵增与数据守恒"></a><font color="#FF8C00">分布式系统的反熵增与数据守恒</font></h2><h3 id="熵增"><a href="#熵增" class="headerlink" title="熵增"></a>熵增</h3><p>熵增定律是物理学的基本定律之一，其被定义为：</p>
 <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">1, 熵（Entropy）是用以度量一个系统“内在的混乱程度”，即系统中的无效能量；<br>2, 熵增定律：在一个孤立系统里，如果没有外力做功，其总混乱度（熵）会不断增大；<br>3，熵增过程是一个自发的由有序向无序发展的过程并且具有必然性，为了保证有序就必须逆熵增做功。<br></code></pre></td></tr></table></figure>
 <p>分布式系统也是一个孤立的系统，其中的网络与计算机节点（涵盖电源、主板、CPU、内存、网卡、硬盘等）等硬件会老化、会出故障，组件之间协同工作也会遇到负载过高、软件系统出现BUG等问题，这也是一个熵增的过程，并且因为熵增的必然性，分布式系统总是自发地或非自发地不断由有序走向无序，最终不可逆地走向失效不可用。为了保证分布式系统是有序可用的就必须逆熵增做功，即对其反熵增，分布式系统的反熵增过程与方法是：</p>
@@ -367,12 +367,12 @@
   <nav class="page-nav">
     <div class="page-nav-next page-nav-item">
       
-      <a href="/2020/02/20/distributed-product_opensource_and_product/" rel="next" title="分布式系统架构设计36式 – 第17式 - 为什么开源的项目不如商业产品"><i class="fas fa-angle-left"></i><span class="nav-title">分布式系统架构设计36式 – 第17式 - 为什么开源的项目不如商业产品</span></a>
+      <a href="/2020/02/20/distributed-product_opensource_and_product/" rel="next" title="分布式系统架构设计 – 第17式 - 为什么开源的项目不如商业产品"><i class="fas fa-angle-left"></i><span class="nav-title">分布式系统架构设计 – 第17式 - 为什么开源的项目不如商业产品</span></a>
       
     </div>
     <div class="page-nav-prev page-nav-item">
       
-      <a href="/2020/03/14/distributed-ideamodel-distributedsystem/" rel="prev" title="分布式系统架构设计36式 – 第19式 - 分布式系统八卦思维模型"><span class="nav-title">分布式系统架构设计36式 – 第19式 - 分布式系统八卦思维模型</span><i class="fas fa-angle-right"></i></a>
+      <a href="/2020/03/14/distributed-ideamodel-distributedsystem/" rel="prev" title="分布式系统架构设计 – 第19式 - 分布式系统八卦思维模型"><span class="nav-title">分布式系统架构设计 – 第19式 - 分布式系统八卦思维模型</span><i class="fas fa-angle-right"></i></a>
       
     </div>
   </nav>
