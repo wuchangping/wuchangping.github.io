@@ -115,6 +115,146 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/01/25/pravega-arch-IO-transaction-autoscaling/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/01/25/pravega-arch-IO-transaction-autoscaling/" itemprop="url">分布式流存储 - 架构、自动缩放、IO隔离与事务</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-01-25T21:23:39+08:00">2019-01-25 21:23:39</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="Pravega架构"><a href="#Pravega架构" class="headerlink" title=" Pravega架构  "></a><font color="#FF8C00"> Pravega架构  </font></h2><blockquote>
+<p> ”技术在某种程度上一定是来自此前已有技术的新的组合“  – 《技术的本质》，布莱恩·阿瑟</p>
+</blockquote>
+<p>Pravega为连续而又无限的数据提供了一种新的存储原语 - 流存储，然而Pravega也并不是凭空发明出来的，它是以前成熟技术与新技术的组合，例如Pravega的 范围、流、段、事件就跟Kafka的主题、分区、段、消息对应，而一层存储又用了Bookkeeper，协调器用了Zookeeper等。</p>
+<h3 id="设计原则与目标"><a href="#设计原则与目标" class="headerlink" title=" 设计原则与目标"></a><font color="#00CED1"> 设计原则与目标</font></h3><ul>
+<li><p>持久化：在客户端确认写入前，数据被复制并且写入磁盘；</p>
+</li>
+<li><p>保序：段内严格保序；</p>
+</li>
+<li><p>恰好一次：支持恰好一次语义；</p>
+</li>
+<li><p>轻量级：一个流就如同一个文件，可以在单集群里创建千万量级起的流；</p>
+</li>
+<li><p>可弹性：可基于负载和吞吐量智能地动态扩展或者收缩流；</p>
+</li>
+<li><p>无限性：存储空间大小不受单个节点的容量限制；</p>
+</li>
+<li><p>高性能：写入延迟低于10ms，吞吐量仅受网络带宽限制，读模式（例如：追赶读）不影响写性能;</p>
+</li>
+</ul>
+<h3 id="Pravega设计创新"><a href="#Pravega设计创新" class="headerlink" title="Pravega设计创新"></a><font color="#00CED1">Pravega设计创新</font></h3><ol>
+<li><p>支持“无限流”分层</p>
+</li>
+<li><p>零接触动态缩放</p>
+<ul>
+<li><p>根据负载和SLO自动调整读/写并行度</p>
+</li>
+<li><p>没有服务中断</p>
+</li>
+<li>无需手动重新配置客户端</li>
+<li>无需手动重新配置服务资源</li>
+</ul>
+</li>
+<li><p>智能工作负载分配</p>
+<ul>
+<li>无需为峰值负载过度配置服务器</li>
+</ul>
+</li>
+<li><p>I / O路径隔离</p>
+<ul>
+<li>支持尾部写入</li>
+<li>支持尾部读</li>
+<li>支持追赶读</li>
+</ul>
+</li>
+<li><p>支持“恰好一次”事务</p>
+</li>
+</ol>
+<h3 id="逻辑架构"><a href="#逻辑架构" class="headerlink" title="  逻辑架构"></a><font color="#00CED1">  逻辑架构</font></h3><p>下图为Pravega的逻辑架构图：</p>
+<p><div align="center"><br><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch.png" alt="逻辑架构图"></div></p>
+<div align="left"> 
+
+<ol>
+<li>首先，Pravega提供了一个用Java编写的客户端库，抽象出了流协议层接口，用于支持客户端应用，例如Flink、Spark以及一些检索系统等；</li>
+<li>其次，Pravega实现了一个流数据抽象层，用于事件流和字节流的抽象；</li>
+<li>再者，从整体架构上来讲Pravega符合软件定义存储的设计规则，其控制面与数据面分离，数据面的集合统称为段存储层，控制实例组成控制面，实现了检索流信息、监控集群、收集相关指标等功能，同时为了实现高可用，通常有多个（建议至少3个）控制实例同时对外提供服务。 </li>
+<li>Pravega采用Zookeeper作为集群中的协调组件。 </li>
+<li>Pravega的存储系统由两部分组成：第1层为短期存储层，主要关注性能，用于存储热点数据，由bookkeeper实现，保证了存储系统的低时延、高性能。第2层为长期存储层，主要关注成本，提供数据的持久性以及长期存储，由开源的或者商业的存储产品组成。第1层保留热点数据，随着第1层中数据的老化，数据将自动分层流入第2层。</li>
+</ol>
+<h3 id="数据架构"><a href="#数据架构" class="headerlink" title=" 数据架构"></a><font color="#00CED1"> 数据架构</font></h3><p>下图展示了Pravega的数据架构图以及数据流分层：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-data-path.png" alt="数据架构图"></p>
+<ol>
+<li>Pravega客户端可以通过调用控制器接口管理流的创建、删除和缩放以及进行事务管理：启动事务、创建事务、跟踪事务状态；</li>
+<li>所有的数据对读来说都是透明的，客户端的读写操作直接与段存储（数据面）进行交互，而不通过控制器；</li>
+<li>段存储里有缓存组件保证了读写的高性能，热点数据放在bookkeeper里作为一层存储；</li>
+<li>数据老化后会自动流转到长期存储（例如：对象存储系统，文件存储系统，HDFS等）里以便降低存储成本；</li>
+</ol>
+<h3 id="关键子功能-零接触缩放"><a href="#关键子功能-零接触缩放" class="headerlink" title="关键子功能 - 零接触缩放"></a><font color="#00CED1">关键子功能 - 零接触缩放</font></h3><h4 id="零接触缩放：段的动态拆分与合并"><a href="#零接触缩放：段的动态拆分与合并" class="headerlink" title="零接触缩放：段的动态拆分与合并"></a>零接触缩放：段的动态拆分与合并</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-2.png" alt="段的拆分与合并"></p>
+<p>如上图所示，1）拆分：在t1时刻系统负载加大，段0被拆分成段1和段2，同时段0封装不再写入；t2时刻系统负载继续加大，段2被拆分成段3与段4，同时段2被封装不再写入；t3时刻系统负载又继续加大，段1被拆分成段5和段6，同时段1被封装不再写入；2）合并：t4时刻系统负载降低，段6与段3被合并成段7，同时段6与段3被封装不再写入。而且所有的这些行为都是Pravega里自动完成的无需人工干预。</p>
+<h4 id="零接触缩放：写并行-与Kafka比较"><a href="#零接触缩放：写并行-与Kafka比较" class="headerlink" title="零接触缩放：写并行 - 与Kafka比较"></a>零接触缩放：写并行 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-3.png" alt="写并行"></p>
+<p>当并行写入的时候：</p>
+<ol>
+<li><p>在Pravega里流段的数量会根据负载和服务质量目标而动态变化，并且段的拆分与合并都是自动进行的无需人工干预，同时拆分或合并流段是，写客户端的配置是静态不变的；</p>
+</li>
+<li><p>在Kafka里主题分区数（写并行性）是静态的，添加或删除分区时需要手动配置服务并且当分区数更改时，必须手动更新生产者配置。</p>
+</li>
+</ol>
+<h4 id="零接触缩放：读并行-与Kafka比较"><a href="#零接触缩放：读并行-与Kafka比较" class="headerlink" title="零接触缩放：读并行 - 与Kafka比较"></a>零接触缩放：读并行 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-4.png" alt="读并行"></p>
+<p>并行读取时：</p>
+<ol>
+<li>在Pravega里，当拆分或者合并流段时，读客户端通过流协议获得通知从而使得读并行与流段缩放保持同步；</li>
+<li>在Kafka里，当分区数更改时，必须手动更改使用者配置。</li>
+</ol>
+<h4 id="关键子功能-智能工作负载分配"><a href="#关键子功能-智能工作负载分配" class="headerlink" title="关键子功能 - 智能工作负载分配 "></a><font color="#00CED1">关键子功能 - 智能工作负载分配 </font></h4><h4 id="智能工作负载分配-与Kafka比较"><a href="#智能工作负载分配-与Kafka比较" class="headerlink" title="智能工作负载分配 - 与Kafka比较"></a>智能工作负载分配 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-5.png" alt="智能工作负载分配"></p>
+<p>在Pravega里，热点段会自动拆分，子段在整个集群中重新分配缓解热点，同时最大限度地利用集群的可用IOPS能力；而在Kafka里没有减轻“热点”分区的机制，其强制部署并且过度配置资源以获得处理其“峰值负载”的能力。</p>
+<h3 id="关键子功能-I-O路径隔离"><a href="#关键子功能-I-O路径隔离" class="headerlink" title="关键子功能 - I/O路径隔离"></a><font color="#00CED1">关键子功能 - I/O路径隔离</font></h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-6.png" alt="I/O路径隔离"></p>
+<p>流存储的基础数据结构为仅附加写入的日志结构。考虑到高吞吐量，Pravega支持追赶读，同时为了保证低时延，Pravega还支持尾部读取以及尾部写入，从而进行了IO路径的隔离。</p>
+<h3 id="关键子功能-事务"><a href="#关键子功能-事务" class="headerlink" title="关键子功能 - 事务"></a><font color="#00CED1">关键子功能 - 事务</font></h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-7.png" alt="智能工作负载分配"></p>
+<p>Pravega提供了事务功能，事务是写客户端可以“批处理”一堆事件并将它们作为一个处理单元原子性地提交到流中。这一堆事件要么所有都处理成功，要么所有都处理失败。在提交事务之前，发布到事务中的事件永远不会被读客户端看到。如上图所示，第一步，先将一堆事件封装在一个事务里；第二步，提交这个事务。这个事务里所有的事件要么全部都处理成功要么全部都处理失败。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a><font color="#FF8C00">总结</font></h2><p>本文分析了物联网场景下的数据存储商业现状以及技术现状，为平衡商业成本与技术成本推出了分布式流存储系统Pravega，同时本文还介绍了流存储的特殊需求点以及与Kafka做了简要对比，此外还介绍了一些Pravega的关键架构以及一些关键特性。有关Pravega的更多详细信息，请参阅官方网站。另作者能力有限，如有不足之处欢迎留言批评指正。</p>
+</div>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/11/25/pravega-blog-i-have-a-stream/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -773,129 +913,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/01/pravega-working-with-transactions/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/10/01/pravega-working-with-transactions/" itemprop="url">pravega handbook - 开发pravega应用 - 事务</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-01T09:16:14+08:00">2018-10-01 09:16:14</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="Pravega事务"><a href="#Pravega事务" class="headerlink" title="Pravega事务"></a>Pravega事务</h2><p>本文探讨了如何使用Pravega 事务以原子方式将一组事件写入Stream。<br>有关示例的说明，请参阅 Pravega Samples自述文件。</p>
-<p>在阅读本页之前，您应该熟悉Pravega Concepts（请参阅  Pravega Concepts）。<br>Pravega事务和控制台writer和控制台reader APPs<br>我们编写了几个应用，ConsoleReader和ConsoleWriter，用于帮助说明使用Pravega读取和写入数据，特别是用于说明Pravega编程模型中的事务工具。你可以找到这些应用 在这里。</p>
-<h2 id="ConsoleReader"><a href="#ConsoleReader" class="headerlink" title="ConsoleReader"></a>ConsoleReader</h2><p>ConsoleReader应用非常简单。它使用Pravega Java客户端库从Stream读取并将每个事件输出到控制台。它无限期运行，所以你必须终止进程才能终止程序。</p>
-<h2 id="ConsoleWriter"><a href="#ConsoleWriter" class="headerlink" title="ConsoleWriter"></a>ConsoleWriter</h2><p>ConsoleWriter应用有点复杂。它使用Pravega Java客户端库将事件写入流，包括在Pravega事务的上下文中编写的事件。为了更轻松地操作事务，我们提供了一个基于控制台的CLI，CLI的帮助文本如下所示：</p>
-<h3 id="ConsoleWriter帮助文本"><a href="#ConsoleWriter帮助文本" class="headerlink" title="ConsoleWriter帮助文本"></a>ConsoleWriter帮助文本</h3><p>在命令行提示符处输入以下命令之一：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>如果未输入任何命令，则将该行视为WRITE_EVENT命令的参数。<br><br>WRITE_EVENT &#123;event&#125;  - 将&#123;event&#125;写入Stream或当前的Transaction。<br>WRITE_EVENT_RK &lt;&lt; &#123;routingKey&#125; &gt;&gt;，&#123;event&#125;  - 使用&#123;routingKey&#125;将&#123;event&#125;写入Stream或当前Transaction。注意&#123;routingKey&#125;周围的&lt;&lt;和&gt;&gt;。<br>开始 - 开始交易。CLI支持一次只有一个事务。<br>GET_TXN_ID  - 输出当前交易的Id（如果交易正在运行）<br>FLUSH  - 刷新当前事务（如果事务正在运行）<br>COMMIT  - 提交事务（如果事务正在运行）<br>ABORT  - 中止事务（如果事务正在运行）<br>STATUS - 检查事务的状态（如果事务正在运行）<br>HELP - 打印出命令列表。<br>QUIT - 终止程序。<br>examples/someStream &gt;<br></code></pre></td></tr></table></figure>
-<p>因此，编写单个事件很简单，只需键入一些文本（如果您不想，甚至不必键入WRITE_EVENT命令）。<br>但我们真的想谈谈Pravega事务，所以让我们深入研究一下。</p>
-<h2 id="Pravega事务-1"><a href="#Pravega事务-1" class="headerlink" title="Pravega事务"></a>Pravega事务</h2><p>Pravega 事务的想法是允许应用程序准备一组可以“一次性”写入Stream的事件。这允许应用程序以原子方式“提交”一系列事件。这是通过将它们写入事务并调用commit以将它们追加到Stream来实现的。如果应用程序希望持久存储事件，并随后决定是否应将这些事件附加到Stream中，那么它可能期望这样操作。这允许应用程序控制何时对读者可见。</p>
-<p>通过EventStreamWriter创建事务。回想一下，EventStreamWriter本身是通过ClientFactory创建的，并被构造为对Stream进行操作。因此，事务绑定到Stream。一旦创建了一个事务，它就像一个Writer。应用程序将事件写入事务，一旦确认，数据将被认为在事务中持久存在。请注意，在提交事务之前，写入事务的数据对读者来说是不可见的。除了使用路由键的writeEvent和writeEvent之外，还提供了几个特定于事务的操作：</p>
-<table>
-<thead>
-<tr>
-<th>操作</th>
-<th>讨论</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>getTxnId（）</td>
-<td>检索事务的唯一标识符。Pravega为每个交易生成一个唯一的UUID。</td>
-</tr>
-<tr>
-<td>flush()</td>
-<td>确保所有写入都已持久化</td>
-</tr>
-<tr>
-<td>ping()</td>
-<td>延长交易的持续时间。请注意，在一定的空闲时间后，事务将自动中止。这是为了处理客户端崩溃的情况，并且不再适合持久化与事务关联的资源。</td>
-</tr>
-<tr>
-<td>checkStatus()</td>
-<td>返回交易状态。事务可以处于以下状态之一：打开，提交，提交，中止或中止。</td>
-</tr>
-<tr>
-<td>commit()</td>
-<td>将写入事务的所有事件附加到流中。要么所有的事件数据都要附加到Stream，要么都不会。</td>
-</tr>
-<tr>
-<td>abort()</td>
-<td>终止事务，将删除写入事务的数据。</td>
-</tr>
-</tbody>
-</table>
-<h2 id="使用ConsoleWriter来启动并提交事务"><a href="#使用ConsoleWriter来启动并提交事务" class="headerlink" title="使用ConsoleWriter来启动并提交事务"></a>使用ConsoleWriter来启动并提交事务</h2><p>所有事务API都反映在ConsoleWriter的CLI命令集中。<br>要开始事务，请键入BEGIN：</p>
-<h3 id="开始事务"><a href="#开始事务" class="headerlink" title="开始事务"></a>开始事务</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">examples/someStream &gt;begin<br>346d8561-3fd8-40b6-8c15-9343eeea2992 &gt;<br></code></pre></td></tr></table></figure>
-<p>创建事务时，它返回一个事务对象，它将参数化的事务对象返回到Stream支持的Event类型。对于ConsoleWriter，Event的类型是Java String。</p>
-<p>命令提示符将更改为显示事务的id。现在可以发出任何与事务相关的命令（GET_TXN_ID，FLUSH，PING，COMMIT，ABORT和STATUS）。请注意，BEGIN命令不起作用，因为ConsoleWriter一次只支持一个事务（这是应用的限制，而不是Pravega的限制）。当ConsoleWriter处于事务上下文时，WRITE_EVENT（请记住，如果不键入命令，ConsoleWriter假定您希望将文本写为事件），或者WRITE_EVENT_RK将被写入事务：</p>
-<h3 id="将事件写入事务"><a href="#将事件写入事务" class="headerlink" title="将事件写入事务"></a>将事件写入事务</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>346d8561-3fd8-40b6-8c15-9343eeea2992 &gt;m1<br>**** Wrote &apos;m1&apos;<br>346d8561-3fd8-40b6-8c15-9343eeea2992 &gt;m2<br>**** Wrote &apos;m2&apos;<br>346d8561-3fd8-40b6-8c15-9343eeea2992 &gt;m3<br>**** Wrote &apos;m3&apos;<br></code></pre></td></tr></table></figure>
-<p>此时，如果您查看Stream（例如，通过调用Stream上的ConsoleReader应用程序），您将看不到写入Stream的那些事件。</p>
-<h3 id="事件未写入流（尚未）"><a href="#事件未写入流（尚未）" class="headerlink" title="事件未写入流（尚未）"></a>事件未写入流（尚未）</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>$ bin/consoleReader<br>...<br>******** Reading events from examples/someStream<br></code></pre></td></tr></table></figure>
-<p>但是当给出COMMIT命令时，导致事务提交：</p>
-<h3 id="提交"><a href="#提交" class="headerlink" title="提交"></a>提交</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>346d8561-3fd8-40b6-8c15-9343eeea2992 &gt;commit<br>**** Transaction commit completed.<br></code></pre></td></tr></table></figure>
-<p> 这些事件被附加到Stream，现在全部可用：<br>提交后，事件是可见的</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>******** Reading events from examples/someStream<br>&apos;m1&apos;<br>&apos;m2&apos;<br>&apos;m3&apos;<br></code></pre></td></tr></table></figure>
-<h2 id="更多关于BeginTransaction"><a href="#更多关于BeginTransaction" class="headerlink" title="更多关于BeginTransaction"></a>更多关于BeginTransaction</h2><p>Begin 事务（beginTxn（））操作需要三个参数（ConsoleWriter选择一些合理的默认值，因此在CLI中这些是可选的）： </p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>讨论</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>transactionTimeout</td>
-<td>允许事务在Pravega自动中止之前运行的时间。这也称为“租约”。</td>
-</tr>
-<tr>
-<td>maxExecutionTime</td>
-<td>ping操作之间允许的时间量</td>
-</tr>
-</tbody>
-</table>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/4/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/6/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -921,7 +938,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">76</a></div>
+      <div><a href="/archives">78</a></div>
     </div>
     
     

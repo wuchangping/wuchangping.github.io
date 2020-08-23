@@ -115,6 +115,129 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/01/pravega-working-with-transactions/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/10/01/pravega-working-with-transactions/" itemprop="url">pravega handbook - 开发pravega应用 - 事务</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-01T09:16:14+08:00">2018-10-01 09:16:14</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="Pravega事务"><a href="#Pravega事务" class="headerlink" title="Pravega事务"></a>Pravega事务</h2><p>本文探讨了如何使用Pravega 事务以原子方式将一组事件写入Stream。<br>有关示例的说明，请参阅 Pravega Samples自述文件。</p>
+<p>在阅读本页之前，您应该熟悉Pravega Concepts（请参阅  Pravega Concepts）。<br>Pravega事务和控制台writer和控制台reader APPs<br>我们编写了几个应用，ConsoleReader和ConsoleWriter，用于帮助说明使用Pravega读取和写入数据，特别是用于说明Pravega编程模型中的事务工具。你可以找到这些应用 在这里。</p>
+<h2 id="ConsoleReader"><a href="#ConsoleReader" class="headerlink" title="ConsoleReader"></a>ConsoleReader</h2><p>ConsoleReader应用非常简单。它使用Pravega Java客户端库从Stream读取并将每个事件输出到控制台。它无限期运行，所以你必须终止进程才能终止程序。</p>
+<h2 id="ConsoleWriter"><a href="#ConsoleWriter" class="headerlink" title="ConsoleWriter"></a>ConsoleWriter</h2><p>ConsoleWriter应用有点复杂。它使用Pravega Java客户端库将事件写入流，包括在Pravega事务的上下文中编写的事件。为了更轻松地操作事务，我们提供了一个基于控制台的CLI，CLI的帮助文本如下所示：</p>
+<h3 id="ConsoleWriter帮助文本"><a href="#ConsoleWriter帮助文本" class="headerlink" title="ConsoleWriter帮助文本"></a>ConsoleWriter帮助文本</h3><p>在命令行提示符处输入以下命令之一：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>如果未输入任何命令，则将该行视为WRITE_EVENT命令的参数。<br><br>WRITE_EVENT &#123;event&#125;  - 将&#123;event&#125;写入Stream或当前的Transaction。<br>WRITE_EVENT_RK &lt;&lt; &#123;routingKey&#125; &gt;&gt;，&#123;event&#125;  - 使用&#123;routingKey&#125;将&#123;event&#125;写入Stream或当前Transaction。注意&#123;routingKey&#125;周围的&lt;&lt;和&gt;&gt;。<br>开始 - 开始交易。CLI支持一次只有一个事务。<br>GET_TXN_ID  - 输出当前交易的Id（如果交易正在运行）<br>FLUSH  - 刷新当前事务（如果事务正在运行）<br>COMMIT  - 提交事务（如果事务正在运行）<br>ABORT  - 中止事务（如果事务正在运行）<br>STATUS - 检查事务的状态（如果事务正在运行）<br>HELP - 打印出命令列表。<br>QUIT - 终止程序。<br>examples/someStream &gt;<br></code></pre></td></tr></table></figure>
+<p>因此，编写单个事件很简单，只需键入一些文本（如果您不想，甚至不必键入WRITE_EVENT命令）。<br>但我们真的想谈谈Pravega事务，所以让我们深入研究一下。</p>
+<h2 id="Pravega事务-1"><a href="#Pravega事务-1" class="headerlink" title="Pravega事务"></a>Pravega事务</h2><p>Pravega 事务的想法是允许应用程序准备一组可以“一次性”写入Stream的事件。这允许应用程序以原子方式“提交”一系列事件。这是通过将它们写入事务并调用commit以将它们追加到Stream来实现的。如果应用程序希望持久存储事件，并随后决定是否应将这些事件附加到Stream中，那么它可能期望这样操作。这允许应用程序控制何时对读者可见。</p>
+<p>通过EventStreamWriter创建事务。回想一下，EventStreamWriter本身是通过ClientFactory创建的，并被构造为对Stream进行操作。因此，事务绑定到Stream。一旦创建了一个事务，它就像一个Writer。应用程序将事件写入事务，一旦确认，数据将被认为在事务中持久存在。请注意，在提交事务之前，写入事务的数据对读者来说是不可见的。除了使用路由键的writeEvent和writeEvent之外，还提供了几个特定于事务的操作：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>讨论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>getTxnId（）</td>
+<td>检索事务的唯一标识符。Pravega为每个交易生成一个唯一的UUID。</td>
+</tr>
+<tr>
+<td>flush()</td>
+<td>确保所有写入都已持久化</td>
+</tr>
+<tr>
+<td>ping()</td>
+<td>延长交易的持续时间。请注意，在一定的空闲时间后，事务将自动中止。这是为了处理客户端崩溃的情况，并且不再适合持久化与事务关联的资源。</td>
+</tr>
+<tr>
+<td>checkStatus()</td>
+<td>返回交易状态。事务可以处于以下状态之一：打开，提交，提交，中止或中止。</td>
+</tr>
+<tr>
+<td>commit()</td>
+<td>将写入事务的所有事件附加到流中。要么所有的事件数据都要附加到Stream，要么都不会。</td>
+</tr>
+<tr>
+<td>abort()</td>
+<td>终止事务，将删除写入事务的数据。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="使用ConsoleWriter来启动并提交事务"><a href="#使用ConsoleWriter来启动并提交事务" class="headerlink" title="使用ConsoleWriter来启动并提交事务"></a>使用ConsoleWriter来启动并提交事务</h2><p>所有事务API都反映在ConsoleWriter的CLI命令集中。<br>要开始事务，请键入BEGIN：</p>
+<h3 id="开始事务"><a href="#开始事务" class="headerlink" title="开始事务"></a>开始事务</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">examples/someStream &gt;begin<br>346d8561-3fd8-40b6-8c15-9343eeea2992 &gt;<br></code></pre></td></tr></table></figure>
+<p>创建事务时，它返回一个事务对象，它将参数化的事务对象返回到Stream支持的Event类型。对于ConsoleWriter，Event的类型是Java String。</p>
+<p>命令提示符将更改为显示事务的id。现在可以发出任何与事务相关的命令（GET_TXN_ID，FLUSH，PING，COMMIT，ABORT和STATUS）。请注意，BEGIN命令不起作用，因为ConsoleWriter一次只支持一个事务（这是应用的限制，而不是Pravega的限制）。当ConsoleWriter处于事务上下文时，WRITE_EVENT（请记住，如果不键入命令，ConsoleWriter假定您希望将文本写为事件），或者WRITE_EVENT_RK将被写入事务：</p>
+<h3 id="将事件写入事务"><a href="#将事件写入事务" class="headerlink" title="将事件写入事务"></a>将事件写入事务</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>346d8561-3fd8-40b6-8c15-9343eeea2992 &gt;m1<br>**** Wrote &apos;m1&apos;<br>346d8561-3fd8-40b6-8c15-9343eeea2992 &gt;m2<br>**** Wrote &apos;m2&apos;<br>346d8561-3fd8-40b6-8c15-9343eeea2992 &gt;m3<br>**** Wrote &apos;m3&apos;<br></code></pre></td></tr></table></figure>
+<p>此时，如果您查看Stream（例如，通过调用Stream上的ConsoleReader应用程序），您将看不到写入Stream的那些事件。</p>
+<h3 id="事件未写入流（尚未）"><a href="#事件未写入流（尚未）" class="headerlink" title="事件未写入流（尚未）"></a>事件未写入流（尚未）</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>$ bin/consoleReader<br>...<br>******** Reading events from examples/someStream<br></code></pre></td></tr></table></figure>
+<p>但是当给出COMMIT命令时，导致事务提交：</p>
+<h3 id="提交"><a href="#提交" class="headerlink" title="提交"></a>提交</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>346d8561-3fd8-40b6-8c15-9343eeea2992 &gt;commit<br>**** Transaction commit completed.<br></code></pre></td></tr></table></figure>
+<p> 这些事件被附加到Stream，现在全部可用：<br>提交后，事件是可见的</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>******** Reading events from examples/someStream<br>&apos;m1&apos;<br>&apos;m2&apos;<br>&apos;m3&apos;<br></code></pre></td></tr></table></figure>
+<h2 id="更多关于BeginTransaction"><a href="#更多关于BeginTransaction" class="headerlink" title="更多关于BeginTransaction"></a>更多关于BeginTransaction</h2><p>Begin 事务（beginTxn（））操作需要三个参数（ConsoleWriter选择一些合理的默认值，因此在CLI中这些是可选的）： </p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>讨论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>transactionTimeout</td>
+<td>允许事务在Pravega自动中止之前运行的时间。这也称为“租约”。</td>
+</tr>
+<tr>
+<td>maxExecutionTime</td>
+<td>ping操作之间允许的时间量</td>
+</tr>
+</tbody>
+</table>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/01/pravega-working-with-state-synchronizer/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -830,81 +953,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/flink-what-is-apache-flink/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/23/flink-what-is-apache-flink/" itemprop="url">Flink handbook - 什么是Apache Flink？</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-23T21:18:21+08:00">2018-09-23 21:18:21</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>Apache Flink是一个框架和分布式处理引擎，用于对无界和有界数据流进行有状态计算。Flink设计为在所有常见的集群环境中运行，以内存速度和任何规模执行计算。</p>
-<p>在这里，我们解释了Flink架构的重要方面。</p>
-<h2 id="无界和有界数据的处理"><a href="#无界和有界数据的处理" class="headerlink" title="无界和有界数据的处理"></a>无界和有界数据的处理</h2><p>任何类型的数据都是作为事件流产生的。信用卡交易，传感器测量，机器日志或网站或移动应用程序上的用户交互，所有这些数据都作为流生成。</p>
-<p>数据可以作为无界或有界流处理。</p>
-<ol>
-<li><p><strong>无界流</strong> 有一个开始，但没有定义的结束。它们不会终止并提供其生成的数据。无界流必须持续处理，即必须在摄取事件后立即处理事件。不可能等待所有的输入数据都到达，因为输入是无界的，并且在任何时间点都不会结束。处理无界数据通常要求以特定顺序（例如事件发生的顺序）摄取事件，以便能够推断结果的完整性。</p>
-</li>
-<li><p><strong>有界流</strong>具有定义的开始和结束。可以在执行任何计算之前，通过摄取所有数据来处理有界流。有界数据集是可以被排序的，因此处理有界流不需要有序摄取。有界流的处理也称为批处理。</p>
-</li>
-</ol>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fbounded-unbounded.png" alt=""></p>
-<p><strong>Apache Flink擅长处理无界和有界数据集</strong>。精确控制时间和状态使Flink的运行时能够在无界流上运行任何类型的应用程序。有界流由算法和数据结构在内部处理，这些算法和数据结构专门针对固定大小的数据集而设计，从而发挥出性能优势。</p>
-<h2 id="随处部署应用"><a href="#随处部署应用" class="headerlink" title="随处部署应用"></a>随处部署应用</h2><p>Apache Flink是一个分布式系统，需要计算资源才能执行的应用程序。Flink可以与所有常见的集群资源管理器（如Hadoop YARN，Apache Mesos和Kubernetes）集成，但也可以设置为独立的集群运行。</p>
-<p>Flink旨在很好地适用于之前列出的每个资源管理器，这是通过特定于资源管理器的部署模式实现的，这些模式允许Flink以其惯用的方式与每个资源管理器进行交互。</p>
-<p>部署Flink应用程序时，Flink会根据应用程序配置的并行性自动识别所需资源，并从资源管理器里申请它们。如果发生故障，Flink会通过申请新资源来替换发生故障的容器。所有提交或控制应用程序的通信都是通过REST调用来进行，这简化了Flink在许多环境中的集成。</p>
-<h2 id="以任何规模运行应用"><a href="#以任何规模运行应用" class="headerlink" title="以任何规模运行应用"></a>以任何规模运行应用</h2><p>Flink旨在以任何规模运行有状态的流应用，应用程序可以并行化为数千个在集群中分布和同时执行的任务。因此，应用程序可以利用几乎无限量的CPU、主内存、磁盘和网络IO。而且，Flink可以轻松维护数据量非常大的应用状态。其异步和增量检查点算法确保对处理的延迟影响最小，同时保证恰好一次状态的一致性。</p>
-<p>用户报告了在其生产环境中运行的Flink集群的规模，这样的规模有点令人印象深刻，例如</p>
-<ul>
-<li>应用程序每天处理数万亿个事件，</li>
-<li>应用程序维护多个TB的状态，以及</li>
-<li>应用程序在数千个内核的运行。</li>
-</ul>
-<h2 id="内存的性能优势"><a href="#内存的性能优势" class="headerlink" title="内存的性能优势"></a>内存的性能优势</h2><p>有状态Flink应用针对本地状态的访问进行了优化。任务状态始终保留在内存中，或者，如果状态大小超过可用内存，则保存在可高效访问的磁盘上的数据结构中。因此，任务通过访问本地（通常是内存中）状态来执行所有计算，从而产生非常低的处理延迟。Flink通过定期并且异步地把本地状态打检查点并持久化到存储设备来保证在出现故障时的恰好一次状态的一致性。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Flocal-state.png" alt=""></p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1].<a href="https://flink.apache.org/flink-architecture.html" target="_blank" rel="noopener">https://flink.apache.org/flink-architecture.html</a></p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/5/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/7/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -930,7 +978,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">76</a></div>
+      <div><a href="/archives">78</a></div>
     </div>
     
     

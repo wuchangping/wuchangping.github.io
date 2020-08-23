@@ -115,6 +115,161 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-concepts-3/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravega-concepts-3/" itemprop="url">Pravega handbook - 基本概念三 - ReaderGroup，Transactions，State Synchronizers</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T13:21:24+08:00">2018-09-16 13:21:24</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="ReaderGroup以及Checkpoint"><a href="#ReaderGroup以及Checkpoint" class="headerlink" title="ReaderGroup以及Checkpoint"></a>ReaderGroup以及Checkpoint</h2><p>Pravega为应用提供了在ReaderGroup上初始化Checkpoint的功能。使用Checkpoint的意图是通过使用一种特殊事件（检查点事件）来确保每个Reader能保存原来的使用状态，ReaderGroup中的每个Reader都可以创建一个“时间点”，借助这个“时间点“可以为reader提供状态的持久化以及保证这个状态一致性的功能。检查点完成后，应用可以通过恢复checkpoint(检查点)将ReaderGroup中的所有Reader恢复成这个检查点所代表的一致状态。</p>
+<h2 id="Transactions（事务）"><a href="#Transactions（事务）" class="headerlink" title="Transactions（事务）"></a>Transactions（事务）</h2><p>Pravega支持事务。事务的想法是，Writer可以“批处理”一堆event并将它们作为一个处理单元提交到Stream中。这在某些场景是很有用的，例如，使用Pravega作为Flink作业的接收器。Flink作业可以不断产生一些数据的处理结果，并使用事务功能来持久化累积的处理结果。当在某个时间窗口（例如）的末尾时，Flink作业可以提交事务，因此使的处理结果可用于数据的下游处理，或者在出现错误的场景下，退出事务并且放弃整个处理结果。</p>
+<p>Pravega的事务和类似方法（例如Kafka的生产者方式批处理）之间的关键区别在于能否持久化。当事件回到Writer时，添加到事务的事件是持久的。但是，在Writer提交Transaction之前，Reader不会看到事务中的事件。事务很像流; 事务与多个流段相关联。将事件发布到事务中时，事件本身将附加到事务的流段。假设Stream有5个段，当在该流上创建事务时，那么表示该事务也有5个段。当事件发布到事务中时，它被路由到相同编号的段，就像它被发布到Stream本身一样（如果事件将被放置在“真实”流中的段3中，那么它将出现在事务的段3中）。提交事务时，每个事务的段将自动附加到实际流中的相应段。如果流被中止，则事务其所有段以及发布到事务中的所有事件都将被从Pravega中删除。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Ftrx.commit.new.png" alt="trx.commit.new"></p>
+<p>在提交事务之前，发布到事务中的事件永远不会被Reader看到。有关使用事务的更多详细信息，请参阅  使用Pravega：事务。</p>
+<h2 id="State-Synchronizers（状态同步器）"><a href="#State-Synchronizers（状态同步器）" class="headerlink" title="State Synchronizers（状态同步器）"></a>State Synchronizers（状态同步器）</h2><p>Pravega是一个流存储; 但是Pravega也提供了在分布式计算环境中作为协调器的功能（类似zookeeper,etcd）。Pravega的State Synchronizer功能属于后一种。</p>
+<p>状态同步器使用Pravega Stream为在集群中运行的多个进程之间共享的状态提供同步机制，从而使得更加的容易构建分布式应用。使用State Synchronizer，开发人员可以使用Pravega来读取状态，并且借助一致性和乐观锁功能对这些共享状态进行更改。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fstate.synchronizer.png" alt="state.synchronizer"></p>
+<p>状态同步器可用于维护和保存应用的配置副本，状态同步器还可用于存储一个数据或具有数千个不同键值对的映射数据。实际上，Pravega本身就在内部使用State Synchronizer来管理分布在整个网络中的ReaderGroups和Readers的状态。</p>
+<p>应用开发人员以类似于创建Writer的方式在Stream上创建State Synchronizer。状态同步器保留共享状态的本地副本，以便为应用提供快速访问数据的功能。对共享状态的任何修改都将通过StateSynchronizer写入Stream，以便跟踪对共享状态的所有更改。每个应用实例都使用状态同步器通过将更新提取到共享状态并修改数据的本地副本来保持最新的更改。通过状态同步器对共享状态的追加样式进行维护，保持一致性，确保仅对共享状态的最新版本进行更新。</p>
+<p>状态同步器还支持可以“压缩”，压缩和删除旧的状态更新，以便只有最新版本的状态保留在后备流中。此功能可帮助应用开发人员确保共享状态不会未经检查。</p>
+<p>在存储的总数据大小比较小时，状态同步器对共享状态的更新可以工作得最好，允许将这些数据写为小的增量。与任何乐观并发系统一样，当许多进程都试图同时更新同一条数据时，状态同步器并不是最佳状态。</p>
+<p>更多有关使用状态同步器的详细信息，请参阅  使用Pravega：状态同步器。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-concepts-2/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/16/pravega-concepts-2/" itemprop="url">Pravega handbook - 基本概念二 - Events, Segments, AutoScaling, Ordering</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T12:25:04+08:00">2018-09-16 12:25:04</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="Stream-segments"><a href="#Stream-segments" class="headerlink" title="Stream segments"></a>Stream segments</h2><p>如下图，Stream由Stream Segments组成，而流段是流的分片或分区。</p>
+<p><img src="http://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fstream.segment.png" alt="stream.segment"></p>
+<h2 id="Event-event组成了stream-segment"><a href="#Event-event组成了stream-segment" class="headerlink" title="Event: event组成了stream segment"></a>Event: event组成了stream segment</h2><p>Stream Segment是事件（Event）的容器，event组成了流段，event存储在stream segment里，当事件被写入流时，会进行hash计算生成一个路由码，根据这个路由码，事件会被路由到一个流段中。Pravega使用一致性哈希算法将事件分配给流段。事件路由码被哈希后会生成一个“密钥空间”。然后密钥空间会被划分为多个分区，这些分区又对应于多个流段，采用一致性哈希算法可以确定将事件分配给哪个流段。</p>
+<h2 id="AutoScaling：流段数量可变"><a href="#AutoScaling：流段数量可变" class="headerlink" title="AutoScaling：流段数量可变"></a>AutoScaling：流段数量可变</h2><p>当了流中的I/O负载上升或下降时，Stream中stream segments的数量会随着I/O负载增长或收缩 ，我们将此特性称之为AutoScaling。</p>
+<p>参考下图，图中体现了路由码和时间之间的关系。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fsegment.split.merge.overtime.new.png" alt="segment.split.merge.overtime.new"></p>
+<p>流在时间t0开始，具有可配置数量的段。如果写入流的数据速率不变，则段的数量不会改变。然而，在时间t1，系统注意到摄取率的增加并且选择将段1分成两部分。我们称之为Scale-up事件。在t1之前，具有哈希到密钥空间上部的路由密钥（值0.5-0.99）的事件将被放置在段1中，而散列到密钥空间下部的值（值0-0.49）将是放置在段0中。在t1之后，段1被分成段2和段3.段1被密封，它不再接受写入。此时，具有路由密钥0.7及以上的事件被写入段3，而在0.5和0.69之间的事件将被写入段2。  </p>
+<p>我们还在时间t2看到另一个Scale-up事件，因为段0的路由键范围被分成段5和段4.此时，段0被封闭，因此它不接受进一步的写入。</p>
+<p>覆盖密钥空间的连续范围的段也可以合并。在时间t3，段2和段5被合并到段6中以适应流上的负载的减少。</p>
+<p>创建Stream时，会使用Scaling Policy配置Stream，该策略确定Stream如何响应其负载变化。目前有三种扩展策略：</p>
+<ol>
+<li><p>固定，流段的数量不随负载而变化</p>
+</li>
+<li><p>基于大小，当写入流的每秒数据字节数增量超过某个目标速率时，流段的数量增加。如果它低于某个流速时，会减少流段数。</p>
+</li>
+<li><p>基于事件的，与基于大小的扩展策略类似，不同之处在于它使用事件数而不是字节数。</p>
+</li>
+</ol>
+<h2 id="Events-Stream-Segments-and-AutoScaling"><a href="#Events-Stream-Segments-and-AutoScaling" class="headerlink" title="Events, Stream Segments and AutoScaling"></a>Events, Stream Segments and AutoScaling</h2><p>我们之前提到当一个event被写入Stream的一个段中时，有时候需要AutoScaling，Stream Segments可以被看作是基于路由密钥和时间的事件的分组。在任何给定时间，在给定值的Routing Key内发布到Stream的event都将出现在同一个Stream Segment中。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Frk.segment.new.png" alt="rk.segment.new"></p>
+<p>还值得强调的是，事件仅写入活动的流段。密封的段不接受写入。在上图中，在“现在”时，只有流段3,6和4处于活动状态，并且这三个流段覆盖了整个密钥空间。  </p>
+<h2 id="Stream-Segments-and-ReaderGroups"><a href="#Stream-Segments-and-ReaderGroups" class="headerlink" title="Stream Segments and ReaderGroups"></a>Stream Segments and ReaderGroups</h2><p>流段对于理解ReaderGroup的工作方式非常重要。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2Fsegment.readergroup.png" alt="segment.readergroup"></p>
+<p>Pravega给ReaderGroup中的每个Reader分配了零个或多个Stream Segments用于读取数据。Pravega尝试平衡每个Reader分配的Stream Segments的数量。在上图中，Reader B1从2个Stream Segments中读取，而Reader Group中的每个其他读者只有1个Stream Segment可供读取。Pravega确保每个Stream Segment都会被配置给这个Stream的ReaderGroup中的一个Reader读取。当Reader被添加到ReaderGroup或Reader崩溃并从ReaderGroup中删除时，Pravega会重新分配流段，以便在Reader之间平衡流段。</p>
+<p>流中的流段数确定了ReaderGroup中Reader的并行度的上限 - 流段越多，我们可以使用Stream的Reader的并行集合就越多。在上图中，Stream1有4个Stream Segments。这意味着最大的有效ReaderGroup将包含4个读者。上图中名为“B”的ReaderGroup并不是最优的。如果将另外一个Reader添加到ReaderGroup，则每个Reader将有1个Stream Segment进行处理，从而最大化读取并行性。但是，ReaderGroup中的读者数量增加到4以上，至少有一个读者不会被分配一个流段。</p>
+<p>如果上图中的Stream1经历了Scale-Down事件，将Stream Segments的数量减少到3，那么所描绘的Reader Group B将具有理想数量的Readers。</p>
+<p>借助AutoScaling特性，Pravega开发人员无需预先使用固定的流段个数配置其Streams - Pravega可以动态确定正确的流段个数。借助此特性，Pravega Streams可以自动增长或收缩以匹配数据输入的行为。任何Stream的大小仅受Pravega集群可用的总存储容量的限制; 如果您需要更大的流，只需向群集添加更多存储空间即可。</p>
+<p>应用程序可以响应Stream中segments数量的变化，调整ReaderGroup中的Readers数量，以便在资源允许时保持最佳读取并行度。例如，在Flink应用程序中，这很有用，允许Flink增加或减少并行处理Stream的任务的数量，因为随着时间的推移会缩放事件。</p>
+<h2 id="顺序保证Odering-Guarantees"><a href="#顺序保证Odering-Guarantees" class="headerlink" title="顺序保证Odering Guarantees"></a>顺序保证Odering Guarantees</h2><p>流包括可以随时间变化的一组段，在键区空间区域重叠的段具有已定义的顺序。</p>
+<p>写入流的事件将写入单个段，并且相对于该段的事件具有顺序性，段内事件的存在和位置是强一致性的。</p>
+<p>可以为Reader分配多个并行段（来自键空间的不同部分）。从多个段读取的Reader将交错段的事件，但每个段事件的顺序关联了一个段中。具体来说，如果s是一个片段，s的事件e~1和e~2使得e~1在e~2之前， Reader读取e~1和e~2，然后Reader将在e~2之前读取e~1。</p>
+<p>这导致以下顺序保证：</p>
+<ol>
+<li><p>具有相同路由密钥的事件按其编写顺序被消费。</p>
+</li>
+<li><p>发送到特定段的具有不同路由键的事件将始终以相同的顺序被可见，即使Reader备份并重新读取它们也是如此。</p>
+</li>
+<li><p>如果某个事件已经被其Writer激活或已被Reader读取，则可以保证它将在所有后续读取的同一位置继续存在，直到被删除为止。</p>
+</li>
+<li><p>如果有多个读者读一个流并且他们都回到任何给定点，他们将永远不会看到关于该点的任何重新排序。（永远不会发生所选点之前读取的事件现在又再次出现的情况，反之亦然。）</p>
+</li>
+</ol>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/pravega-concepts-1/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -389,7 +544,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">76</a></div>
+      <div><a href="/archives">78</a></div>
     </div>
     
     
