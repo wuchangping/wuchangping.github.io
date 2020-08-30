@@ -115,6 +115,79 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/02/pravega-working-with-connector-readergroupnotifications/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/10/02/pravega-working-with-connector-readergroupnotifications/" itemprop="url">pravega handbook - 开发pravega应用 - connector与readerGroup通知</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-02T09:03:45+08:00">2018-10-02 09:03:45</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h1 id="ReaderGroup通知"><a href="#ReaderGroup通知" class="headerlink" title="ReaderGroup通知"></a>ReaderGroup通知</h1><p>ReaderGroup api支持不同类型的通知。目前，我们已经实现了两种类型，但我们计划添加更多类型。我们目前支持的类型如下：</p>
+<h2 id="分段通知"><a href="#分段通知" class="headerlink" title="分段通知"></a>分段通知</h2><p>当ReaderGroup管理的段总数发生变化时，触发段通知。在缩放期间，可以将段拆分为多个或合并到某个其他段中，从而导致段的总数发生变化。当ReaderGroup的配置发生改变时（例如，添加或删除流时），段的总数也会发生变化。</p>
+<p>订阅分段通知的方法如下所示</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>@Cleanup<br>ReaderGroupManager groupManager = new ReaderGroupManagerImpl(SCOPE, controller, clientFactory,<br>        connectionFactory);<br>groupManager.createReaderGroup(GROUP_NAME, ReaderGroupConfig.builder().<br>                                                            .stream(Stream.of(SCOPE, STREAM))<br>                                                            .build());<br><br>groupManager.getReaderGroup(GROUP_NAME).getSegmentNotifier(executor).registerListener(segmentNotification -&gt; &#123;<br>       int numOfReaders = segmentNotification.getNumOfReaders();<br>       int segments = segmentNotification.getNumOfSegments();<br>       if (numOfReaders &lt; segments) &#123;<br>          //Scale up number of readers based on application capacity<br>       &#125; else &#123;<br>         //More readers available time to shut down some<br>       &#125;<br>&#125;);<br></code></pre></td></tr></table></figure>
+<p>应用程序可以使用registerListenerapi 注册一个监听器以通知SegmentNotification。这个 API 以<code>io.pravega.client.stream.notifications.Listener</code>作为参数。在这里，应用程序可以添加自定义逻辑，以根据段的数量更改在线reader的数量。例如，如果段数增加，则应用程序可能会考虑增加在线reader的数量。如果段的数量根据段通知而减少，则应用程序可能希望相应地更改该组在线reader的数量。</p>
+<h2 id="EndOfData通知"><a href="#EndOfData通知" class="headerlink" title="EndOfData通知"></a>EndOfData通知</h2><p>当读者已读取readerGroup管理的流的所有数据时，将触发数据通知程序的结束。这对于使用批处理作业处理流数据很有用，其中应用程序想要读取密封流的数据。<br>订阅数据通知结束的方法如下所示：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>@Cleanup<br>ReaderGroupManager groupManager = new ReaderGroupManagerImpl(SCOPE, controller, clientFactory,<br>        connectionFactory);<br>groupManager.createReaderGroup(GROUP_NAME, ReaderGroupConfig.builder()<br>                                                            .stream(Stream.of(SCOPE, SEALED_STREAM))<br>                                                            .build());<br><br>groupManager.getReaderGroup(GROUP_NAME).getEndOfDataNotifier(executor).registerListener(notification -&gt; &#123;<br>      //custom action e.g: close all readers<br>&#125;);<br></code></pre></td></tr></table></figure>
+<p>应用程序可以使用registerListener api注册一个监听器以通知EndOfDataNotification。这个api以<code>io.pravega.client.stream.notifications.Listener</code>作为参数。在这里，应用程序可以添加自定义逻辑，读取密封流的所有数据就可以调用该自定义逻辑。</p>
+<h1 id="Pravega连接器"><a href="#Pravega连接器" class="headerlink" title="Pravega连接器"></a>Pravega连接器</h1><p>连接器允许将Pravega与不同的数据源和接收器集成。</p>
+<h2 id="Flink连接器"><a href="#Flink连接器" class="headerlink" title="Flink连接器"></a>Flink连接器</h2><p>支持的初始连接器是Flink，它支持使用Pravega构建端到端流处理流水线。这还允许通过Flink流连接器读取和写入数据到外部数据源和接收器。</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ul>
+<li>Logstash</li>
+<li>Hadoop连接器</li>
+</ul>
+<p>其他参考原文： <a href="http://pravega.io/docs/latest/connectors" target="_blank" rel="noopener">http://pravega.io/docs/latest/connectors</a></p>
+<h1 id="Java-API参考"><a href="#Java-API参考" class="headerlink" title="Java API参考"></a>Java API参考</h1><h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><p>Writer是一个创建事件并将它们发布到Streams中的客户端。Reader是一个消费来自Streams的事件的客户端。我们提供了一个Java库，它为Writer和Reader应用程序实现了一个方便的API。客户端库封装了用于在Pravega客户端和Pravega服务之间传递请求和响应的有线协议。<br>Writer和Reader API</p>
+<h1 id="Pravega控制器的API"><a href="#Pravega控制器的API" class="headerlink" title="Pravega控制器的API"></a>Pravega控制器的API</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>pravega控制器服务的管理REST API列表。</p>
+<h2 id="版本信息"><a href="#版本信息" class="headerlink" title="版本信息"></a>版本信息</h2><p>版本：0.0.1</p>
+<p>许可证信息</p>
+<p>许可证：Apache 2.0 </p>
+<p>许可证URL：http：//<a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">www.apache.org/licenses/LICENSE-2.0</a> </p>
+<p>服务条款：null</p>
+<p>其他参考原文： <a href="http://pravega.io/docs/latest/rest/restapis/" target="_blank" rel="noopener">http://pravega.io/docs/latest/rest/restapis/</a></p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/01/pravega-working-with-streamcuts/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -798,101 +871,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/flink-use-cases/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/23/flink-use-cases/" itemprop="url">Flink handbook - flink用例</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-23T21:32:26+08:00">2018-09-23 21:32:26</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="用例"><a href="#用例" class="headerlink" title="用例"></a>用例</h2><p>Apache Flink因其丰富的功能集而成为开发和运行多种不同类型应用程序的绝佳选择。Flink的功能包括对流和批处理的支持，复杂的状态管理，事件时间处理语义以及状态的恰好一次一致性保证。此外，Flink可以部署在各种资源管理集群（如YARN，Apache Mesos和Kubernetes）上，也可以部署为裸机硬件上的单个群集。Flink配置为高可用性，没有单点故障。Flink已经被证明可以扩展到数千个核心和万亿字节的应用状态，提供高吞吐量和低延迟，并为世界上一些最苛刻的流处理应用程序提供支持。</p>
-<p>下面，我们将探讨由Flink提供支持的最常见类型的应用程序，并指出实际示例。</p>
-<ul>
-<li>事件驱动的应用</li>
-<li>数据分析应用</li>
-<li>数据管道应用</li>
-</ul>
-<h2 id="事件驱动的应用"><a href="#事件驱动的应用" class="headerlink" title="事件驱动的应用"></a>事件驱动的应用</h2><h3 id="什么是事件驱动的应用？"><a href="#什么是事件驱动的应用？" class="headerlink" title="什么是事件驱动的应用？"></a>什么是事件驱动的应用？</h3><p>事件驱动的应用程序是一个有状态的应用程序，它从一个或多个事件流中提取事件，并通过触发计算，状态更新或外部操作对传入事件做出响应。</p>
-<p>事件驱动的应用程序是传统应用程序设计的演变，具有分离的计算和数据存储层。在传统应用的体系结构中，应用从远程事务数据库中读取数据并将数据持久化到远程事务数据库。</p>
-<p>相比之下，事件驱动的应用程序基于有状态流处理应用程序。在这种设计中，数据和计算是共同定位的，这产生了本地（内存或磁盘）数据访问。通过定期将检查点写入远程持久存储来实现容错。下图描绘了传统应用程序体系结构和事件驱动应用程序之间的差异。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-eventdrivenapps.png" alt=""></p>
-<h3 id="事件驱动的应用有哪些优点？"><a href="#事件驱动的应用有哪些优点？" class="headerlink" title="事件驱动的应用有哪些优点？"></a>事件驱动的应用有哪些优点？</h3><p>事件驱动的应用程序不是查询远程数据库，而是在本地访问其数据，从而在吞吐量和延迟方面发挥更好的性能。远程持久存储的定期检查点可以异步和递增完成。因此，检查点对常规事件处理的影响非常小。但是，事件驱动的应用程序设计提供的不仅仅是本地数据访问。在分层体系结构中，多个应用程序共享同一数据库是很常见的。因此，需要协调数据库的任何更改，例如由于应用程序更新或扩展服务而更改数据布局。由于每个事件驱动的应用程序都负责自己的数据，因此对数据表示的更改或扩展应用程序需要较少的协调。</p>
-<h3 id="Flink如何支持事件驱动的应用？"><a href="#Flink如何支持事件驱动的应用？" class="headerlink" title="Flink如何支持事件驱动的应用？"></a>Flink如何支持事件驱动的应用？</h3><p>事件驱动应用程序的限制由流处理器处理时间和状态的程度来定义。Flink的许多杰出功能都围绕着这些概念。Flink提供了一组丰富的状态原语，可以管理非常大的数据量（最多几TB），并且具有恰好一次的一致性保证。此外，Flink支持事件时间，高度可定制的窗口逻辑，以及通过ProcessFunction实现高级业务逻辑提供的细粒度时间控制。此外，Flink还提供了一个用于复杂事件处理（CEP）的库，用于检测数据流中的模式。</p>
-<p>但是，Flink针对事件驱动应用程序的突出特点是保存点功能。保存点是一致的状态图像，可用作兼容应用程序的起点。给定保存点，可以更新应用程序或调整其规模，或者可以启动应用程序的多个版本以进行A / B测试。</p>
-<h3 id="什么是典型的事件驱动应用？"><a href="#什么是典型的事件驱动应用？" class="headerlink" title="什么是典型的事件驱动应用？"></a>什么是典型的事件驱动应用？</h3><ul>
-<li>欺诈识别</li>
-<li>异常检测</li>
-<li>基于规则的警报</li>
-<li>业务流程监控</li>
-<li>Web应用程序（社交网络）</li>
-</ul>
-<h2 id="数据分析应用"><a href="#数据分析应用" class="headerlink" title="数据分析应用"></a>数据分析应用</h2><h3 id="什么是数据分析应用？"><a href="#什么是数据分析应用？" class="headerlink" title="什么是数据分析应用？"></a>什么是数据分析应用？</h3><p>分析工作从原始数据中提取信息和洞察力。传统上，分析是在有记录事件的有界数据集上作为批查询或应用程序来执行的。为了将最新数据合并到分析结果中，必须将其添加到分析的数据集中，并重新运行查询或应用程序。结果将写入存储系统或作为报告发出。</p>
-<p>借助先进的流处理引擎，还可以实时地执行分析。流式查询或应用程序不是读取有限数据集，而是摄取实时事件流，并在消耗事件时不断生成和更新结果。结果要么写入外部数据库，要么保持为内部状态。仪表板应用程序可以从外部数据库读取最新结果或直接查询应用程序的内部状态。</p>
-<p>Apache Flink支持流式和批量分析应用程序，如下图所示。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-analytics.png" alt=""></p>
-<h3 id="流式分析应用有哪些优势？"><a href="#流式分析应用有哪些优势？" class="headerlink" title="流式分析应用有哪些优势？"></a>流式分析应用有哪些优势？</h3><p>与批量分析相比，连续流分析的优势不仅限于因消除定期导入和查询执行而从事件到洞察的低得多的延迟。与批量查询相比，流式查询不必处理输入数据中的人为边界，这些边界是由定期导入和输入的有界性质引起的。</p>
-<p>另一方面是更简单的应用程序架构。批量分析管道由若干独立组件组成，以周期性地调度数据提取和查询执行。可靠地操作这样的管道并非易事，因为一个组件的故障会影响管道的后续步骤。相比之下，在像Flink这样的复杂流处理器上运行的流分析应用程序包含从数据摄取到连续结果计算的所有步骤。因此，它可以依赖于引擎的故障恢复机制。</p>
-<h3 id="Flink如何支持数据分析应用？"><a href="#Flink如何支持数据分析应用？" class="headerlink" title="Flink如何支持数据分析应用？"></a>Flink如何支持数据分析应用？</h3><p>Flink为连续流式传输和批量分析提供了非常好的支持。具体来说，它具有符合ANSI标准的SQL接口，具有用于批处理和流式查询的统一语义。无论是在记录事件的静态数据集上还是在实时事件流上运行，SQL查询都会计算相同的结果。对用户定义函数的丰富支持可确保在SQL查询中执行自定义代码。如果需要更多的自定义逻辑，Flink的DataStream API或DataSet API提供更多的低级控制。此外，Flink的Gelly库为批量数据集上的大规模和高性能图形分析提供算法和构建块。</p>
-<h3 id="什么是典型的数据分析应用？"><a href="#什么是典型的数据分析应用？" class="headerlink" title="什么是典型的数据分析应用？"></a>什么是典型的数据分析应用？</h3><ul>
-<li>电信网络的质量监控</li>
-<li>分析移动应用程序中的产品更新和实验评估</li>
-<li>对消费者技术中的实时数据进行特别分析</li>
-<li>大规模图分析</li>
-</ul>
-<h2 id="数据管道应用"><a href="#数据管道应用" class="headerlink" title="数据管道应用"></a>数据管道应用</h2><h3 id="什么是数据管道？"><a href="#什么是数据管道？" class="headerlink" title="什么是数据管道？"></a>什么是数据管道？</h3><p>提取 - 转换 - 加载（ETL）是在存储系统之间转换和移动数据的常用方法。通常会定期触发ETL作业，以便将数据从事务数据库系统复制到分析数据库或数据仓库。</p>
-<p>数据管道与ETL作业具有相似的用途。它们可以转换和丰富数据，并可以将数据从一个存储系统移动到另一个存储系统 但是，它们以连续流模式运行，而不是周期性地触发。因此，他们能够从连续生成数据的源中读取记录，并以低延迟将其移动到目的地。例如，数据管道可能会监视文件系统目录中的新文件并将其数据写入事件日志。另一个应用程序可能会将事件流实现到数据库，或者逐步构建和优化搜索索引。</p>
-<p>下图描述了定期ETL作业和连续数据管道之间的差异。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-datapipelines.png" alt=""></p>
-<h3 id="数据管道有哪些优势？"><a href="#数据管道有哪些优势？" class="headerlink" title="数据管道有哪些优势？"></a>数据管道有哪些优势？</h3><p>连续数据流水线优于周期性ETL作业的显著优势是减少了将数据移动到目的地的延迟。此外，数据管道更加通用，可用于更多用例，因为它们能够连续消耗和发送数据。</p>
-<h3 id="Flink如何支持数据管道？"><a href="#Flink如何支持数据管道？" class="headerlink" title="Flink如何支持数据管道？"></a>Flink如何支持数据管道？</h3><p>Flink的SQL接口（或表API）可以解决许多常见的数据转换或丰富任务，并支持用户定义的函数。通过使用更通用的DataStream API，可以实现具有更高级要求的数据管道。Flink为各种存储系统（如Kafka，Kinesis，Elasticsearch和JDBC数据库系统）提供了丰富的连接器。它还具有连续的文件系统源，用于监视以时间分区方式写入文件的目录和接收器。</p>
-<h3 id="什么是典型的数据管道应用？"><a href="#什么是典型的数据管道应用？" class="headerlink" title="什么是典型的数据管道应用？"></a>什么是典型的数据管道应用？</h3><ul>
-<li>电子商务中的实时搜索索引构建</li>
-<li>电子商务中持续的ETL</li>
-</ul>
-<h2 id="参考资料："><a href="#参考资料：" class="headerlink" title="参考资料："></a>参考资料：</h2><p>[1].<a href="https://flink.apache.org/usecases.html" target="_blank" rel="noopener">https://flink.apache.org/usecases.html</a></p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/5/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/7/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -918,7 +896,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">78</a></div>
+      <div><a href="/archives">79</a></div>
     </div>
     
     

@@ -115,6 +115,101 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/flink-use-cases/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/23/flink-use-cases/" itemprop="url">Flink handbook - flink用例</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-23T21:32:26+08:00">2018-09-23 21:32:26</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="用例"><a href="#用例" class="headerlink" title="用例"></a>用例</h2><p>Apache Flink因其丰富的功能集而成为开发和运行多种不同类型应用程序的绝佳选择。Flink的功能包括对流和批处理的支持，复杂的状态管理，事件时间处理语义以及状态的恰好一次一致性保证。此外，Flink可以部署在各种资源管理集群（如YARN，Apache Mesos和Kubernetes）上，也可以部署为裸机硬件上的单个群集。Flink配置为高可用性，没有单点故障。Flink已经被证明可以扩展到数千个核心和万亿字节的应用状态，提供高吞吐量和低延迟，并为世界上一些最苛刻的流处理应用程序提供支持。</p>
+<p>下面，我们将探讨由Flink提供支持的最常见类型的应用程序，并指出实际示例。</p>
+<ul>
+<li>事件驱动的应用</li>
+<li>数据分析应用</li>
+<li>数据管道应用</li>
+</ul>
+<h2 id="事件驱动的应用"><a href="#事件驱动的应用" class="headerlink" title="事件驱动的应用"></a>事件驱动的应用</h2><h3 id="什么是事件驱动的应用？"><a href="#什么是事件驱动的应用？" class="headerlink" title="什么是事件驱动的应用？"></a>什么是事件驱动的应用？</h3><p>事件驱动的应用程序是一个有状态的应用程序，它从一个或多个事件流中提取事件，并通过触发计算，状态更新或外部操作对传入事件做出响应。</p>
+<p>事件驱动的应用程序是传统应用程序设计的演变，具有分离的计算和数据存储层。在传统应用的体系结构中，应用从远程事务数据库中读取数据并将数据持久化到远程事务数据库。</p>
+<p>相比之下，事件驱动的应用程序基于有状态流处理应用程序。在这种设计中，数据和计算是共同定位的，这产生了本地（内存或磁盘）数据访问。通过定期将检查点写入远程持久存储来实现容错。下图描绘了传统应用程序体系结构和事件驱动应用程序之间的差异。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-eventdrivenapps.png" alt=""></p>
+<h3 id="事件驱动的应用有哪些优点？"><a href="#事件驱动的应用有哪些优点？" class="headerlink" title="事件驱动的应用有哪些优点？"></a>事件驱动的应用有哪些优点？</h3><p>事件驱动的应用程序不是查询远程数据库，而是在本地访问其数据，从而在吞吐量和延迟方面发挥更好的性能。远程持久存储的定期检查点可以异步和递增完成。因此，检查点对常规事件处理的影响非常小。但是，事件驱动的应用程序设计提供的不仅仅是本地数据访问。在分层体系结构中，多个应用程序共享同一数据库是很常见的。因此，需要协调数据库的任何更改，例如由于应用程序更新或扩展服务而更改数据布局。由于每个事件驱动的应用程序都负责自己的数据，因此对数据表示的更改或扩展应用程序需要较少的协调。</p>
+<h3 id="Flink如何支持事件驱动的应用？"><a href="#Flink如何支持事件驱动的应用？" class="headerlink" title="Flink如何支持事件驱动的应用？"></a>Flink如何支持事件驱动的应用？</h3><p>事件驱动应用程序的限制由流处理器处理时间和状态的程度来定义。Flink的许多杰出功能都围绕着这些概念。Flink提供了一组丰富的状态原语，可以管理非常大的数据量（最多几TB），并且具有恰好一次的一致性保证。此外，Flink支持事件时间，高度可定制的窗口逻辑，以及通过ProcessFunction实现高级业务逻辑提供的细粒度时间控制。此外，Flink还提供了一个用于复杂事件处理（CEP）的库，用于检测数据流中的模式。</p>
+<p>但是，Flink针对事件驱动应用程序的突出特点是保存点功能。保存点是一致的状态图像，可用作兼容应用程序的起点。给定保存点，可以更新应用程序或调整其规模，或者可以启动应用程序的多个版本以进行A / B测试。</p>
+<h3 id="什么是典型的事件驱动应用？"><a href="#什么是典型的事件驱动应用？" class="headerlink" title="什么是典型的事件驱动应用？"></a>什么是典型的事件驱动应用？</h3><ul>
+<li>欺诈识别</li>
+<li>异常检测</li>
+<li>基于规则的警报</li>
+<li>业务流程监控</li>
+<li>Web应用程序（社交网络）</li>
+</ul>
+<h2 id="数据分析应用"><a href="#数据分析应用" class="headerlink" title="数据分析应用"></a>数据分析应用</h2><h3 id="什么是数据分析应用？"><a href="#什么是数据分析应用？" class="headerlink" title="什么是数据分析应用？"></a>什么是数据分析应用？</h3><p>分析工作从原始数据中提取信息和洞察力。传统上，分析是在有记录事件的有界数据集上作为批查询或应用程序来执行的。为了将最新数据合并到分析结果中，必须将其添加到分析的数据集中，并重新运行查询或应用程序。结果将写入存储系统或作为报告发出。</p>
+<p>借助先进的流处理引擎，还可以实时地执行分析。流式查询或应用程序不是读取有限数据集，而是摄取实时事件流，并在消耗事件时不断生成和更新结果。结果要么写入外部数据库，要么保持为内部状态。仪表板应用程序可以从外部数据库读取最新结果或直接查询应用程序的内部状态。</p>
+<p>Apache Flink支持流式和批量分析应用程序，如下图所示。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-analytics.png" alt=""></p>
+<h3 id="流式分析应用有哪些优势？"><a href="#流式分析应用有哪些优势？" class="headerlink" title="流式分析应用有哪些优势？"></a>流式分析应用有哪些优势？</h3><p>与批量分析相比，连续流分析的优势不仅限于因消除定期导入和查询执行而从事件到洞察的低得多的延迟。与批量查询相比，流式查询不必处理输入数据中的人为边界，这些边界是由定期导入和输入的有界性质引起的。</p>
+<p>另一方面是更简单的应用程序架构。批量分析管道由若干独立组件组成，以周期性地调度数据提取和查询执行。可靠地操作这样的管道并非易事，因为一个组件的故障会影响管道的后续步骤。相比之下，在像Flink这样的复杂流处理器上运行的流分析应用程序包含从数据摄取到连续结果计算的所有步骤。因此，它可以依赖于引擎的故障恢复机制。</p>
+<h3 id="Flink如何支持数据分析应用？"><a href="#Flink如何支持数据分析应用？" class="headerlink" title="Flink如何支持数据分析应用？"></a>Flink如何支持数据分析应用？</h3><p>Flink为连续流式传输和批量分析提供了非常好的支持。具体来说，它具有符合ANSI标准的SQL接口，具有用于批处理和流式查询的统一语义。无论是在记录事件的静态数据集上还是在实时事件流上运行，SQL查询都会计算相同的结果。对用户定义函数的丰富支持可确保在SQL查询中执行自定义代码。如果需要更多的自定义逻辑，Flink的DataStream API或DataSet API提供更多的低级控制。此外，Flink的Gelly库为批量数据集上的大规模和高性能图形分析提供算法和构建块。</p>
+<h3 id="什么是典型的数据分析应用？"><a href="#什么是典型的数据分析应用？" class="headerlink" title="什么是典型的数据分析应用？"></a>什么是典型的数据分析应用？</h3><ul>
+<li>电信网络的质量监控</li>
+<li>分析移动应用程序中的产品更新和实验评估</li>
+<li>对消费者技术中的实时数据进行特别分析</li>
+<li>大规模图分析</li>
+</ul>
+<h2 id="数据管道应用"><a href="#数据管道应用" class="headerlink" title="数据管道应用"></a>数据管道应用</h2><h3 id="什么是数据管道？"><a href="#什么是数据管道？" class="headerlink" title="什么是数据管道？"></a>什么是数据管道？</h3><p>提取 - 转换 - 加载（ETL）是在存储系统之间转换和移动数据的常用方法。通常会定期触发ETL作业，以便将数据从事务数据库系统复制到分析数据库或数据仓库。</p>
+<p>数据管道与ETL作业具有相似的用途。它们可以转换和丰富数据，并可以将数据从一个存储系统移动到另一个存储系统 但是，它们以连续流模式运行，而不是周期性地触发。因此，他们能够从连续生成数据的源中读取记录，并以低延迟将其移动到目的地。例如，数据管道可能会监视文件系统目录中的新文件并将其数据写入事件日志。另一个应用程序可能会将事件流实现到数据库，或者逐步构建和优化搜索索引。</p>
+<p>下图描述了定期ETL作业和连续数据管道之间的差异。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-datapipelines.png" alt=""></p>
+<h3 id="数据管道有哪些优势？"><a href="#数据管道有哪些优势？" class="headerlink" title="数据管道有哪些优势？"></a>数据管道有哪些优势？</h3><p>连续数据流水线优于周期性ETL作业的显著优势是减少了将数据移动到目的地的延迟。此外，数据管道更加通用，可用于更多用例，因为它们能够连续消耗和发送数据。</p>
+<h3 id="Flink如何支持数据管道？"><a href="#Flink如何支持数据管道？" class="headerlink" title="Flink如何支持数据管道？"></a>Flink如何支持数据管道？</h3><p>Flink的SQL接口（或表API）可以解决许多常见的数据转换或丰富任务，并支持用户定义的函数。通过使用更通用的DataStream API，可以实现具有更高级要求的数据管道。Flink为各种存储系统（如Kafka，Kinesis，Elasticsearch和JDBC数据库系统）提供了丰富的连接器。它还具有连续的文件系统源，用于监视以时间分区方式写入文件的目录和接收器。</p>
+<h3 id="什么是典型的数据管道应用？"><a href="#什么是典型的数据管道应用？" class="headerlink" title="什么是典型的数据管道应用？"></a>什么是典型的数据管道应用？</h3><ul>
+<li>电子商务中的实时搜索索引构建</li>
+<li>电子商务中持续的ETL</li>
+</ul>
+<h2 id="参考资料："><a href="#参考资料：" class="headerlink" title="参考资料："></a>参考资料：</h2><p>[1].<a href="https://flink.apache.org/usecases.html" target="_blank" rel="noopener">https://flink.apache.org/usecases.html</a></p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/flink-what-is-apache-flink/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -730,91 +825,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/pravega-controller-service-1/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/20/pravega-controller-service-1/" itemprop="url">Pravega handbook - 控制器服务之一</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T21:29:36+08:00">2018-09-20 21:29:36</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>控制器服务是Pravega的核心组件，用于实现控制平面。它充当集群中执行的各种操作的中央协调器和管理器，主要分为两类：</p>
-<ol>
-<li>流管理</li>
-<li>集群管理</li>
-</ol>
-<p>控制器服务，此后简称为控制器，负责提供<a href="http://pravega.io/docs/latest/pravega-concepts/#streams" target="_blank" rel="noopener">流</a>的抽象，这是Pravega向应用程序公开的主要抽象。流包括一个或多个<a href="http://pravega.io/docs/latest/pravega-concepts/#stream-segments" target="_blank" rel="noopener">段</a>。每个段都是仅附加数据结构，用于存储字节序列。一个段本身与其他段的存在无关，并且不知道它与其对等段的逻辑关系。拥有和管理这些段的段存储没有任何流的概念。流是由Controller概念化的逻辑视图通过组合动态变化的一组段来满足一组预定义的逻辑不变量。控制器提供流抽象并协调流上的所有生命周期操作，同时确保抽象保持一致。</p>
-<p>控制器在流的生命周期中起着核心作用：创建，修改，<a href="http://pravega.io/docs/latest/pravega-concepts/#autoscalingthenumber-of-stream-segments-can-vary-over-time" target="_blank" rel="noopener">缩放</a>和删除。它通过维护每个流的元数据并在必要时对段执行必要的操作来完成这些操作。例如，作为流生命周期的一部分，可以创建新的段并密封现有的段。控制器决定何时执行这些操作，使得流继续可用并且对访问它们的客户端是一致的。</p>
-<h2 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h2><p>控制器服务由一个或多个无状态工作节点实例组成。每个新的控制器实例都可以独立启动，并成为pravega集群的一部分，它只需要指向相同的Apache Zookeeper。对于高可用性，建议是每个群集具有不止一个控制器服务实例。</p>
-<p>每个控制器实例都能够独立工作，并使用一个共享的持久存储作为控制器服务所拥有和管理的所属状态的真实来源。目前使用Apache ZooKeeper作为持久存储来保存所有的元数据。每个实例包括各种子系统，其负责对不同类别的元数据执行特定操作。这些子系统包括不同的API端点，元数据存储句柄，策略管理器和后台工作程序。</p>
-<p>控制器暴露两个端点，这些端点可用于与控制器服务交互。第一个端口用于为pravega客户端提供编程访问，并使用gRPC实现为RPC。另一个端点用于管理操作，并作为REST端点实现。</p>
-<h2 id="流管理"><a href="#流管理" class="headerlink" title="流管理"></a>流管理</h2><p>控制器拥有并管理流的概念，并负责维护每个流的元数据和生命周期。具体而言，它负责创建，更新，缩放，截断，密封和删除流。<br>流管理可以大致分为三类：</p>
-<ol>
-<li><p>流抽象<br>流可以被视为一系列动态变化的段集，其中流从一组一致的段转换到下一个。Controller是创建和管理此流抽象的地方。控制器决定流何时以及如何从一种状态转换到另一种状态，并负责执行这些转换，同时保持流的状态一致且可用。这些转换是受控制器强制执行的用户定义策略的支配。因此，作为流管理的一部分，控制器还会执行策略管理器的角色，以实现保留和缩放等策略。</p>
-</li>
-<li><p>自动策略管理<br>控制器负责通过主动监视流的状态来存储和实施用户定义的流策略。目前，我们有两个用户可以定义的策略，即<a href="https://github.com/pravega/pravega/blob/master/client/src/main/java/io/pravega/client/stream/ScalingPolicy.java" target="_blank" rel="noopener">缩放策略</a>和 <a href="https://github.com/pravega/pravega/blob/master/client/src/main/java/io/pravega/client/stream/RetentionPolicy.java" target="_blank" rel="noopener">保留策略</a>。缩放策略描述了流是否以及在何种情况下应自动缩放其段数。保留策略描述了有关在流中保留多少数据的策略。</p>
-</li>
-<li><p><a href="http://pravega.io/docs/latest/pravega-concepts/#transactions" target="_blank" rel="noopener">事务</a>管理<br>实现事务需要操作段。对于每个事务，Pravega创建一组事务段，这些事务段稍后在提交时合并到流段上或在中止时丢弃。控制器执行事务管理器的角色，负责在给定流上创建和提交事务。在创建事务时，控制器还跟踪事务超时并中止超时已过期的事务。事务管理的细节可以在文档的后面找到。</p>
-</li>
-</ol>
-<h2 id="集群管理"><a href="#集群管理" class="headerlink" title="集群管理"></a>集群管理</h2><p>控制器负责管理段存储集群。控制器管理段存储节点的生命周期，因为它们被添加到群集/从群集中删除，并在可用的段存储节点上执行段容器的重新分发。</p>
-<h2 id="系统图"><a href="#系统图" class="headerlink" title="系统图"></a>系统图</h2><p>下图显示了控制器进程的主要组件。我们接下来将详细讨论该图表的元素。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega%2FControllerSystemDiagram.png" alt="ControllerSystemDiagram"></p>
-<p>控制器流程图</p>
-<h1 id="组件"><a href="#组件" class="headerlink" title="组件"></a>组件</h1><h3 id="服务端点"><a href="#服务端点" class="headerlink" title="服务端点"></a>服务端点</h3><p>控制器公开了两个端口：客户端控制器API和管理API。客户端控制器通信被实现为RPC，RPC公开API以执行所有与流相关的控制平面操作。除此控制器外，还公开了一个作为REST实现的管理API集。</p>
-<p>每个端点都对Controller Service后端子系统执行适当的调用，该控制器服务子系统 具有对控制器拥有和管理的实体进行各种创建，读取，更新和删除（CRUD）操作的实际实现。</p>
-<h3 id="GRPC"><a href="#GRPC" class="headerlink" title="GRPC"></a>GRPC</h3><p>客户端控制器通信端点实现为gRPC 接口。完整的API列表可以在<a href="https://github.com/pravega/pravega/blob/master/shared/controller-api/src/main/proto/Controller.proto" target="_blank" rel="noopener">此处</a>找到 。这暴露了Pravega客户端（读者，写者和流管理器）使用的API，并启用了流管理。此API启用的请求包括创建，修改和删除流。底层gRPC框架提供同步和异步编程模型。我们在客户端控制器交互中使用异步模型，以便客户端线程不会阻止来自服务器的响应。</p>
-<p>为了能够附加和读取来自流，writer和reader的数据，查询控制器以在使用流时获得活动的段集，后继段和前置段。对于事务，客户端使用特定的API调用来请求控制器创建和提交事务。</p>
-<h3 id="REST"><a href="#REST" class="headerlink" title="REST"></a>REST</h3><p>对于管理，控制器实现并公开REST接口。这包括用于流管理的API调用以及主要处理范围创建和删除的其他管理API。我们使用swagger来描述我们的REST API。<a href="https://github.com/pravega/pravega/tree/master/shared/controller-api/src/main/swagger" target="_blank" rel="noopener">这里</a>可以找到swagger的yaml文件。</p>
-<h3 id="控制器服务"><a href="#控制器服务" class="headerlink" title="控制器服务"></a>控制器服务</h3><p>Controller服务是控制器端点（gRPC和REST）后面的后端层。提供控制器API调用所需的所有业务逻辑都在此处实现。该层包含所有其他子系统的句柄，如各种存储实现（流存储，主机存储和检查点存储）和后台处理框架（任务框架，事件处理器框架）。存储是提供对Controller管理的各种类型元数据的访问的接口。后台处理框架用于执行异步处理，该异步处理通常实现涉及元数据更新和对分段存储的请求的工作流。</p>
-<h3 id="流元数据存储"><a href="#流元数据存储" class="headerlink" title="流元数据存储"></a>流元数据存储</h3><p>流是动态改变的段序列，其中路由键空间的区域映射到开放段。随着流的段的集合发生变化，路由密钥空间到段的映射也会发生变化。<br>如果1）映射到集合中的段的关键空间区域的并集覆盖整个密钥空间，则该组段是一致的。2）密钥空间区域之间没有重叠。例如，假设集合S = { S 1，S 2，S 3 }，使得： - 区域[0,0.3]映射到区段S 1 - 区域[0.3,0.6]映射到区段S 2 - 区域[0.6 ，1.0）映射到段S 3<br>S是一致的段集。</p>
-<p>随着时间的推移，流会经历转换。流以初始的段集合开始，这些初始段集合在创建时由流配置确定，并且随着对流执行缩放操作时转换为新的段集。在任何给定时间点构成流的每一段被认为属于一个时期。因此，流以初始时期开始，该初始时期是时期0，并且在每次转换时，它在其时期中向前移动以描述流中的段的生成的变化。</p>
-<p>控制器维护流存储关于构成给定流的所有时期以及它们如何转换的信息。该存储旨在优化存储和查询与段及其相互关系相关的信息。<br>除了时期信息之外，它还保留了一些额外的元数据，例如状态及其策略以及流上的持续事务。</p>
-<p>控制器的各种子组件通过定义良好的接口访问每个流的存储元数据 。我们目前有两个具体的流存储接口实现：内存和zookeeper支持的存储。两者共享一个公共的基础实现，该实现依赖于流对象，为所有特定于流的元数据提供特定于存储类型的实现。流存储的基本实现创建并缓存这些流对象。</p>
-<p>流对象实现存储/流接口。具体的流实现特定于存储类型的，并负责实现存储特定的方法，以提供一致性和正确性。我们有一个提供乐观并发的所有存储类型的通用基础实现。此基类封装了针对支持Compare和Swap（CAS）的所有具体存储的流存储查询的逻辑。我们目前使用zookeeper作为我们的底层存储，它也支持CAS。我们在流特定的znodes（ZooKeeper数据节点）下以分层方式存储所有流元数据。</p>
-<p>对于基于ZooKeeper的存储，我们将元数据组织到不同的组中，以支持针对此元数据的各种查询。所有特定于流的元数据都存储在作用域/流根节点下。针对该元数据的查询包括（但不限于）查询在不同时间点形成流的段集，段特定信息，段前驱和后继。有关流元数据存储公开的API的详细信息，请参阅流元数据接口。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/6/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/8/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -840,7 +850,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">78</a></div>
+      <div><a href="/archives">79</a></div>
     </div>
     
     

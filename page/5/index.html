@@ -115,6 +115,61 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/02/11/person-emc-one-year/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/02/11/person-emc-one-year/" itemprop="url">新公司一年里程碑</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-02-11T20:20:31+08:00">2019-02-11 20:20:31</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/person/" itemprop="url" rel="index"><span itemprop="name">person</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>2018年2月12日到2019年2月11日，刚好满一年，不知不觉间居然写了35770行代码，</p>
+<p>2018-02-12 ~ 2019-02-11， 刚好入职EMC满一年，里程碑两件：</p>
+<p>1，个人代码量突破3万5千行，排列第一；</p>
+<p>2，专利公司内部通过且美国专利局审核中2个。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/person/emc-201902-codeline.png" alt="codeline"></p>
+<div align="left"> </div>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/person/" rel="tag"><i class="fas fa-tags"></i>person</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/01/25/pravega-arch-refactor-bigdata-storage-stack/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -982,79 +1037,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/02/pravega-working-with-connector-readergroupnotifications/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/10/02/pravega-working-with-connector-readergroupnotifications/" itemprop="url">pravega handbook - 开发pravega应用 - connector与readerGroup通知</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-02T09:03:45+08:00">2018-10-02 09:03:45</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h1 id="ReaderGroup通知"><a href="#ReaderGroup通知" class="headerlink" title="ReaderGroup通知"></a>ReaderGroup通知</h1><p>ReaderGroup api支持不同类型的通知。目前，我们已经实现了两种类型，但我们计划添加更多类型。我们目前支持的类型如下：</p>
-<h2 id="分段通知"><a href="#分段通知" class="headerlink" title="分段通知"></a>分段通知</h2><p>当ReaderGroup管理的段总数发生变化时，触发段通知。在缩放期间，可以将段拆分为多个或合并到某个其他段中，从而导致段的总数发生变化。当ReaderGroup的配置发生改变时（例如，添加或删除流时），段的总数也会发生变化。</p>
-<p>订阅分段通知的方法如下所示</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>@Cleanup<br>ReaderGroupManager groupManager = new ReaderGroupManagerImpl(SCOPE, controller, clientFactory,<br>        connectionFactory);<br>groupManager.createReaderGroup(GROUP_NAME, ReaderGroupConfig.builder().<br>                                                            .stream(Stream.of(SCOPE, STREAM))<br>                                                            .build());<br><br>groupManager.getReaderGroup(GROUP_NAME).getSegmentNotifier(executor).registerListener(segmentNotification -&gt; &#123;<br>       int numOfReaders = segmentNotification.getNumOfReaders();<br>       int segments = segmentNotification.getNumOfSegments();<br>       if (numOfReaders &lt; segments) &#123;<br>          //Scale up number of readers based on application capacity<br>       &#125; else &#123;<br>         //More readers available time to shut down some<br>       &#125;<br>&#125;);<br></code></pre></td></tr></table></figure>
-<p>应用程序可以使用registerListenerapi 注册一个监听器以通知SegmentNotification。这个 API 以<code>io.pravega.client.stream.notifications.Listener</code>作为参数。在这里，应用程序可以添加自定义逻辑，以根据段的数量更改在线reader的数量。例如，如果段数增加，则应用程序可能会考虑增加在线reader的数量。如果段的数量根据段通知而减少，则应用程序可能希望相应地更改该组在线reader的数量。</p>
-<h2 id="EndOfData通知"><a href="#EndOfData通知" class="headerlink" title="EndOfData通知"></a>EndOfData通知</h2><p>当读者已读取readerGroup管理的流的所有数据时，将触发数据通知程序的结束。这对于使用批处理作业处理流数据很有用，其中应用程序想要读取密封流的数据。<br>订阅数据通知结束的方法如下所示：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>@Cleanup<br>ReaderGroupManager groupManager = new ReaderGroupManagerImpl(SCOPE, controller, clientFactory,<br>        connectionFactory);<br>groupManager.createReaderGroup(GROUP_NAME, ReaderGroupConfig.builder()<br>                                                            .stream(Stream.of(SCOPE, SEALED_STREAM))<br>                                                            .build());<br><br>groupManager.getReaderGroup(GROUP_NAME).getEndOfDataNotifier(executor).registerListener(notification -&gt; &#123;<br>      //custom action e.g: close all readers<br>&#125;);<br></code></pre></td></tr></table></figure>
-<p>应用程序可以使用registerListener api注册一个监听器以通知EndOfDataNotification。这个api以<code>io.pravega.client.stream.notifications.Listener</code>作为参数。在这里，应用程序可以添加自定义逻辑，读取密封流的所有数据就可以调用该自定义逻辑。</p>
-<h1 id="Pravega连接器"><a href="#Pravega连接器" class="headerlink" title="Pravega连接器"></a>Pravega连接器</h1><p>连接器允许将Pravega与不同的数据源和接收器集成。</p>
-<h2 id="Flink连接器"><a href="#Flink连接器" class="headerlink" title="Flink连接器"></a>Flink连接器</h2><p>支持的初始连接器是Flink，它支持使用Pravega构建端到端流处理流水线。这还允许通过Flink流连接器读取和写入数据到外部数据源和接收器。</p>
-<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ul>
-<li>Logstash</li>
-<li>Hadoop连接器</li>
-</ul>
-<p>其他参考原文： <a href="http://pravega.io/docs/latest/connectors" target="_blank" rel="noopener">http://pravega.io/docs/latest/connectors</a></p>
-<h1 id="Java-API参考"><a href="#Java-API参考" class="headerlink" title="Java API参考"></a>Java API参考</h1><h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><p>Writer是一个创建事件并将它们发布到Streams中的客户端。Reader是一个消费来自Streams的事件的客户端。我们提供了一个Java库，它为Writer和Reader应用程序实现了一个方便的API。客户端库封装了用于在Pravega客户端和Pravega服务之间传递请求和响应的有线协议。<br>Writer和Reader API</p>
-<h1 id="Pravega控制器的API"><a href="#Pravega控制器的API" class="headerlink" title="Pravega控制器的API"></a>Pravega控制器的API</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>pravega控制器服务的管理REST API列表。</p>
-<h2 id="版本信息"><a href="#版本信息" class="headerlink" title="版本信息"></a>版本信息</h2><p>版本：0.0.1</p>
-<p>许可证信息</p>
-<p>许可证：Apache 2.0 </p>
-<p>许可证URL：http：//<a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">www.apache.org/licenses/LICENSE-2.0</a> </p>
-<p>服务条款：null</p>
-<p>其他参考原文： <a href="http://pravega.io/docs/latest/rest/restapis/" target="_blank" rel="noopener">http://pravega.io/docs/latest/rest/restapis/</a></p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/4/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/6/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -1080,7 +1062,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">78</a></div>
+      <div><a href="/archives">79</a></div>
     </div>
     
     
