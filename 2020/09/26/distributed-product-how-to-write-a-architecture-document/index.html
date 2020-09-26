@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#1D2D2D">
+    <meta name="msapplication-TileColor" content="#1D2D2D">
+    
+    
+    
+    <meta name="keywords" content="flink, pravega, kubernetes, docker, streaming, storage">
+    
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicons/android-chrome-192x192.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+    
+    
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+    
+    
+    <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#1D2D2D">
+    
+    
+    <link rel="manifest" href="/favicons/site.webmanifest">
+    
+    
+    <meta name="msapplication-config" content="/favicons/browserconfig.xml">
+    
+    
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/favicons/favicon.ico">
+    
+    
+    <link rel="stylesheet" type="text/css" href="/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="/css/index.css">
+    
+    <link rel="stylesheet" type="text/css" href="/css/sidebar.css">
+    
+    
+<link rel="stylesheet" type="text/css" href="/css/page.css">
+<link rel="stylesheet" type="text/css" href="/css/post.css">
+
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+    <link rel="stylesheet" type="text/css" href="/css/atom-one-dark.css">
+    <link rel="stylesheet" type="text/css" href="/css/lightgallery.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script defer type="text/javascript" src="/js/util.js"></script>
+    <script defer type="text/javascript" src="/js/scrollspy.js"></script>
+    <script defer type="text/javascript" src="/js/fontawesome-all.min.js"></script>
+    <script defer type="text/javascript" src="/js/lightgallery.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-fullscreen.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-hash.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-pager.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-thumbnail.min.js"></script>
+    <script defer type="text/javascript" src="/js/lg-zoom.min.js"></script>
+    
+    <script defer src="/js/busuanzi.pure.mini.js"></script>
+    
+    
+    
+    <script defer type="text/javascript" src="/js/index.js"></script>
+    
+    <script defer type="text/javascript" src="/js/custom.js"></script>
+    <title>分布式系统架构设计 – 第24式- 如何撰写一个好的架构设计文档 | 常平的技术博客 - 技术是有生命的，因为它可以进化</title>
+  </head>
+  <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
+    
+<header id="header" class="header" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="header-container">
+      <div class="header-title">
+        <h1 class="title"><a href="/">常平的技术博客</a></h1>
+        <h2 class="subtitle">www.changping.me</h2>
+      </div>
+      
+      <div class="logo">
+        <img src="/images/logo.png" alt="logo">
+      </div>
+      
+    </div>
+    <nav id="nav" class="nav">
+      <a id="nav-toggle" class="nav-toggle" aria-hidden="true"><i class="fas fa-bars" aria-label="切换导航栏"></i></a>
+      <ul id="menu" role="menubar" aria-hidden="false">
+        
+        <li role="menuitem"><a href="/">首页</a></li>
+        
+        <li role="menuitem"><a href="/archives">全部</a></li>
+        
+        <li role="menuitem"><a href="/categories">分类</a></li>
+        
+        <li role="menuitem"><a href="/tags">标签</a></li>
+        
+        <li role="menuitem"><a href="/about">关于</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+    <main id="main" class="main">
+      <div class="container">
+        <div class="main-container">
+          <div class="content">
+            
+<div id="post" class="page">
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2020/09/26/distributed-product-how-to-write-a-architecture-document/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+       <meta itemprop="name" content="常平">
+       <meta itemprop="description" content="“分布式系统架构设计师”">
+       <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+       <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">分布式系统架构设计 – 第24式- 如何撰写一个好的架构设计文档</h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-09-26T11:11:25+08:00">2020-09-26 11:11:25</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/product/" itemprop="url" rel="index"><span itemprop="name">product</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      <h2 id="为什么需要写文档"><a href="#为什么需要写文档" class="headerlink" title="为什么需要写文档"></a><font color="#FF8C00">为什么需要写文档</font></h2><p>软件工程师有两大难：1，没有文档；2，写文档。设计文档是用于描述如何去解决一个产品或特性的问题的，好的设计文档可以确保正在做的是正确的事情。</p>
+<p>架构设计文档通常又可以分成概要设计文档以及详细设计文档。概要设计文档把握产品架构的宏观方向，而详细设计文档确定微观的代码实现。通常详细设计文档应该由具体负责这个模块实现的人员来完成，只有负责代码落地的人员才最清楚具体的微观问题，其他人员可以参与审阅设计方案、把握正确的方向。在工作中经常会遇到这样的情况：设计人员写完详细设计文档再把文档交付给写代码的人，去要求按这个文档写代码，经常会遇到的矛盾是：负责具体写代码的人觉得这个文档脱离实际没价值，而写文档的人又指责写代码的人员不理解他的意图。 因此，比较合适的方案是 谁负责写代码谁就负责详细设计（这对技术人员的能力要求也较高），其他人员提供检阅与建议，把握风险与方向。</p>
+<p>那么如何撰写一个好的架构设计文档呢？这里提出一个我自己常用的架构设计模板，以供参考，如下：</p>
+<h2 id="架构设计文档模板"><a href="#架构设计文档模板" class="headerlink" title="架构设计文档模板"></a><font color="#FF8C00">架构设计文档模板</font></h2><h3 id="动机介绍"><a href="#动机介绍" class="headerlink" title="动机介绍"></a>动机介绍</h3><p>描述需要完成的内容，介绍上下文以及需要达到的目标。</p>
+<h3 id="需求分析"><a href="#需求分析" class="headerlink" title="需求分析"></a>需求分析</h3><p>以三三制需求分析模型分析客户、用户以及团队的功能、质量与约束需求，首要方针是“价值优先”。</p>
+<table>
+<thead>
+<tr>
+<th><strong>类别</strong></th>
+<th><strong>功能</strong></th>
+<th><strong>质量</strong></th>
+<th><strong>约束</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“大”客户</td>
+<td>业务目标：  商业成功</td>
+<td>业务质量：    多、快、好、省</td>
+<td>业务约束：  时间、质量、成本，法律法规，信息安全，技术趋势，竞争对手，行业标准等</td>
+</tr>
+<tr>
+<td>“大”用户</td>
+<td>业务需求：比如AI模型训练</td>
+<td>运行时质量：  精度、线性度、收敛性，性能、可用性、可靠性，可伸缩性、可观测性、可运维性、易用性、兼容性、安全性</td>
+<td>使用时约束：  遗留系统，业务环境，用户能力，用户群特征等</td>
+</tr>
+<tr>
+<td>“大”团队</td>
+<td>功能需求：  基本功能P0  、增值功能P1、潜在功能P2 、可有可无功能P3  、有害无益功能P100</td>
+<td>编程时质量：  可扩展，可读性，可测试性，可维护性，可移植性</td>
+<td>编程时约束：开发进度，资源预算、上级要求、开发团队能力、产品规划、运行环境</td>
+</tr>
+</tbody>
+</table>
+<h3 id="目标非目标"><a href="#目标非目标" class="headerlink" title="目标非目标"></a>目标非目标</h3><p>目标与非目标主要是解释本文档做什么与不做什么，定义需要完成的任务与约束边界。</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">目标：定义本设计文档需要解决的问题以及需要达到的质量指标，是说明需要做什么。<br><br>非目标：说明本设计文档的约束，是说明不做什么。<br></code></pre></td></tr></table></figure>
+<h3 id="里程碑"><a href="#里程碑" class="headerlink" title="里程碑"></a>里程碑</h3><p>计划本身是“无用”的，但是没有计划却是万万不能，通过制定里程碑可以让文档的其他用户知道项目所需要的大概的时间周期。例如，可以按如下格式定义里程碑：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs undefined">开工日期：2020年10月10日<br>里程碑 1 - 2020年10月30日，完成概要设计文档<br>里程碑 2 - 2020年11月30日，完成详细设计文档，并且编写完代码<br>结束日期: 2020年12月30日，完成自我测试、文档、质量保证以及特性交付<br></code></pre></td></tr></table></figure>
+<h3 id="设计哲学"><a href="#设计哲学" class="headerlink" title="设计哲学"></a>设计哲学</h3><p>产品的设计哲学是产品的宪法，也是产品的灵魂与价值观，是产品的不可违背的最高指导思想，其把握了架构设计的方向，例如:</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">设计哲学<br> - 以客户价值为中心<br> - 以持续创新为竞争力<br></code></pre></td></tr></table></figure>
+<h3 id="设计原则"><a href="#设计原则" class="headerlink" title="设计原则"></a>设计原则</h3><p>架构交付的是功能需求，但是真正的差距体现在非功能需求（质量与约束），因此可以通过制定设计原则确定产品的非功能要素，设计原则是产品的法则，也是架构取舍的依据，例如:</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs undefined">设计原则<br>- 最佳物种原则<br>- 高内聚低耦合原则<br>- 可用性原则<br>- 可靠性原则<br>- 稳定性原则<br>- 可服务化原则<br>- 兼容性、可迁移原则<br>- 服务化、组件化<br>- 接口隔离与服务自治<br>- 用户触达成本原则<br>- 用户体验原则<br>- 持续演进原则<br></code></pre></td></tr></table></figure>
+<h3 id="设计提案"><a href="#设计提案" class="headerlink" title="设计提案"></a>设计提案</h3><p>设计提案可以从三个方面进行考虑：客户想要的、对手怎么做以及自身打算怎么进行，还需要分析每个方案的优点、缺点以及方案取舍的依据。</p>
+<h4 id="当前提案"><a href="#当前提案" class="headerlink" title="当前提案"></a>当前提案</h4><p>当前方案需要分当前已有的提案、也可包括当前竞争对手的方案，以及客户/用户所期待的方案。</p>
+<h4 id="自身提案"><a href="#自身提案" class="headerlink" title="自身提案"></a>自身提案</h4><p>提出自身的设计方案，可以提出多个设计方案：比如 提案1，提案2等，确定大的架构设计方向。</p>
+<h4 id="提案比较"><a href="#提案比较" class="headerlink" title="提案比较"></a>提案比较</h4><p>提出以上方案后，制定技术提案评审表，分析提案的优缺点，确定最终的可选方案。</p>
+<h3 id="架构设计"><a href="#架构设计" class="headerlink" title="架构设计"></a>架构设计</h3><p>这一部分是最重要、最核心的内容，属于架构设计文档的核心。在确定设计提案后进行概要设计，通常可以采用 4+1 架构设计法完成这一部分内容。如下图：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/product-how-to-write-arch-document.png" alt="4+1视图"></p>
+<p>常用的4+1视图涵盖有物理视图、逻辑视图、处理视图、开发视图以及用例视图，其中与用例视图交叉的部分是描述共同的细节，同时每种视图中又有各自的需求，例如：</p>
+<ul>
+<li>物理视图关注安装、部署、升级、运维的需求；</li>
+<li>逻辑视图关注架构设计的功能需求；</li>
+<li>处理视图关注非功能里的用户运行质量需求；</li>
+<li>开发视图关注团队的开发质量需求；</li>
+</ul>
+<h3 id="跨团队影响"><a href="#跨团队影响" class="headerlink" title="跨团队影响"></a>跨团队影响</h3><p>这里阐述需要的团队依赖以及对其他团队的影响。</p>
+<h3 id="详细的交付计划"><a href="#详细的交付计划" class="headerlink" title="详细的交付计划"></a>详细的交付计划</h3><p>这里可以以表格的方式，制定详细的交付计划。</p>
+<h3 id="开放问题讨论"><a href="#开放问题讨论" class="headerlink" title="开放问题讨论"></a>开放问题讨论</h3><p>提出需要讨论的问题。</p>
+<h3 id="作者与评审人员"><a href="#作者与评审人员" class="headerlink" title="作者与评审人员"></a>作者与评审人员</h3><p>确定作者与评审人员信息，例如：</p>
+<table>
+<thead>
+<tr>
+<th>类目</th>
+<th>修改</th>
+<th>时间</th>
+<th>作者</th>
+<th>评审</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>类目 1</td>
+<td>init</td>
+<td>2020/09/26</td>
+<td>xxxx</td>
+<td>xxxx</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1] <a href="https://www.freecodecamp.org/news/how-to-write-a-good-software-design-document-66fcf019569c/" target="_blank" rel="noopener">https://www.freecodecamp.org/news/how-to-write-a-good-software-design-document-66fcf019569c/</a></p>
+
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/product/" rel="tag"><i class="fas fa-tags"></i>product</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  
+  <nav class="page-nav">
+    <div class="page-nav-next page-nav-item">
+      
+      <a href="/2020/08/30/distributed-ideamodel-singularity_action/" rel="next" title="分布式系统架构设计 – 第23式- 产品创新与宇宙奇点大爆炸"><i class="fas fa-angle-left"></i><span class="nav-title">分布式系统架构设计 – 第23式- 产品创新与宇宙奇点大爆炸</span></a>
+      
+    </div>
+    <div class="page-nav-prev page-nav-item">
+      
+    </div>
+  </nav>
+  
+  
+</div>
+
+          </div>
+          
+          
+          
+<aside class="sidebar" id="sidebar" >
+  
+  
+<div class="info sidebar-item" id="info">
+  
+  <img class="author-avatar" src="/images/avatar.jpg" alt="常平">
+  
+  <h1 class="author-name">常平</h1>
+  <h2 class="author-description">“分布式系统架构设计师”</h2>
+  <div class="site-count">
+    
+    <div class="archives-count">
+      <div class="site-count-title">全部</div>
+      <div><a href="/archives">79</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="categories-count">
+      <div class="site-count-title">分类</div>
+      <div><a href="/categories">5</a></div>
+    </div>
+    
+    
+    
+    <span class="site-count-divider divider">|</span>
+    
+    <div class="tags-count">
+      <div class="site-count-title">标签</div>
+      <div><a href="/tags">5</a></div>
+    </div>
+    
+  </div>
+  
+</div>
+
+
+  <div class="sidebar-sticky">
+    
+    
+    
+    
+    
+    <hr>
+    <div class="post-toc sidebar-item" id="toc-div">
+      <div><i class="fas fa-list-ol"></i>文章目录</div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#为什么需要写文档"><span class="toc-text">为什么需要写文档</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#架构设计文档模板"><span class="toc-text">架构设计文档模板</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#动机介绍"><span class="toc-text">动机介绍</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#需求分析"><span class="toc-text">需求分析</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#目标非目标"><span class="toc-text">目标非目标</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#里程碑"><span class="toc-text">里程碑</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#设计哲学"><span class="toc-text">设计哲学</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#设计原则"><span class="toc-text">设计原则</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#设计提案"><span class="toc-text">设计提案</span></a><ol class="list-group toc-child"><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#当前提案"><span class="toc-text">当前提案</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#自身提案"><span class="toc-text">自身提案</span></a></li><li class="toc-item toc-level-4"><a class="list-group-item toc-link" href="#提案比较"><span class="toc-text">提案比较</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#架构设计"><span class="toc-text">架构设计</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#跨团队影响"><span class="toc-text">跨团队影响</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#详细的交付计划"><span class="toc-text">详细的交付计划</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#开放问题讨论"><span class="toc-text">开放问题讨论</span></a></li><li class="toc-item toc-level-3"><a class="list-group-item toc-link" href="#作者与评审人员"><span class="toc-text">作者与评审人员</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#参考资料"><span class="toc-text">参考资料</span></a></li></ol></div>
+    </div>
+    
+    
+    
+    <hr>
+    <div class="social-link sidebar-item">
+      <div><i class="far fa-address-card"></i>链接</p></div>
+      <ul>
+        
+        <li><i class="fab fa-github"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a></li>
+        
+      </ul>
+    </div>
+    
+    
+  </div>
+</aside>
+
+
+          
+        </div>
+      </div>
+    </main>
+    
+<footer id="footer" class="footer" style="background: #1D2D2D;">
+  <div class="container">
+    <div class="back-to-top">
+      <button id="back-to-top"><i class="fas fa-angle-double-up" aria-label="回到顶部"></i></button>
+    </div>
+    <div class="footer-container">
+      <div class="footer-left">
+        <div class="copyright">
+          <span class="author">常平</span><span class="year"><i class="far fa-copyright"></i>2017 - 2020</span>
+        </div>
+        
+        <div class="busuanzi">
+          <span id="busuanzi_container_site_pv"><i class="fas fa-eye" aria-label="站点点击量" aria-hidden="false"></i><span id="busuanzi_value_site_pv"></span></span><span id="busuanzi_container_site_uv"><i class="fas fa-user" aria-label="站点用户数" aria-hidden="false"></i><span id="busuanzi_value_site_uv"></span></span><span id="busuanzi_container_page_pv"><i class="far fa-file-alt"></i><span id="busuanzi_value_page_pv" aria-label="页面点击量" aria-hidden="false"></span></span>
+        </div>
+        
+      </div>
+      <div class="footer-right">
+        <div class="custom-info">
+          
+          PoweredBy<i class="fab fa-github-alt"></i><a href="https://github.com/wuchangping" target="_blank">GitHub</a>
+          
+        </div>
+        <div class="powered-by">
+          由 <a href="https://hexo.io/" target="_blank">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/AlynxZhou/hexo-theme-aria/" target="_blank">ARIA</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>
