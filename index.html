@@ -115,6 +115,98 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2021/04/18/distributed-ai-training-1/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2021/04/18/distributed-ai-training-1/" itemprop="url">分布式训练实战18式 – 第1式 - 什么是分布式训练</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2021-04-18T22:23:38+08:00">2021-04-18 22:23:38</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/AI/" itemprop="url" rel="index"><span itemprop="name">AI</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>深度学习软件工程具有一体两面性：单卡的功能完备性、质量、用户体验以及多卡大规模。多卡大规模的出现是为了解决这样一个主要矛盾，即：“日益增长的数据、模型训练的需求与当前单卡计算能力无法满足这个需求之间的矛盾”，而分布式训练可以通过扩展卡子的规模解决这个矛盾，因此，这就是分布式训练的价值。</p>
+<p>然而，正如懂得很多道理，仍旧过不好这一生一样，懂得很多分布式训练的理论与知识，也不一定就能做好一个分布式训练系统。把这么多机器连接跑起来、跟跑好也是两回事，分布式训练是一门实践的软件工程，只有你PK过设计方案，调试过一个个Bug，手把手的敲过一行行的代码，为了性能指标能达标无所不用其极的去验证各种性能优化方案，才能知道细节在哪里，难点在哪里，痛点、挑战点在哪里。因此，宏观处着眼，微观处着手，才能完全理解分布式训练的道理。</p>
+<p>一个知识领域里的 “道 法 术 器” 这四个境界需要从 微观、中观以及宏观 三个角度来把握，微观是实践，中观讲方法论，宏观靠领悟。本系列文章我把它命名为《分布式训练实战18式》，从工程实战的角度拆解分布式训练里最重要的十八个套路，也是从“微观实践、中观方法论、宏观领悟”这三个维度系统性的讲述分布式训练技术，本文讲述第1式，也是最难讲清楚的一式（也后续再迭代更新），即本质的一问：<strong>“什么是分布式训练“</strong>。</p>
+<h2 id="什么是分布式训练"><a href="#什么是分布式训练" class="headerlink" title="什么是分布式训练"></a><font color="#FF8C00">什么是分布式训练</font></h2><p>简单来说，<strong>分布式训练 = 分布式训练系统 = 分布式系统 + 训练系统</strong>，因此，要解答什么是分布式训练就需要解答什么是分布式系统以及什么是训练系统，而<strong>“系统 = 要素x连接 + 目的”</strong>，因此进一步的就是需要分析分布式系统的要素、连接与目的以及训练系统的要素、连接与目的。</p>
+<h3 id="分布式系统"><a href="#分布式系统" class="headerlink" title="分布式系统"></a>分布式系统</h3><p>在AI训练过程中采用单卡总会遇到一些问题，比如原始的数据样本太大无法加载进训练卡，或者模型太大无法训练，那么这就需要用到分布式技术把大量的数据分割成小块由多个训练卡分别进行计算，在更新运算结果后，再将结果统一合并得出最终的可用模型。百科上对分布式系统的定义有：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">A distributed system is a system whose components are located on different networked computers, which communicate and coordinate their actions by passing messages to one another. The components interact with one another in order to achieve a common goal.<br></code></pre></td></tr></table></figure>
+<p>即：</p>
+<blockquote>
+<p>分布式系统是指其组件位于不同的网络计算机上的系统，这些组件通过相互传递消息来进行通信和协调其动作，且彼此相互交互以完成一个共同的任务目标。</p>
+</blockquote>
+<p>从这句话可以得出三个结论：</p>
+<ul>
+<li>分布式系统的组件是位于不同的网络计算机上的；</li>
+<li>分布式系统的组件通过传递消息进行通信与协调的；</li>
+<li>分布式系统的组件是通过相互交互以完成一个共同的任务目标；</li>
+</ul>
+<p>因此基于此定义，拆解分布式系统的概念，从中可以看到分布式系统里的要素即为组件，连接即网络，目的是共同的任务目标。其中的位于不同的网络计算机上的“组件”是分布式系统的要素，即各种计算单元，比如Ai训练卡，“网络”是分布式系统的连接，即神经网与数据网，“共同的任务目标”是分布式系统的目的，即训练，至此，再进一步抽象，可以推导出分布式系统的公理化定义，也是分布式系统的本质理论定义：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">分布式系统 = 计算 x 网络 + 目的<br></code></pre></td></tr></table></figure>
+<p>在这个公式里，计算即计算单元，是各种AI训练卡，比如GPU, TPU, DPU, DTU。网络即网络连接单元，在单个训练卡内为计算用的神经网，主机内的多个卡子之间是PCIE 以及PCIE Switch，以及各种高带宽通信网，比如GenZ,CXL,NVLINK,OpenCAPI,CCIX等，在主机之间是各种通信网络，比如RDMA网络、InfiniBand网络、普通的TCP网络以及对应的各种交换机，另外从磁盘 + 主机内存 + 训练卡的HBM这个IO路径我们认为属于IO网络，而这里的目的 即<strong>训练</strong>。</p>
+<h3 id="训练系统"><a href="#训练系统" class="headerlink" title="训练系统"></a>训练系统</h3><p>以数据并行随机梯度下降( SGD )技术为例，神经网络训练的过程如下:</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/1/ai-training.PNG" alt="AI训练"></p>
+<p>1，首先需要通过在第一个step进行Broadcast操作将参数同步到集群内的所有的训练卡上;</p>
+<p>2，将数据样本切片分发到整个集群的每张训练卡上并且通过data pipeline技术将数据样本加载进训练卡的高速内存空间内，作为输入X;</p>
+<p>3，每个训练卡在其数据样本上运行前向传播，计算出误差LOSSi；</p>
+<p>4，对计算出的LOSSi进行反向传播，得到梯度GRADi；</p>
+<p>5，所有的训练卡在主机内及主机之间相互通信并进行梯度归约(AllReduce)；</p>
+<p>6，最后再进行梯度更新以获得新的参数。</p>
+<p>基于以上步骤，这里可以推导出<strong>训练系统</strong>的公式定义如下：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">训练系统 = Broadcast +data pipeline + 前向传播 + 反向传播 + AllReduce + 梯度更新<br></code></pre></td></tr></table></figure>
+<p>从上面的步骤可知分布式训练是在固定的步骤迭代中进行的，并且需要系统内的所有的训练卡都完成它们的迭代步骤，才能进行最后的参数更新，这相当于在单个训练卡上执行梯度下降技术，但是通过在系统内所有的训练卡之间分发数据样本并同时执行计算来获得训练的加速。</p>
+<h3 id="举例说明"><a href="#举例说明" class="headerlink" title="举例说明"></a>举例说明</h3><p>以TensorFlow为例说明模型的训练过程，TensorFlow 是用数据流图做计算的，如下图所示:</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/tensorflow/tf_arch_dataflow.gif" alt="计算流图示例" style="zoom:150%;"></p>
+<center>图片来源于网络版权归原作者所有</center>
+
+<p>图中显示了 TensorFlow 的训练过程，其包含输入（input）、塑形（reshape）、Relu 层（Relu layer）、Logit 层（Logit layer）、Softmax、交叉熵（cross entropy）、梯度（gradient）、SGD 训练（SGD Trainer）等部分。</p>
+<p>它的训练过程是，首先从数据分片输入开始，经过Reshape数据清洗后，进行前向传播运算，通过Relu 层后得到LOSS值，然后进入 Logit 层，进行反向传播并且用 Cross Entropy 来计算梯度，接着进行梯度归约(Allreduce)，最后进行梯度更新SGD Trainer。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>采用分布式训练的目的往往也是因为数据量或模型太大，一个训练卡放不下，因此对数据或者模型进行切分，分发到多卡上进行计算与归约。本文很概况性的讲述了什么是分布式训练，简单来说分布式训练就是分布式计算的一种，通过对数据样本的计算，得出最后可用的模型再用于数据推理。本系列文章的后续内将展开讲述分布式训练系统的基础理论、训练过程、质量保证、集合通信、系统工程、产品化等，同样分布式训练系统除了解决训练所带来的各种故障也还需要解决分布式所带来的各种故障。</p>
+<p>日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，某AI独角兽深度学习首席软件工程师，前EMC 大数据资深首席工程师，主要工作背景在深度学习、流式大数据、云计算、分布式中间件以及Linux内核。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1] <a href="https://blog.tensorflow.org/2019/09/tensorflow-20-is-now-available.html" target="_blank" rel="noopener">https://blog.tensorflow.org/2019/09/tensorflow-20-is-now-available.html</a></p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/AI/" rel="tag"><i class="fas fa-tags"></i>AI</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2021/02/17/distributed-product_Lean_development/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -981,102 +1073,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2020/04/10/distributed-theory-cap-pacelc/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2020/04/10/distributed-theory-cap-pacelc/" itemprop="url">分布式系统架构设计 – 第21式 - 基础理论 - 从CAP到PACELC</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-04-10T21:30:38+08:00">2020-04-10 21:30:38</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>分布式系统是一门讲究实践的软件工程，只有PK过设计方案，从微观处手把手的敲过一行行的代码，才能知道细节在哪里，难点在哪里，痛点、挑战点在哪里。同时，分布式系统也是一门讲究理论的软件工程，从宏观处着眼深刻理解系统设计的理论，将理论与实践相结合，想好、做好、说好才是真的好。因此，宏观处着眼，微观处着手，才能真正掌握分布式系统。自此，本系列文章开始讲诉分布式系统设计里的基础理论，本文为CAP与PACELC理论。</p>
-<h2 id="CAP理论与PACELC理论"><a href="#CAP理论与PACELC理论" class="headerlink" title=" CAP理论与PACELC理论"></a><font color="#FF8C00"> CAP理论与PACELC理论</font></h2><h3 id="CAP理论"><a href="#CAP理论" class="headerlink" title=" CAP理论"></a><font color="#00CED1"> CAP理论</font></h3><p>CAP理论是分布式系统最为基本的指导理论之一，是分布式系统设计时最为基本的取舍依据，CAP理论认为一致性、可用性、分区容忍性不能同时满足，即：</p>
-<ul>
-<li><p>一致性(Consistency): 所有的节点在同一时刻看到同样的数据；</p>
-</li>
-<li><p>可用性(Availability):  节点失效不会影响系统的读写；</p>
-</li>
-<li><p>分区容忍性(Partition Tolerance): 系统能支持网络分区，即使分区之间的消息丢失系统也正常工作。</p>
-</li>
-</ul>
-<p>但是，CAP理论也有其自身的局限性。在工程实践中CAP理论的应用可以一分为二：系统整体以及系统内部。比如，系统整体可以选择CA或者CP，但是系统内部微观处有些特性却可以同时满足CAP三要素，因为分区是件极少发生的事，为了追求卓越的设计理念可以尽量同时满足CAP三要素。根据业务场景的不同，不同的分布式系统会根据自身业务的需求在CAP三者中进行取舍， CAP理论的意义是一种在分布式系统设计时取舍的参考因素，而非绝对的三者必舍其一。</p>
-<p>此外，在CAP理论中是没有提到系统的时延（Latency）的，而访问时延（Latency）却是很重要的可用性(Availability)因素，因此又延申出了PACELC理论。</p>
-<h3 id="PACELC理论"><a href="#PACELC理论" class="headerlink" title="PACELC理论"></a><font color="#00CED1">PACELC理论</font></h3><p>PACELC理论是CAP理论的扩展，PACELC理论在wiki上的定义是:</p>
-<blockquote>
-<p>It states that in case of network partitioning (P) in a distributed computer system, one has to choose between availability (A) and consistency (C) (as per the CAP theorem), but else (E), even when the system is running normally in the absence of partitions, one has to choose between latency (L) and consistency (C).</p>
-</blockquote>
-<p>意思就是：</p>
-<blockquote>
-<p>如果有分区partition (P)，系统就必须在availability 和consistency (A and C)之间取得平衡; 否则else (E) 当系统运行在无分区情况下,系统需要在 latency (L) 和 consistency (C)之间取得平衡</p>
-</blockquote>
-<p>如下图，在PACELC里添加了Latency要素：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/theory/distributed-cap-pacelc-1.PNG" alt="cap-pacelc"></p>
-<p>当前分布式系统设计指导理论应当采用PACELC理论替代CAP理论，理由如下：</p>
-<ul>
-<li><p>PACELC更能满足实际操作中分布式系统的工作场景是更好的工程实现策略；</p>
-</li>
-<li><p>当partition (P)存在的场景下，需要在availability 和consistency (A and C)之间取舍，但是实际上分布式系统中绝大多数时间里partition (P)是不存在的，那么就需要在latency (L) 和 consistency (C)之间作取舍；</p>
-</li>
-<li><p>Availability在不存在partition (P)的场景下跟 latency关联,在partition (P)时跟”可靠性“指标相关联；</p>
-</li>
-<li><p>PACELC 可以在 latency 与 consistency之间获得平衡；</p>
-</li>
-<li><p>CAP 理论忽略了 一致性和时延之间的取舍；</p>
-</li>
-</ul>
-<p>PACELC理论是建立在CAP理论之上的，二者都描述了一致性(Consistency)、可用性(Availability)和分区容忍性(Partition Tolerance)之间的约束与取舍。而PACELC理论则更进一步描述了即使在没有Partition的场景下，也存在Latency和Consistency之间的取舍，从而为分布式系统的Consistency模型提供了一个更为完整的理论依据。</p>
-<h3 id="理论应用"><a href="#理论应用" class="headerlink" title="理论应用"></a><font color="#00CED1">理论应用</font></h3><p>要保证系统数据的高可用（high availability）那么有个技术方案是采用数据冗余备份的方式，那么就涉及到复制数据，而进行分布式系统的数据复制，就会出现在Consistency和Latency之间做个取舍的要求。举个例子，如下图所示：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/theory/distributed-cap-pacelc-2.PNG" alt="consistency-latency"></p>
-<p>在强一致性复制场景下，需要三副本都下盘才能返回OK确认信息给client端，假设Master节点向 Slave 节点复制数据，时延的限制是 20ms，有时候，slave 2 硬盘或网络出现故障，Master 往 Slave 复制数据的时延超过 了20ms，这个时候如果还一直等待 slave 2 返回结果再通知给client就会出现性能和时延抖动，而且这种抖动是经常会发生的长尾效应。</p>
-<p>依据PACELC理论，我们可以在 consistency和Latency之间做个取舍，比如 slave 2 节点的时延超过 20ms了，就不等待slave 2 返回，master 和 slave 1 返回结果给client即可，如果 slave 2 出现 超时的 次数超过 5次那么就认为 这个节点可能出现故障，打个故障标签，进行后续的处理。采用这种方式可以消除写时的长尾抖动，获得更优雅的写时性能曲线。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文遵循理论与实践相结合的指导思想讲述了CAP理论与PACELC理论。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中国科学技术大学硕士研究生，深度学习首席软件主管工程师，前EMC 大数据资深首席工程师，主要从事Linux内核以及分布式产品的架构设计、开发以及交付工作。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a><font color="#FF8C00">参考文献</font></h2><p>[1] <a href="https://en.wikipedia.org/wiki/PACELC_theorem" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/PACELC_theorem</a></p>
-<p>[2] CAP理论与分布式系统设计，S先生</p>
-<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
-<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -1102,7 +1098,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">83</a></div>
+      <div><a href="/archives">84</a></div>
     </div>
     
     
@@ -1111,7 +1107,7 @@
     
     <div class="categories-count">
       <div class="site-count-title">分类</div>
-      <div><a href="/categories">5</a></div>
+      <div><a href="/categories">6</a></div>
     </div>
     
     
@@ -1120,7 +1116,7 @@
     
     <div class="tags-count">
       <div class="site-count-title">标签</div>
-      <div><a href="/tags">5</a></div>
+      <div><a href="/tags">6</a></div>
     </div>
     
   </div>
