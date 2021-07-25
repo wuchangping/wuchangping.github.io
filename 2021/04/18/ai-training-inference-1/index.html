@@ -68,7 +68,7 @@
     <script defer type="text/javascript" src="/js/index.js"></script>
     
     <script defer type="text/javascript" src="/js/custom.js"></script>
-    <title>人工智能训练与推理实战 – 第1式 - 什么是分布式训练 | 常平的技术博客 - 技术是有生命的，因为它可以进化</title>
+    <title>分布式训练与推理实战 – 第1式 - 什么是分布式训练 | 常平的技术博客 - 技术是有生命的，因为它可以进化</title>
   </head>
   <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
     
@@ -125,7 +125,7 @@
       </span>
     </div>
     <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">人工智能训练与推理实战 – 第1式 - 什么是分布式训练</h1>
+      <h1 class="post-title" itemprop="name headline">分布式训练与推理实战 – 第1式 - 什么是分布式训练</h1>
       <div class="post-meta">
         
         <span class="post-date">
@@ -147,7 +147,7 @@
     <main class="post-main" itemprop="articleBody">
       <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>深度学习软件工程具有一体两面性：单卡的功能完备性、质量、用户体验以及多卡大规模。多卡大规模的出现是为了解决这样一个主要矛盾，即：“日益增长的数据、模型训练的需求与当前单卡计算能力无法满足这个需求之间的矛盾”，而分布式训练可以通过扩展卡子的规模解决这个矛盾，因此，这就是分布式训练的价值。</p>
 <p>然而，正如懂得很多道理，仍旧过不好这一生一样，懂得很多分布式训练的理论与知识，也不一定就能做好一个分布式训练系统。把这么多机器连接跑起来、跟跑好也是两回事，分布式训练是一门实践的软件工程，只有你PK过设计方案，调试过一个个Bug，手把手的敲过一行行的代码，为了性能指标能达标无所不用其极的去验证各种性能优化方案，才能知道细节在哪里，难点在哪里，痛点、挑战点在哪里。因此，宏观处着眼，微观处着手，才能完全理解分布式训练的道理。</p>
-<p>一个知识领域里的 “道 法 术 器” 这四个境界需要从 微观、中观以及宏观 三个角度来把握，微观是实践，中观讲方法论，宏观靠领悟。本系列文章我把它命名为《分布式训练实战18式》，从工程实战的角度拆解分布式训练里最重要的十八个套路，也是从“微观实践、中观方法论、宏观领悟”这三个维度系统性的讲述分布式训练技术，本文讲述第1式，也是最难讲清楚的一式（也后续再迭代更新），即本质的一问：<strong>“什么是分布式训练“</strong>。</p>
+<p>一个知识领域里的 “道 法 术 器” 这四个境界需要从 微观、中观以及宏观 三个角度来把握，微观是实践，中观讲方法论，宏观靠领悟。本系列文章我把它命名为《分布式训练与推理实战》，从工程实战的角度拆解分布式训练里最重要的十八个套路，也是从“微观实践、中观方法论、宏观领悟”这三个维度系统性的讲述分布式训练技术，本文讲述第1式，也是最难讲清楚的一式（也后续再迭代更新），即本质的一问：<strong>“什么是分布式训练“</strong>。</p>
 <h2 id="什么是分布式训练"><a href="#什么是分布式训练" class="headerlink" title="什么是分布式训练"></a><font color="#FF8C00">什么是分布式训练</font></h2><p>简单来说，<strong>分布式训练 = 分布式训练系统 = 分布式系统 + 训练系统</strong>，因此，要解答什么是分布式训练就需要解答什么是分布式系统以及什么是训练系统，而<strong>“系统 = 要素x连接 + 目的”</strong>，因此进一步的就是需要分析分布式系统的要素、连接与目的以及训练系统的要素、连接与目的。</p>
 <h3 id="分布式系统"><a href="#分布式系统" class="headerlink" title="分布式系统"></a>分布式系统</h3><p>在AI训练过程中采用单卡总会遇到一些问题，比如原始的数据样本太大无法加载进训练卡，或者模型太大无法训练，那么这就需要用到分布式技术把大量的数据分割成小块由多个训练卡分别进行计算，在更新运算结果后，再将结果统一合并得出最终的可用模型。百科上对分布式系统的定义有：</p>
 <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">A distributed system is a system whose components are located on different networked computers, which communicate and coordinate their actions by passing messages to one another. The components interact with one another in order to achieve a common goal.<br></code></pre></td></tr></table></figure>
@@ -209,6 +209,8 @@
     </div>
     <div class="page-nav-prev page-nav-item">
       
+      <a href="/2021/07/25/ai-training-inference-2/" rel="prev" title="分布式训练与推理实战 – 第2式 - 分布式训练的评价指标"><span class="nav-title">分布式训练与推理实战 – 第2式 - 分布式训练的评价指标</span><i class="fas fa-angle-right"></i></a>
+      
     </div>
   </nav>
   
@@ -232,7 +234,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">84</a></div>
+      <div><a href="/archives">85</a></div>
     </div>
     
     

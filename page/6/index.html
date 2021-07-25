@@ -115,6 +115,146 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/01/25/pravega-arch-IO-transaction-autoscaling/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/01/25/pravega-arch-IO-transaction-autoscaling/" itemprop="url">分布式流存储 - 架构、自动缩放、IO隔离与事务</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-01-25T21:23:39+08:00">2019-01-25 21:23:39</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="Pravega架构"><a href="#Pravega架构" class="headerlink" title=" Pravega架构  "></a><font color="#FF8C00"> Pravega架构  </font></h2><blockquote>
+<p> ”技术在某种程度上一定是来自此前已有技术的新的组合“  – 《技术的本质》，布莱恩·阿瑟</p>
+</blockquote>
+<p>Pravega为连续而又无限的数据提供了一种新的存储原语 - 流存储，然而Pravega也并不是凭空发明出来的，它是以前成熟技术与新技术的组合，例如Pravega的 范围、流、段、事件就跟Kafka的主题、分区、段、消息对应，而一层存储又用了Bookkeeper，协调器用了Zookeeper等。</p>
+<h3 id="设计原则与目标"><a href="#设计原则与目标" class="headerlink" title=" 设计原则与目标"></a><font color="#00CED1"> 设计原则与目标</font></h3><ul>
+<li><p>持久化：在客户端确认写入前，数据被复制并且写入磁盘；</p>
+</li>
+<li><p>保序：段内严格保序；</p>
+</li>
+<li><p>恰好一次：支持恰好一次语义；</p>
+</li>
+<li><p>轻量级：一个流就如同一个文件，可以在单集群里创建千万量级起的流；</p>
+</li>
+<li><p>可弹性：可基于负载和吞吐量智能地动态扩展或者收缩流；</p>
+</li>
+<li><p>无限性：存储空间大小不受单个节点的容量限制；</p>
+</li>
+<li><p>高性能：写入延迟低于10ms，吞吐量仅受网络带宽限制，读模式（例如：追赶读）不影响写性能;</p>
+</li>
+</ul>
+<h3 id="Pravega设计创新"><a href="#Pravega设计创新" class="headerlink" title="Pravega设计创新"></a><font color="#00CED1">Pravega设计创新</font></h3><ol>
+<li><p>支持“无限流”分层</p>
+</li>
+<li><p>零接触动态缩放</p>
+<ul>
+<li><p>根据负载和SLO自动调整读/写并行度</p>
+</li>
+<li><p>没有服务中断</p>
+</li>
+<li>无需手动重新配置客户端</li>
+<li>无需手动重新配置服务资源</li>
+</ul>
+</li>
+<li><p>智能工作负载分配</p>
+<ul>
+<li>无需为峰值负载过度配置服务器</li>
+</ul>
+</li>
+<li><p>I / O路径隔离</p>
+<ul>
+<li>支持尾部写入</li>
+<li>支持尾部读</li>
+<li>支持追赶读</li>
+</ul>
+</li>
+<li><p>支持“恰好一次”事务</p>
+</li>
+</ol>
+<h3 id="逻辑架构"><a href="#逻辑架构" class="headerlink" title="  逻辑架构"></a><font color="#00CED1">  逻辑架构</font></h3><p>下图为Pravega的逻辑架构图：</p>
+<p><div align="center"><br><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch.png" alt="逻辑架构图"></div></p>
+<div align="left"> 
+
+<ol>
+<li>首先，Pravega提供了一个用Java编写的客户端库，抽象出了流协议层接口，用于支持客户端应用，例如Flink、Spark以及一些检索系统等；</li>
+<li>其次，Pravega实现了一个流数据抽象层，用于事件流和字节流的抽象；</li>
+<li>再者，从整体架构上来讲Pravega符合软件定义存储的设计规则，其控制面与数据面分离，数据面的集合统称为段存储层，控制实例组成控制面，实现了检索流信息、监控集群、收集相关指标等功能，同时为了实现高可用，通常有多个（建议至少3个）控制实例同时对外提供服务。 </li>
+<li>Pravega采用Zookeeper作为集群中的协调组件。 </li>
+<li>Pravega的存储系统由两部分组成：第1层为短期存储层，主要关注性能，用于存储热点数据，由bookkeeper实现，保证了存储系统的低时延、高性能。第2层为长期存储层，主要关注成本，提供数据的持久性以及长期存储，由开源的或者商业的存储产品组成。第1层保留热点数据，随着第1层中数据的老化，数据将自动分层流入第2层。</li>
+</ol>
+<h3 id="数据架构"><a href="#数据架构" class="headerlink" title=" 数据架构"></a><font color="#00CED1"> 数据架构</font></h3><p>下图展示了Pravega的数据架构图以及数据流分层：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-data-path.png" alt="数据架构图"></p>
+<ol>
+<li>Pravega客户端可以通过调用控制器接口管理流的创建、删除和缩放以及进行事务管理：启动事务、创建事务、跟踪事务状态；</li>
+<li>所有的数据对读来说都是透明的，客户端的读写操作直接与段存储（数据面）进行交互，而不通过控制器；</li>
+<li>段存储里有缓存组件保证了读写的高性能，热点数据放在bookkeeper里作为一层存储；</li>
+<li>数据老化后会自动流转到长期存储（例如：对象存储系统，文件存储系统，HDFS等）里以便降低存储成本；</li>
+</ol>
+<h3 id="关键子功能-零接触缩放"><a href="#关键子功能-零接触缩放" class="headerlink" title="关键子功能 - 零接触缩放"></a><font color="#00CED1">关键子功能 - 零接触缩放</font></h3><h4 id="零接触缩放：段的动态拆分与合并"><a href="#零接触缩放：段的动态拆分与合并" class="headerlink" title="零接触缩放：段的动态拆分与合并"></a>零接触缩放：段的动态拆分与合并</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-2.png" alt="段的拆分与合并"></p>
+<p>如上图所示，1）拆分：在t1时刻系统负载加大，段0被拆分成段1和段2，同时段0封装不再写入；t2时刻系统负载继续加大，段2被拆分成段3与段4，同时段2被封装不再写入；t3时刻系统负载又继续加大，段1被拆分成段5和段6，同时段1被封装不再写入；2）合并：t4时刻系统负载降低，段6与段3被合并成段7，同时段6与段3被封装不再写入。而且所有的这些行为都是Pravega里自动完成的无需人工干预。</p>
+<h4 id="零接触缩放：写并行-与Kafka比较"><a href="#零接触缩放：写并行-与Kafka比较" class="headerlink" title="零接触缩放：写并行 - 与Kafka比较"></a>零接触缩放：写并行 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-3.png" alt="写并行"></p>
+<p>当并行写入的时候：</p>
+<ol>
+<li><p>在Pravega里流段的数量会根据负载和服务质量目标而动态变化，并且段的拆分与合并都是自动进行的无需人工干预，同时拆分或合并流段是，写客户端的配置是静态不变的；</p>
+</li>
+<li><p>在Kafka里主题分区数（写并行性）是静态的，添加或删除分区时需要手动配置服务并且当分区数更改时，必须手动更新生产者配置。</p>
+</li>
+</ol>
+<h4 id="零接触缩放：读并行-与Kafka比较"><a href="#零接触缩放：读并行-与Kafka比较" class="headerlink" title="零接触缩放：读并行 - 与Kafka比较"></a>零接触缩放：读并行 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-4.png" alt="读并行"></p>
+<p>并行读取时：</p>
+<ol>
+<li>在Pravega里，当拆分或者合并流段时，读客户端通过流协议获得通知从而使得读并行与流段缩放保持同步；</li>
+<li>在Kafka里，当分区数更改时，必须手动更改使用者配置。</li>
+</ol>
+<h4 id="关键子功能-智能工作负载分配"><a href="#关键子功能-智能工作负载分配" class="headerlink" title="关键子功能 - 智能工作负载分配 "></a><font color="#00CED1">关键子功能 - 智能工作负载分配 </font></h4><h4 id="智能工作负载分配-与Kafka比较"><a href="#智能工作负载分配-与Kafka比较" class="headerlink" title="智能工作负载分配 - 与Kafka比较"></a>智能工作负载分配 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-5.png" alt="智能工作负载分配"></p>
+<p>在Pravega里，热点段会自动拆分，子段在整个集群中重新分配缓解热点，同时最大限度地利用集群的可用IOPS能力；而在Kafka里没有减轻“热点”分区的机制，其强制部署并且过度配置资源以获得处理其“峰值负载”的能力。</p>
+<h3 id="关键子功能-I-O路径隔离"><a href="#关键子功能-I-O路径隔离" class="headerlink" title="关键子功能 - I/O路径隔离"></a><font color="#00CED1">关键子功能 - I/O路径隔离</font></h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-6.png" alt="I/O路径隔离"></p>
+<p>流存储的基础数据结构为仅附加写入的日志结构。考虑到高吞吐量，Pravega支持追赶读，同时为了保证低时延，Pravega还支持尾部读取以及尾部写入，从而进行了IO路径的隔离。</p>
+<h3 id="关键子功能-事务"><a href="#关键子功能-事务" class="headerlink" title="关键子功能 - 事务"></a><font color="#00CED1">关键子功能 - 事务</font></h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-7.png" alt="智能工作负载分配"></p>
+<p>Pravega提供了事务功能，事务是写客户端可以“批处理”一堆事件并将它们作为一个处理单元原子性地提交到流中。这一堆事件要么所有都处理成功，要么所有都处理失败。在提交事务之前，发布到事务中的事件永远不会被读客户端看到。如上图所示，第一步，先将一堆事件封装在一个事务里；第二步，提交这个事务。这个事务里所有的事件要么全部都处理成功要么全部都处理失败。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a><font color="#FF8C00">总结</font></h2><p>本文分析了物联网场景下的数据存储商业现状以及技术现状，为平衡商业成本与技术成本推出了分布式流存储系统Pravega，同时本文还介绍了流存储的特殊需求点以及与Kafka做了简要对比，此外还介绍了一些Pravega的关键架构以及一些关键特性。有关Pravega的更多详细信息，请参阅官方网站。另作者能力有限，如有不足之处欢迎留言批评指正。</p>
+</div>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/11/25/pravega-blog-i-have-a-stream/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -773,151 +913,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/01/pravega-working-with-state-synchronizer/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/10/01/pravega-working-with-state-synchronizer/" itemprop="url">pravega handbook - 开发pravega应用 - stateSynchronizer</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-01T09:16:01+08:00">2018-10-01 09:16:01</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>Pravega即可以作为流式存储系统，也可以作为 pub-sub消息系统，还可以将Pravega作为一种在分布式集群中共享多个进程状态的方法。<br>运行示例应用，请参阅 Pravega Samples文件。<br>在看本文之前，需要熟悉Pravega Concepts（请参考  Pravega Concepts）。特别是，对State Synchronizer 概念有所了解。</p>
-<h2 id="共享的状态和Pravega"><a href="#共享的状态和Pravega" class="headerlink" title="共享的状态和Pravega"></a>共享的状态和Pravega</h2><p>State Synchronizer是Pravega编程模型提供的一种工具，它使得开发人员可以轻松地使用Pravega来协调进程之间的共享状态。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/state.synchronizer.png" alt=""></p>
-<p>其思想是使用Stream来保持共享状态的变化序列，并且各种应用使用其Pravega Java客户端库以一致的方式同时读取和写入共享状态。 </p>
-<h2 id="SharedStateMap和共享配置示例"><a href="#SharedStateMap和共享配置示例" class="headerlink" title="SharedStateMap和共享配置示例"></a>SharedStateMap和共享配置示例</h2><p>在深入了解如何使用状态同步器之前，我们先快速看一下一个使用状态同步器的简单示例 。<br>该示例使用State Synchronizer构建Java 映射数据结构的实现，称为SharedMap。我们使用该SharedMap数据结构来构建一个共享配置，该配置允许一组进程一致地读/写键/值对属性的共享配置对象。此外，作为该示例的一部分，我们提供了一个简单的基于命令行的应用程序，允许您使用SharedConfig。  </p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/state.sync.example.png" alt=""></p>
-<p>以下是SharedConfigCLI中可用的命令菜单：<br><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs undefined">在命令行提示符处输入以下命令之一：<br><br>GET_ALL  - 打印出共享配置中的所有属性。<br>GET &#123;key&#125;  - 打印出给定键的配置属性。<br>PUT &#123;key&#125;，&#123;value&#125;  - 使用给定的键/值对更新共享配置。打印出以前的值（如果存在）。<br>PUT_IF_ABSENT &#123;key&#125;，&#123;value&#125;  - 仅在尚未定义属性的情况下，使用给定的键/值对更新共享配置。<br>REMOVE &#123;key&#125; [，&#123;currentValue&#125;]  - 从共享配置中删除给定的属性。如果给出&#123;currentValue&#125;，则仅在属性的当前值与&#123;currentValue&#125;匹配时删除。<br>REPLACE &#123;key&#125;，&#123;newValue&#125; [，&#123;currentValue&#125;]  - 更新属性的值。如果给出&#123;currentValue&#125;，则仅在属性的当前值与&#123;cuurentValue&#125;匹配时才更新。<br>CLEAR - 从共享配置中删除所有密钥。<br>REFRESH  - 强制从同步状态更新。<br>HELP - 打印出命令列表。<br>QUIT - 终止程序。<br></code></pre></td></tr></table></figure></p>
-<p>安装Pravega-Samples并使用相同的范围和流名称启动SharedConfigCLI的两个实例。这将模拟两个不同的进程如何将SharedConfig的本地副本与一个共享状态对象进行协调。您可以按照以下步骤来了解SharedConfig的如何协调：</p>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>过程1</th>
-<th>过程2</th>
-<th>讨论</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>GET_ALL</td>
-<td>GET_ALL</td>
-<td>显示两个进程都看到一个空的SharedConfig</td>
-</tr>
-<tr>
-<td>2</td>
-<td>PUT  p1, v1</td>
-<td></td>
-<td>进程1添加名为p1的属性</td>
-</tr>
-<tr>
-<td>3</td>
-<td>GET p1</td>
-<td>GET p1</td>
-<td>过程1看到属性的值v1, 进程2没有名为p1的属性。为什么？因为它没有, 使用共享状态刷新其状态</td>
-</tr>
-<tr>
-<td>4</td>
-<td></td>
-<td>REFRESH</td>
-<td>将进程2的状态与共享状态重新同步</td>
-</tr>
-<tr>
-<td>5</td>
-<td></td>
-<td>GET p1</td>
-<td>现在，流程2看到了步骤2中所做的更改流程1</td>
-</tr>
-<tr>
-<td>6</td>
-<td></td>
-<td>REPLACE p1, newVal, v1</td>
-<td>进程2尝试更改p1的值，但使用条件替换，这意味着仅当p1的旧值为v1（此时为此）时才应进行更改</td>
-</tr>
-<tr>
-<td>7</td>
-<td></td>
-<td>GET p1</td>
-<td>果然，p1的值改为newVal</td>
-</tr>
-<tr>
-<td>8</td>
-<td>REPLACE p1, anotherVal, v1</td>
-<td></td>
-<td>进程1尝试以与进程2在步骤6中所做的相同的方式更改p1的值。这将失败，因为共享状态中p1的值不再是v1</td>
-</tr>
-<tr>
-<td>9</td>
-<td>GET p1</td>
-<td></td>
-<td>步骤8中的失败替换操作导致进程1的共享状态, 副本被更新，由于步骤6，其值现在是newVal。</td>
-</tr>
-</tbody>
-</table>
-<p>您可以使用类似的序列，以探索PUT_IF_ABSENT的语义以及修改共享状态的其他操作。<br>这个想法是，只有在对最新的值进行操作时，对SharedConfig的修改才会成功。我们使用乐观并发来实现SharedConfig对象的多个消费者之间实现有效的一致性。<br>您可以同时运行多个不同的SharedConfig状态对象，每个单独的SharedConfig使用基于不同Pravega Stream的State Synchronizer对象。当然，如果使用由同一Stream支持的State Synchronizer对象启动两个应用，则两个进程会同时访问共享状态，这正是我们上面说明的情况。</p>
-<h2 id="使用State-Synchronizer构建SharedMap"><a href="#使用State-Synchronizer构建SharedMap" class="headerlink" title="使用State Synchronizer构建SharedMap"></a>使用State Synchronizer构建SharedMap</h2><p>我们使用State Synchronizer在Pravega-Samples中构建SharedMap对象。State Synchronizer可用于构建几乎任何数据结构的共享版本。也许你的应用只需要共享一些简单的整数计数; 我们可以使用State Synchronizer来构建一个简单的共享计数器。也许您共享的数据是集群中当前运行的服务器集; 我们可以使用State Synchronizer来构建共享Set。可能性是多方面的。<br>让我们通过使用如何构建共享映射来探讨如何使用State Synchronizer构建共享对象。</p>
-<h2 id="State-Synchronizer"><a href="#State-Synchronizer" class="headerlink" title="State Synchronizer"></a>State Synchronizer</h2><p>State Synchronizer是一种Pravega客户端，类似于EventStreamReader或EventStreamWriter。状态同步器是通过ClientFactory对象创建的。每个状态同步器在范围内都有唯一的名称。SynchronizerConfig对象用于定制StateSynchronizer的行为（尽管目前State Synchronizer上没有可配置的属性）。State Synchronizer使用Java泛型类型来允许开发人员指定类型特定的State Synchronizer。所有这些都以类似于使用EventStreamReaders和EventStreamWriters的方式进行。</p>
-<h2 id="StateT"><a href="#StateT" class="headerlink" title="StateT"></a>StateT</h2><p>在设计使用State Synchronizer的应用时，开发人员需要决定要同步（共享）哪种类型的状态。我们共享一个map吗？一个 set ? 一个Pojo？正在共享的数据结构是什么？这定义了状态同步器的核心“类型”（状态同步器接口中的StateT泛型类型）。StateT对象可以是实现Pravega定义的Revisioned接口的任何Java对象。  Revisioned是一个简单的接口，允许Pravega确保它能够正确地比较两个不同的StateT对象。<br>在我们的示例中，SharedMap是State Synchronizer的一个应用。它定义了一个简单的Map对象，该对象表示您期望从键值对映射对象获得的典型get（key），set（key，value）等操作。它根据需要使用状态同步器的实现了  Revisioned接口，并使用简单的ConcurrentHashMap作为Map的内部实现。因此，在我们的示例中，StateT对应于SharedStateMap \&lt;K，V&gt;。</p>
-<h2 id="UpdateT和InitialUpdateT"><a href="#UpdateT和InitialUpdateT" class="headerlink" title="UpdateT和InitialUpdateT"></a>UpdateT和InitialUpdateT</h2><p>除了StateT之外，还有另外两种需要由StateSynchronizer定义的泛型类型：Update类型和InitialUpdate类型。UpdateType表示Pravega Stream上持久存储的“delta”或更改对象。InitialUpdateType是一个特殊的更新对象，用于启动状态同步器。UpdateType和InitialUpdateType都是根据StateT定义的。<br>StateSynchronizer使用Stream上的单个Segment来将更新（更改）存储到共享状态对象的，以Initial或Update类型对象的形式进行的更改将根据更新是否与Stream中状态的最新副本相关而写入Stream。如果更新是基于旧版本的状态，则不进行更新。<br>StateSynchronizer对象本身在本地内存中保存状态的本地副本，它还保留有关该状态副本的版本元数据。可以使用getState（）操作检索本地状态。内存中的本地副本可能是过时的，应用可以使用fetchUpdates（）操作来刷新它，该操作将检索对给定版本的状态所做的所有更改。<br>应用的大多数更改都是通过updateState（）操作进行的。updateState（）操作将Function作为参数。使用最新的状态对象调用Function，并计算要应用的更新。<br>在我们的示例中，InitialUpdateT实现为：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/**<br> * Create a Map. This is used by StateSynchronizer to initialize shared state.<br> */<br>private static class CreateState&lt;K, V&gt; implements InitialUpdate&lt;SharedStateMap&lt;K,V&gt;&gt;, Serializable &#123;<br>    private static final long serialVersionUID = 1L;<br>    private final ConcurrentHashMap&lt;K, V&gt; impl;<br><br>    public CreateState(ConcurrentHashMap&lt;K, V&gt; impl) &#123;<br>        this.impl = impl;<br>    &#125;<br><br>    @Override<br>    public SharedStateMap&lt;K, V&gt; create(String scopedStreamName, Revision revision) &#123;<br>        return new SharedStateMap&lt;K, V&gt;(scopedStreamName, impl, revision);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>在这种情况下，CreateState类用于通过创建一个新的、空的SharedStateMap对象来初始化Stream中的共享状态。您可以想象InitialUpdate的其他示例将计数器设置为1，或者将Set初始化为固定的初始成员集。<br>像“initialize”和“update”这样的函数表示为类似乎有点奇怪，但是当你考虑到它时，这是有意义的。这些更改（如初始化和更新）需要存储在Pravega中，因此它们需要的是可序列化的对象。客户端应用必须能够随时启动，计算当前状态，然后在将更改写入Stream时保持运行状态。如果我们只是在Stream中存储“最新状态值”，就不可能始终如一地提供使用乐观并发的并发更新和读取。<br>UpdateT有点棘手。不仅有一种对Map的更新，而是有各种更新：放置一个键/值对，放置一组键/值对，删除键/值对并清除所有键/值对，这些“更新类型”中的每一个都由它们自己的类表示。我们定义了一个名为StateUpdate的抽象类，所有这些“操作”更新类都从该类继承。  </p>
-<h3 id="StateUpdate抽象类"><a href="#StateUpdate抽象类" class="headerlink" title="StateUpdate抽象类"></a>StateUpdate抽象类</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/**<br> * A base class for all updates to the shared state. This allows for several different types of updates.<br> */<br>private static abstract class StateUpdate&lt;K,V&gt; implements Update&lt;SharedStateMap&lt;K,V&gt;&gt;, Serializable &#123;<br>    private static final long serialVersionUID = 1L;<br><br>    @Override<br>    public SharedStateMap&lt;K,V&gt; applyTo(SharedStateMap&lt;K,V&gt; oldState, Revision newRevision) &#123;<br>        ConcurrentHashMap&lt;K, V&gt; newState = new ConcurrentHashMap&lt;K, V&gt;(oldState.impl);<br>        process(newState);<br>        return new SharedStateMap&lt;K,V&gt;(oldState.getScopedStreamName(), newState, newRevision);<br>    &#125;<br><br>    public abstract void process(ConcurrentHashMap&lt;K, V&gt; updatableList);<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>通过定义抽象类，我们可以用抽象StateUpdate类来定义UpdateT。抽象类实现StateSynchronizer调用的“applyTo”方法，以便将更新应用于当前状态对象并返回更新后的状态对象。实际的工作是在对旧状态的底层Map（impl）对象的副本上进行的，对impl对象和新版本的SharedState应用“特定于每个子类”的“进程”操作，使用后处理的impl作为内部状态。抽象类定义了一个process（）方法，该方法实际上需要应用任何更新的工作。此方法由表示共享映射上的Put，PutAll等操作的各种具体类实现。<br>例如，我们在SharedMap对象上实现Put（key，value）操作的方式：</p>
-<h3 id="作为更新对象"><a href="#作为更新对象" class="headerlink" title="作为更新对象"></a>作为更新对象</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/**<br> * Add a key/value pair to the State.<br> */<br>private static class Put&lt;K,V&gt; extends StateUpdate&lt;K,V&gt; &#123;<br>    private static final long serialVersionUID = 1L;<br>    private final K key;<br>    private final V value;<br><br>    public Put(K key, V value) &#123;<br>        this.key = key;<br>        this.value = value;<br>    &#125;<br><br>    @Override<br>    public void process(ConcurrentHashMap&lt;K, V&gt; impl) &#123;<br>        impl.put(key, value);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>这里，process（）操作是向map添加键/值对，或者如果key已经存在，则更改该值。SharedMap上的每个“操作”都是根据创建StateUpdate的各个子类的实例来实现的。</p>
-<h2 id="在SharedMap上执行操作"><a href="#在SharedMap上执行操作" class="headerlink" title="在SharedMap上执行操作"></a>在SharedMap上执行操作</h2><p>SharedMap演示了StateSynchronizer的典型操作。SharedMap提供了一个API，非常类似于Java的Map \ &lt;K，V&gt;接口。它通过操作StateSynchronizer来实现了Map操作，使用StateUpdate的各种子类来执行状态更改（写入）操作。</p>
-<h3 id="创建-初始化"><a href="#创建-初始化" class="headerlink" title="创建/初始化"></a>创建/初始化</h3><h3 id="创建SharedMap"><a href="#创建SharedMap" class="headerlink" title="创建SharedMap"></a>创建SharedMap</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/**<br>  * Creates the shared state using a synchronizer based on the given stream name.<br>  *<br>  * @param clientFactory - the Pravega ClientFactory to use to create the StateSynchronizer.<br>  * @param streamManager - the Pravega StreamManager to use to create the Scope and the Stream used by the StateSynchronizer<br>  * @param scope - the Scope to use to create the Stream used by the StateSynchronizer.<br>  * @param name - the name of the Stream to be used by the StateSynchronizer.<br>  */<br> public SharedMap(ClientFactory clientFactory, StreamManager streamManager, String scope, String name)&#123;<br>     streamManager.createScope(scope);<br><br>     StreamConfiguration streamConfig = StreamConfiguration.builder().scope(scope).streamName(name)<br>             .scalingPolicy(ScalingPolicy.fixed(1))<br>             .build();<br><br>     streamManager.createStream(scope, name, streamConfig);<br><br>     this.stateSynchronizer = clientFactory.createStateSynchronizer(name,<br>                                             new JavaSerializer&lt;StateUpdate&lt;K,V&gt;&gt;(),<br>                                             new JavaSerializer&lt;CreateState&lt;K,V&gt;&gt;(),<br>                                             SynchronizerConfig.builder().build());<br><br>     stateSynchronizer.initialize(new CreateState&lt;K,V&gt;(new ConcurrentHashMap&lt;K,V&gt;()));<br> &#125;<br></code></pre></td></tr></table></figure>
-<p>SharedMap对象是通过定义范围和流来创建的（几乎总是如此，范围和流可能已经存在，因此第10-16行中的步骤通常是无操作的）。StateSynchronizer对象本身使用ClientFactory以类似于创建Pravega Reader或Writer的方式在第18-21行中构造。请注意，UpdateT对象和InitialUpdateT对象可以指定单独的Java序列化程序。目前，SynchronizerConfig对象非常枯燥; StateSynchronizer上当前没有可用的配置选项。<br>StateSynchronizer提供了一个带InitialUpdate对象的初始化（）API。这在SharedMap构造函数中被调用，以确保SharedState被正确初始化。请注意，在许多情况下，SharedMap对象将在已经包含SharedMap的共享状态的流上创建。即使在这种情况下，也可以调用initialize（），因为initialize（）不会修改Stream中的共享状态。</p>
-<h2 id="读操作"><a href="#读操作" class="headerlink" title="读操作"></a>读操作</h2><p>读操作，即不改变共享状态的操作，如get（key）containsValue（value）等，针对StateSynchronizer的本地副本工作。所有这些操作都使用getState（）检索当前本地状态，然后从该状态执行读取操作。StateSynchronizer的本地状态可能是过时的。在这些情况下，SharedMap客户端将使用refresh（）来强制StateSynchronizer使用StateSynchronizer对象上的fetchUpdates（）操作从共享状态刷新其状态。<br>请注意，这是一个设计决策，用于平衡响应性的单调性。我们可以很容易地实现读取操作，而不是在对本地状态执行读取之前总是执行刷新。如果开发人员预计将对共享状态进行频繁更新，这将是一种非常有效的策略。在我们的例子中，我们曾想象过，SharedMap会被频繁地读取，但更新相对较少，因此选择针对本地状态进行读取。</p>
-<h2 id="写（更新）操作"><a href="#写（更新）操作" class="headerlink" title="写（更新）操作"></a>写（更新）操作</h2><p>每一个写操作都是根据我们前面讨论过的各种具体StateUpdate对象实现的。clear（）操作使用StateUpdate的Clear子类删除所有键/值对，put（）使用Put类等。<br>让我们深入了解put（）操作的实现，以更详细地讨论StateSynchronizer编程：</p>
-<h3 id="实现put（键，值）"><a href="#实现put（键，值）" class="headerlink" title="实现put（键，值）"></a>实现put（键，值）</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/**<br> * Associates the specified value with the specified key in this map.<br> *<br> * @param key - the key at which the value should be found.<br> * @param value - the value to be entered into the map.<br> * @return - the previous value (if it existed) for the given key or null if the key did not exist before this operation.<br> */<br>public V put(K key, V value)&#123;<br>    final AtomicReference&lt;V&gt; oldValue = new AtomicReference&lt;V&gt;(null);<br>     stateSynchronizer.updateState((state, updates) -&gt; &#123;<br>        oldValue.set(state.get(key));<br>        updates.add(new Put&lt;K,V&gt;(key,value));<br>    &#125;);<br>    return oldValue.get();<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>需要注意的是，提供给StateSynchronizer的updateState（）的函数可能会被多次调用。将函数应用于旧状态的结果仅在对最新的状态修订应用时才会写入。如果存在竞争并且乐观并发检查失败，则将再次调用它。大多数时候只会有少量的调用。在某些情况下，开发人员可以选择使用fetchUpdates（）在运行updateState（）之前将StateSynchronizer与流中的最新共享状态副本同步。这是优化预期更新的频率与您希望更新效率之间的权衡的问题。如果您期望进行大量更新，请在调用updateState（）之前调用fetchUpdates（）。在我们的例子中，我们没有期望进行很多更新，因此每次调用put()时，都可能处理函数的几个调用。</p>
-<h2 id="删除操作"><a href="#删除操作" class="headerlink" title="删除操作"></a>删除操作</h2><p>我们选择实现删除（删除）操作以利用StateSynchronizer的compact（）功能。我们有一个策略，在每5个删除操作之后，并且在每次clear（）操作之后，我们都会进行compact()操作。现在，我们可以选择在每5次更新操作后执行compact（）操作，但是我们希望隔离使用compact（）仅删除操作的说明。<br>您可以将compact（）视为StateSynchronizer中的“垃圾收集”形式。在将一定数量的更改写入SharedState之后，将新的初始状态（所有更改的累积表示）写入Stream可能是有效的。这样，可以忽略比compact()操作更旧的数据，并最终从Stream中删除。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/ss.compact.png" alt=""></p>
-<p>作为compact（）操作的结果，新的初始状态（Initial2）被写入流。现在，来自Change3及更旧版本的所有数据不再相关，可以从Stream中回收垃圾。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/5/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/7/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -943,7 +938,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">84</a></div>
+      <div><a href="/archives">85</a></div>
     </div>
     
     

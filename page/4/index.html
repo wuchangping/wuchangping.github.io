@@ -115,6 +115,103 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/11/20/distributed-ideamodel-technology/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/11/20/distributed-ideamodel-technology/" itemprop="url">分布式系统架构设计 – 第8式 - 技术思维模型</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-11-20T20:40:38+08:00">2019-11-20 20:40:38</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><font color="#FF8C00">注：本思维模型系列文章已被infoq采纳并推荐至首页：<a href="https://www.infoq.cn/article/JjycubQz3YTBgozaZ4G9" target="_blank" rel="noopener">https://www.infoq.cn/article/JjycubQz3YTBgozaZ4G9</a></font>
+
+<p>日拱一卒，功不唐捐，一个知识领域里的 “道 法 术 器” 这四个境界需要从 微观、中观以及宏观 三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计36式》，讲诉分布式系统里最重要的三十六个的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
+<p><strong>“兵者，国之大事，死生之地，存亡之道，不可不察也”</strong>，这句话对企业来讲，兵即产品，国即企业，察即研究探讨，产品关系到企业的存亡，所以不可以不慎重地加以研究探讨。</p>
+<p>我们知道一个产品的成功不只是技术的成功，它还包括商业、创新、管理、资本、运营以及销售等的成功。当打造一个产品的时候，通常来说工程人员往往会比较关注技术层面的东西： 方案、功能、难点、亮点以及如何实现等，深度有余但高度与广度往往不足 。一般有点经验的工程人员都可以从点或线的层面考虑一个产品的实现，但往往缺乏从面及体的层面看待一个产品的能力。</p>
+<p>因此，如果说技术思维是架构师的一根DNA螺旋线，那么产品思维、创新思维以及商业思维等就是架构师的另外一根DNA螺旋线，只有两根DNA螺旋线俱全才能有机会进化出新物种。</p>
+<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>人的知识与能力可以从“时空”这两个角度进行评价，其可分为四个维度：深度、广度、高度以及跨度。空间角度指的是深度、广度、高度，时间角度指的是跨度。深度靠专研，广度靠学习，高度靠抽象，而跨度靠长久地积累经验。这四个维度组合成了一个人的知识与能力的时空度。</p>
+<p>万事万物逃脱不出<strong>“不易、简易、变易”</strong>这三个层次，金庸先生的《天龙八部》里少林寺有72技，其每一技又千变万化，想要样样精通，今生无望，然而练就“小无相功”却可以以这功法催动不同的“技”，甚至可以比原版更具威力，以“不易 简易”之功施展“变易”之术。那么对于技术开发人员来说技术也是“变易”的，更新快，领域多，复杂度高，样样精通也是今生无望，那么需要的就是找出适合自己的“功”，技术思维模型、产品思维模型、创新思维模型、商业思维模型就是这样的“功”。</p>
+<p>因此本系列文章提出了技术、产品、创新与商业这四个思维模型，这一系列文章不是为了解决具体的某个分布式系统设计里的难题，它提出了一种思维框架，从技术、产品、创新以及商业的角度，给工程人员以一种系统性的分析分布式系统设计难题的模型，这也是一种系统思维的体现。</p>
+<h2 id="技术思维模型"><a href="#技术思维模型" class="headerlink" title="技术思维模型"></a><font color="#FF8C00">技术思维模型</font></h2><p>技术思维模型很多，适合自己的才是最好的，这里提出“火箭技术思维模型”以抛砖引玉，如下图：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ideamodel/idea-model-technology.PNG" alt="技术思维模型"></p>
+<h4 id="火箭思维"><a href="#火箭思维" class="headerlink" title=" 火箭思维"></a><font color="#00CED1"> 火箭思维</font></h4><p>在这个技术思维模型里，产品被看作一个圆，技术是一个三角形火箭，它包括“势 道 法 术 器 界”这六个要素。其中技术只是产品当中的一个子集，在产品圆内还有企业文化、企业制度以及组织关系，这也是影响产品的几个非常重要的因素。</p>
+<p>在这个技术思维模型中的火箭也体现了一种产品开发思维，开发产品的时候应该先确定好大概的方向（趋势），这时并不需要非常精确但是方向一定要对，然后发射（开工），在过程中不断矫正迭代更新，使得短期目标与长期目标相符合，在这个火箭模型中每一级都都是上一级的动力，一级一级地推动，直至最终命中目标（产品满足市场需求，从而获取商业上的成功）。</p>
+<h4 id="技术与产品匹配-TPF-Technology-Product-Fit"><a href="#技术与产品匹配-TPF-Technology-Product-Fit" class="headerlink" title=" 技术与产品匹配(TPF: Technology-Product Fit)"></a><font color="#00CED1"> 技术与产品匹配(TPF: Technology-Product Fit)</font></h4><p>在做产品的时候第一步讲的是产品需要与市场匹配 (PMF: Product-Market Fit)，找出与市场匹配的产品，然后进行最小可行性验证(MVP:  Minimal Viable Product)。同样在做技术的时候，技术需要与产品匹配，这里提出一个新的概念TPF：Technology-Product Fit, 即技术与产品匹配。在技术思维模型里，当技术三角大于产品圆时，技术领先与产品需求，当技术三角小于圆时，技术落后于产品需求，但技术三角的三个点与圆刚好相交时，技术与产品达到最佳匹配，匹配合适度的评判标准是看是否符合下面的“五看三定六要素”的商业思维模型里的输出。</p>
+<h4 id="“势、道、法、术、器、界“-六元组"><a href="#“势、道、法、术、器、界“-六元组" class="headerlink" title=" “势、道、法、术、器、界“ 六元组"></a><font color="#00CED1"> “势、道、法、术、器、界“ 六元组</font></h4><p>狭义上的技术通常指的是技能属于“术”的范畴，而广义的技术则是市场趋势、自己的优势与劣势、产品设计理念、工程方法论、技术技能、工程工具以及约束限制这几个方面的组合体，抽象成工程哲学即“势、道、法、术、器、界”这六个字 ，简称技术思维六元组。</p>
+<h5 id="势：时势，是市场趋势、是产品定位同时也是自我的优势与劣势"><a href="#势：时势，是市场趋势、是产品定位同时也是自我的优势与劣势" class="headerlink" title=" 势：时势，是市场趋势、是产品定位同时也是自我的优势与劣势"></a><font color="#00CED1"> 势：时势，是市场趋势、是产品定位同时也是自我的优势与劣势</font></h5><p>“天时、地利、人和”，打造的产品必须符合市场趋势、准确定位客户需求，同时也要看看自己团队的优势与劣势。例如：依据市场的趋势判断，未来IOT 以及 IT运维市场是处于快速增长状态的，这可以成为为这两个市场提供数据存储服务的决策支持。同时，也要看清自我团队的优势与劣势，是否有能力打造这样的产品。</p>
+<h5 id="道：本质，是“不变”的范畴，是一个产品的灵魂、设计理念以及价值观"><a href="#道：本质，是“不变”的范畴，是一个产品的灵魂、设计理念以及价值观" class="headerlink" title=" 道：本质，是“不变”的范畴，是一个产品的灵魂、设计理念以及价值观"></a><font color="#00CED1"> 道：本质，是“不变”的范畴，是一个产品的灵魂、设计理念以及价值观</font></h5><p>“能工摹其形，巧匠摄其魂”，代码本身是没有灵魂、没有设计理念、没有价值观的，由打造它的人铸其形而赋其神。如同雕塑与画画一般，好的匠人与宗师可以赋予作品以灵魂。同样的产品由不同的人打造，不同的设计理念体现了不同的产品灵魂，这跟打造它的人相关、也跟企业制度、企业文化、组织结构等相关。</p>
+<p>分布式流存储从工程哲学以及设计理念的角度定义了自己的产品灵魂，工程哲学体现在“Best of Breed” 即“最佳物种”这句话，专门为物联网以及日志场景下的流式数据而设计，产品与市场适配，技术与产品适配。而它的设计理念又涵盖了：可度量化的高质量，云原生、微服务架构，软件定义存储，资源自动伸缩，消除数据冗余，数据无限存储，开箱即用，安全等。</p>
+<h5 id="法：方法论，是”简变“的范畴，是工程的套路方法"><a href="#法：方法论，是”简变“的范畴，是工程的套路方法" class="headerlink" title=" 法：方法论，是”简变“的范畴，是工程的套路方法"></a><font color="#00CED1"> 法：方法论，是”简变“的范畴，是工程的套路方法</font></h5><p>方法论体现在产品的设计原则、产品创新、产品交付以及功能与非功能特性的定义。 分布式流存储的设计原则是最佳物种的工程哲学方法论以及以客户为中心的设计理念，产品创新依据是 ”奇点创新“三部曲：破坏、下移、重生，这一点在”奇点创新思维模型”这一章里会讲述。产品交付依从“持续交付2.0” ，探索环与验证环互补互利、互为驱动。功能特性：分布式流存储系统的核心功能就一个：提供分布式流存储服务，而非功能特性可以一分为二：质量与约束。</p>
+<h5 id="术：技能，是”易变”的范畴，狭义上的技术，通常指的就是这一点"><a href="#术：技能，是”易变”的范畴，狭义上的技术，通常指的就是这一点" class="headerlink" title=" 术：技能，是”易变”的范畴，狭义上的技术，通常指的就是这一点"></a><font color="#00CED1"> 术：技能，是”易变”的范畴，狭义上的技术，通常指的就是这一点</font></h5><p>术，指的是技术上的设计方案与实现，在产品里占据了最大的一块版图。分布式流存储里的术可分为：</p>
+<ul>
+<li><p>架构视图：通常架构可以分为场景、物理、逻辑、数据处理以及开发这五个架构视图。分布式流存储最为朴素的数据处理架构视图即为抽象缓存与2层存储资源为流资源，实时性的读和写都在缓存里，数据恢复采用分布式日志系统，而长期存储采用了2层分布式文件存储系统，这也是分布式流存储最重要的一个设计理念。</p>
+</li>
+<li><p>控制面：分布式流存储的控制面最重要的两个工作就是：流管理与集群管理。流管理负责流的抽象、流的生命周期管理，而集群管理体现在集群状态管理以及集群的可服务管理。</p>
+</li>
+<li><p>数据面：数据面最重要的职责是数据“段“的抽象与管理：创建、删除、修改、使用。</p>
+</li>
+<li><p>高级企业特性：分布式流存储也提供了多租户、安全、监控告警、事务、读群组、状态同步器以及保序等企业级特性。</p>
+</li>
+</ul>
+<h5 id="器：工具，也是”易变”的范畴-“工欲善其事-必先利其器”"><a href="#器：工具，也是”易变”的范畴-“工欲善其事-必先利其器”" class="headerlink" title=" 器：工具，也是”易变”的范畴, “工欲善其事,必先利其器”"></a><font color="#00CED1"> 器：工具，也是”易变”的范畴, “工欲善其事,必先利其器”</font></h5><p>工具的使用对人类的进化起到至关重要的作用，生产工具是人类进步的一大要素，用好“器”可以事半功倍。在分布式流存储里采用的器可分为：</p>
+<ul>
+<li><p>构建与运维工具：k8s、Docker, 部署，版本回滚、升级、发布，监控、告警等组件；</p>
+</li>
+<li><p>测试验证工具：集成测试的Jenkins, 单元测试的 Mock ， 以及A/B测试的方法论等；</p>
+</li>
+<li><p>此外企业平台提供的资源支持也可以属于器的范畴。</p>
+</li>
+</ul>
+<h4 id="界：是约束，也是限制"><a href="#界：是约束，也是限制" class="headerlink" title=" 界：是约束，也是限制"></a><font color="#00CED1"> 界：是约束，也是限制</font></h4><p>技术思维模型里的三角形的三条边代表着“界” ，是技术边界也是技术约束与技术限制，对市场来说它是技术壁垒，对产品来说它是法律法规、是功能约束，对团队来说它是资源约束、是自我能力约束。分布式流存储的最大的技术优势也是最大的技术约束就是它是为 物联网、IT日志这样的数据格式而设计的，不是所有的数据类型存储都适用。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本系列文章讲述了四个思维模型： “技术思维模型、创新思维模型、商业思维模型以及产品思维模型”，再结合分布式流存储做了简单的举例分析。本文讲述”技术思维模型“，日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这几个思维模型对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“[1]，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，主要从事分布式产品的交付、架构设计以及开发工作。</p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1]《第二曲线创新》 李善友</p>
+<p>[2]《如何在一分钟内用5个问题讲清你的商业模式》 中欧商业评论，关苏哲 </p>
+<p>[3] Pravega.io</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/10/21/distributed-product-architecture-daoist/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -762,195 +859,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/24/distributed-servicegovernance-flowcontrol-1/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/03/24/distributed-servicegovernance-flowcontrol-1/" itemprop="url">分布式系统架构设计 – 第4式 - 服务治理之纵向限流模式</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-03-24T08:17:18+08:00">2019-03-24 08:17:18</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="导读"><a href="#导读" class="headerlink" title="导读"></a><font color="#FF8C00">导读</font></h2><p>日拱一卒，功不唐捐，分享是最好的学习，一个知识领域里的 <font color="#00CED1"> <strong>“道 法 术 器”</strong> </font> 这四个境界需要从 <font color="#00CED1"> <strong>微观、中观以及宏观</strong> </font>三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计三十六式》，讲诉分布式系统里最重要的三十六个虚数的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
-<p>实现一个分布式系统通常会面临三大难题： <font color="#00CED1"> <strong>故障传播性、业务拆分与聚合以及分布式事务</strong> </font>。本系列中的服务治理章节主要是为了解决故障传播性的难题，它包括： <font color="#00CED1"> <strong>隔离、熔断、降级、限流、容错以及资源管控</strong> </font>，本文将讲诉服务治理里的 <font color="#00CED1"> <strong>“限流-纵向限流”</strong> </font>模式，下一篇将讲诉<font color="#00CED1"> <strong>“限流-横向限流”</strong> </font>模式。</p>
-<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><font color="#00CED1"> <strong>可靠性</strong> </font>： 在分布式系统里，每个系统都有自己的容量限制，它所能处理的业务请求能力是有限的，如果不控制这些输入的请求数，突发输入过多的请求量会造成过度的资源竞争从而引发系统故障降低系统的可靠性。<br><br><font color="#00CED1"> <strong>可用性</strong> </font>： 限流有利于控制系统资源的消耗速率有利于过载保护，有利于保护业务资源不被耗尽。例如，当服务A所依赖的下游服务B由于某种原因不稳定、响应增加、延迟增加，对于调用者服务A意味着吞吐量下降和更多的资源占用，极端情况下甚至导致资源耗尽造成服务可用性故障。<br><br><font color="#00CED1"> <strong>流量监管</strong> </font>： 流量监管就是对输入的请求流量进行细粒度的控制，通过监管输入的请求量速率，对超出的部分进行”惩罚”， 比如直接丢弃，使得进入系统里的请求量被限制在一个系统所能承受的合理的范围之内，流量监管比较适合对延时要求较高的业务。<br><br><font color="#00CED1"> <strong>流量整形</strong> </font>： 流量整形就是控制最大输出请求速率提供可能，以确保请求量符合系统容量配置的最大传输速率规定。请求的流量被整形，以使它符合下游服务的速率需求，流量整形比较适合可靠性要求较高的业务。<br><br><font></font>
-
-<h2 id="限流限的是什么"><a href="#限流限的是什么" class="headerlink" title=" 限流限的是什么 "></a><font color="#FF8C00"> 限流限的是什么 </font></h2><p>限流其原理是监控输入的请求量，当达到指定的阈值时对量进行控制，以避免系统被瞬时的请求量高峰冲垮，从而保障系统的高可用、高可靠。因此，限流的限的自然是“流”，对于不同的场景“流”是不同的：</p>
-<ul>
-<li>网络限流，流指的是带宽、流量；</li>
-<li>I/O限流的“流”指的是TPS或QPS；</li>
-<li>并发限流的“流”指的是并发请求数；</li>
-<li>线程资源限流的“流”指的是线程数。</li>
-</ul>
-<p>这些“流” 通常具有资源竞用性、延迟性、抖动性以及不可靠性的特征。资源竞用性以及不可靠性需要控制流的资源使用，延迟性、抖动性需要对“流”进行整形，削峰填谷，控制请求的指标波形图。</p>
-<h2 id="限流处理策略"><a href="#限流处理策略" class="headerlink" title="限流处理策略"></a><font color="#FF8C00">限流处理策略</font></h2><ul>
-<li><p>直接拒绝：当请求量超过阈值后，新的请求就会被直接拒绝，方式为直接返回或者抛出异常。这种方式比较适合于对分布式系统的负载容量已知的情况下，比如通过全链路压测已经确定了准确的系统处理能力及系统容量，对应固定窗口、滑动窗口算法。</p>
-</li>
-<li><p>冷启动：当分布式系统长期处于低负载的情况下，请求量突发时，会把系统负载很快拉到很高的水准，这样就可能瞬间就把系统击垮。通过”冷启动”方式，让输入的请求量缓慢增加，在一个时间段内慢慢增加到系统所能承载的阈值上限，给冷系统一个预热的时间，避免系统被压垮，对应令牌桶算法。</p>
-</li>
-<li><p>匀速排队：匀速排队的方式也就是控制请求以均匀的速率通过，对应的是漏桶算法。</p>
-</li>
-</ul>
-<h2 id="限流模式设计思路"><a href="#限流模式设计思路" class="headerlink" title="限流模式设计思路"></a><font color="#FF8C00">限流模式设计思路</font></h2><p>如下图所示，在分布式系统里，限流通常可以按空间维度划分为纵向限流以及横向限流，本文讲述纵向限流，下一篇将讲诉 横向限流。</p>
-<div align="center"> 
-
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control.png" alt="流量控制"></p>
-<div align="left"> 
-
-<p>常用的纵向限流算法有两窗算法：固定窗口、滑动窗口以及两桶算法：令牌桶算法、漏桶算法，按其工作原理又可以划分为 保险丝模式以及变压器模式。</p>
-<h2 id="保险丝模式"><a href="#保险丝模式" class="headerlink" title="保险丝模式"></a><font color="#FF8C00">保险丝模式</font></h2><p>在电路中保险丝主要是起电流过载保护作用，当电路中的电流过载时，保险丝自身就会烧坏从而切断电流，保护后续电路的安全运行，但是保险丝有个问题就是在切断电流后，需要人工或者自动更换保险丝后，电路才能继续运行。</p>
-<p>限流算法里的固定窗口算法以及滑动窗口算法应用原理与此类似，在拒绝请求后，需要重新设置计数，因此我定义它们为限流保险丝模式。</p>
-<h3 id="固定窗口"><a href="#固定窗口" class="headerlink" title="固定窗口"></a><font color="#00CED1">固定窗口</font></h3><p>固定窗口算法类似人工保险丝模式，在切断流量后需要等很久才能重新工作。固定窗口算法将时间线划分成一个个固定大小的时间窗口，并且每个窗口都有一个计数器用于统计这一时间窗口内的访问次数，如果访问的次数超过了一个预先定义的阈值，则拒绝接下来的请求直到下一个时间窗口开始重新计数，又超过则继续拒绝，再在下一个时间窗口重新设置计数器继续计数，依次类推。</p>
-<div align="center"> 
-
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control-fixedwindow.png" alt="固定窗口"></p>
-<div align="left"> 
-
-
-
-<p>如上图所示，如果我们将时间线的窗口大小设置为5秒，上图里的窗口有[0, 5), [5, 10), …。假设限制是每5秒500个请求，如果在这个5秒内 计数器没超过 500就继续，超过500就拒绝后续的请求进入，直到下一个[5,10]的时间窗口内计数器被重新置0 再继续开始计数服务，再超过500，就继续拒绝服务，依次类推。</p>
-<p>很明显，固定窗口的优点很明确，那就是实现很简单，一个计数器就可以实现。但是缺点也很明显，例如：</p>
-<ol>
-<li><p>边界场景，在第一个[0,5]的时间窗口内，第1秒就把计数器打到超过500，则后续的4秒将无法服务，得等到下一个[5,10]的时间窗口内计数器被重新置0，才可以对外提供服务。</p>
-</li>
-<li><p>跨窗口场景，当在第一个时间窗口的 [4,5]计数器的计数是300，没有超过阈值，然后第二个时间窗口的[5,6]计数器是320，也没超过阈值，但是 在 [4,6]的时间窗口内计数器的计数是 300+320=620,很明显超过阈值，因此，固定窗口的缺陷也很明显。</p>
-</li>
-</ol>
-<h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a><font color="#00CED1">滑动窗口</font></h3><p>滑动窗口算法类似自动保险丝模式，在切断流量不像固定窗口那样需要等较长的时间才能重新工作。滑动窗口的计数器也类似固定窗口的计数器，但是将时间线做了进一步的细分，每次往后移动一个细分单元，再每一次都对一个小的窗口进行计数统计实现流量控制，这种方法可以很好的解决之前的固定窗口的跨窗口问题。</p>
-<div align="center"> 
-
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control-slidewindow.png" alt="滑动窗口"></p>
-<div align="left"> 
-
-
-
-<p>如上图所示，还是定义请求的阈值为500，我们将[0,5]划分为5个窗口，则每个窗口对应1s。假设还是在[4,5]有300个请求和下一秒的[5,6]有320个突发请求，按照滑动窗口的原理，此时统计的将是[1,6]窗口，很明显 300+320=620 &gt; 500，超出了阈值，从而触发拒绝服务，避免了固定窗口算法的请求量突增的问题。</p>
-<p>但是对于边界场景，例如[0,5]秒的窗口内，因为是按1s的时间单元进行窗口划分的，假设在第1ms的时间内，请求就超过500，然后就拒绝服务，然后需要等到下一个1s才可以继续出发服务，这很明显有59ms的时间窗式不能提供服务的，因此体现出来请求的指标也不大平滑。</p>
-<h2 id="变压器模式"><a href="#变压器模式" class="headerlink" title="变压器模式"></a><font color="#FF8C00">变压器模式</font></h2><p>因为保险丝模式都不能解决请求的边界问题，因此引出变压器模式，变压器是电路中将某一等级的电压或电流转换成另外一种同频率的电压或电流的设备，有利于稳流稳压。限流算法里的漏桶算法以及令牌桶算法工作原理与此类似，因此我定义它们为变压器模式。</p>
-<h3 id="漏桶"><a href="#漏桶" class="headerlink" title="漏桶"></a><font color="#00CED1">漏桶</font></h3><div align="center"> 
-
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control-leakybucket-1.png" alt="漏桶算法"></p>
-<div align="left"> 
-
-
-<p>上图显示了漏桶算法在流量整形和速率限制中的用法，突发的不均匀的请求到达后被扔到一个桶里，这个桶底下有个固定大小的孔，请求按固定大小稳定的输出。</p>
-<div align="center"> 
-
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control-leakybucket-2.png" alt="漏桶算法"></p>
-<div align="left"> 
-
-
-
-<p>如上图所示，漏桶算法工作步骤：</p>
-<ul>
-<li>请求随意的被输入，有突发的请求量也有比较小的请求量，有快的请求也有慢的请求，然后这些请求进入系统后不是立马被处理，而是被扔到一个桶里；</li>
-<li>当桶里缓冲的请求超过设定的水位时，输入的请求将被拒绝进入，从而丢失的后续请求</li>
-<li>这个桶以恒定的速率将输入的请求输出；</li>
-<li>对比窗口算法，漏桶算法多了一个缓冲。</li>
-</ul>
-<p>优点：</p>
-<ul>
-<li>漏桶算法里，桶的存在有利于削峰填谷，且输出总是按恒定的速率输出的，因此有利于流量整形，从而平滑了突发的请求量。</li>
-</ul>
-<p>缺点：</p>
-<ul>
-<li><p>很明显，漏桶里的请求超过水位后，后续请求会被丢弃，在需要保证幂等性请求的场景不适合使用。</p>
-</li>
-<li><p>漏桶总是按恒定速率输出请求，这是在假设后续的服务能承接这个速率的前提下的，它无法保证这些输出的请求能够稳定地在一个固定的时间内处理完，假如后续的服务出现资源抢用，或者故障，那么将无法处理这个很定的输出速率，从而引发更大的级联故障。</p>
-</li>
-</ul>
-<p>如上图所示，如果服务2变慢，就会一直占用线程资源不释放，从而导致无法响应服务1的请求，而服务1还是以恒定的速率处理漏桶的请求，而其下游资源不够，因此也会引起级联故障。</p>
-<h3 id="令牌桶"><a href="#令牌桶" class="headerlink" title="令牌桶"></a><font color="#00CED1">令牌桶</font></h3><p>下图显示了令牌桶的主要工作步骤：</p>
-<div align="center"> 
-
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control-tockenbucket.png" alt="令牌桶算法"></p>
-<div align="left"> 
-
-
-<p>如上图所示，令牌桶算法工作步骤：</p>
-<ul>
-<li>在这个桶中有按一定时间周期定期生成的令牌，令牌按预先定义的时间周期进行填充；</li>
-<li>令牌桶有最大的令牌个数限制；</li>
-<li>如果请求到来时，必须从令牌桶中取得令牌，之后才可以对这个请求进行处理，并且从令牌桶中删除这个被获取的令牌；</li>
-<li>如果令牌桶中没有令牌，则无法发送请求，请求必须稍后重试。</li>
-</ul>
-<p>优点</p>
-<ul>
-<li>如果令牌桶中令牌已满，则丢令牌而不是丢请求。</li>
-<li>可以支持突发的请求。</li>
-</ul>
-<p>缺点</p>
-<ul>
-<li>令牌被耗光后需要等下一次令牌填充，这意味着需要等待一段时间令牌填充后后续请求才可以使用。</li>
-<li>对请求的处理速率没做限制，这意味着输入的请求处理速率有可能高过设置的阈值从而引发故障。</li>
-</ul>
-<h3 id="漏桶VS令牌桶-3"><a href="#漏桶VS令牌桶-3" class="headerlink" title="漏桶VS令牌桶[3]"></a><font color="#00CED1">漏桶VS令牌桶[3]</font></h3><ul>
-<li><p>漏桶算法控制输出的请求量，输入的请求量可以变化，但输出的请求量保持恒定不变。令牌桶算法控制输入的令牌量，但不限制输出的请求量，输出的请求量可以根据突发的大小而变化。</p>
-</li>
-<li><p>漏桶算法不依赖令牌。令牌桶算法是令牌依赖的。</p>
-</li>
-<li><p>在漏桶算法中，如果桶已满，则丢弃请求。在令牌桶中，如果桶已满，则丢弃令牌但不会丢弃该请求。</p>
-</li>
-<li><p>在漏桶中，请求不断被输出。在令牌桶中，只有在拿到令牌时请求才能通过。</p>
-</li>
-<li><p>漏桶以恒定速率发送请求。令牌桶允许在恒定速率之后以更快的速率发送突发请求。</p>
-</li>
-</ul>
-<h2 id="算法实践"><a href="#算法实践" class="headerlink" title="算法实践"></a><font color="#FF8C00">算法实践</font></h2><ul>
-<li><p>固定窗口与滑动窗口实现都比较简单，性能较好，但是在超出限流阈值后，请求都会被直接拒绝，因此适用于非幂等性的请求场景；</p>
-</li>
-<li><p>漏桶算法，有利于控制输出的请求速率，但是在超出桶的水位后请求也会被丢失，也不适用于幂等性请求的场景;</p>
-</li>
-<li><p>令牌算法，可以支持突发的请求量，但是不控制输出的请求速率，在超出阈值后，只丢失令牌但不丢失请求，因此可以结合在幂等性请求的场景使用;</p>
-</li>
-<li><p>权衡利弊，根据业务场景合理组合以上4个算法，才是最佳实践。</p>
-</li>
-</ul>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲诉了服务治理里的 <font color="#00CED1"><strong>“纵向限流”</strong></font>模式，在前一篇《分布式系统架构设计三十六式之服务治理-降级模式》里讲诉了分布式系统服务治理的降级模式。另作者能力与认知都有限，欢迎大家拍砖留念。</p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及大数据，现就职于DELL EMC。个人技术博客：<a href="https://changping.me" target="_blank" rel="noopener">https://changping.me</a></p>
-<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a> ，可以自由阅读、分享、转发、复制、分发等，限制是需署名、非商业使用（以获利为准）以及禁止演绎。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1]<a href="https://tech.domain.com.au/2017/11/protect-your-api-resources-with-rate-limiting" target="_blank" rel="noopener">https://tech.domain.com.au/2017/11/protect-your-api-resources-with-rate-limiting</a><br>[2]<a href="https://github.com/alibaba/Sentinel/wiki/%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6" target="_blank" rel="noopener">https://github.com/alibaba/Sentinel/wiki/%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6</a><br>[3]<a href="https://www.quora.com/What-is-the-difference-between-token-bucket-and-leaky-bucket-algorithms" target="_blank" rel="noopener">https://www.quora.com/What-is-the-difference-between-token-bucket-and-leaky-bucket-algorithms</a><br>[4]<a href="https://en.wikipedia.org/wiki/Rate_limiting" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Rate_limiting</a><br>[5]<a href="https://en.wikipedia.org/wiki/Bandwidth_throttling" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Bandwidth_throttling</a><br>[6]<a href="https://en.wikipedia.org/wiki/Bandwidth_management" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Bandwidth_management</a><br>[7]<a href="https://en.wikipedia.org/wiki/Token_bucket" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Token_bucket</a><br>[8]<a href="https://en.wikipedia.org/wiki/Leaky_bucket" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Leaky_bucket</a></p>
-</div></div></div></div></div></div></div></div></div></div></div></div>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/3/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/5/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -976,7 +884,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">84</a></div>
+      <div><a href="/archives">85</a></div>
     </div>
     
     

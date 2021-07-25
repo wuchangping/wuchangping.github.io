@@ -115,6 +115,100 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2021/07/25/ai-training-inference-2/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2021/07/25/ai-training-inference-2/" itemprop="url">分布式训练与推理实战 – 第2式 - 分布式训练的评价指标</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2021-07-25T22:23:38+08:00">2021-07-25 22:23:38</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/AI/" itemprop="url" rel="index"><span itemprop="name">AI</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>不同于教科书里讲的深度学习的评价指标，这里主要讲述生产训练中常用的评价指标。通常在分布式训练中对训练的过程与结果会进行评价，比如选择一个评价指标：准确率，即表明模型求解给定问题的准确度。而本文提到的评价指标主要分为两大类，即训练结果评价与训练系统评价。</p>
+<h2 id="训练结果评价"><a href="#训练结果评价" class="headerlink" title="训练结果评价"></a><font color="#FF8C00">训练结果评价</font></h2><p>教科书里经常提到的深度学习的评价指标有准确率、精确率、召回率、F1值等，如下：</p>
+<ul>
+<li><p>准确率（Accuracy），所有的预测正确（正类负类）的占总的比重；</p>
+</li>
+<li><p>精确率（Precision），查准率，即正确预测为正的占全部预测为正的比例；</p>
+</li>
+<li><p>召回率（Recall），查全率，即正确预测为正的占全部实际为正的比例；</p>
+</li>
+<li><p>F1值（H-mean值），F1值为算数平均数除以几何平均数，且越大越好；</p>
+</li>
+</ul>
+<p>实际上这些指标在真正的生产过程中用的不多，在实际的分布式训练过程中，比较关心的评价指标有：</p>
+<ul>
+<li><p>加速比，即多卡训练下的单卡吞吐量平均指标除以单卡训练下的吞吐量平均指标，比如，大规模训练下的 ResNet-50 v3的单卡FPS指标是400，而单卡训练的FPS指标是500，那么加速比即 400/500 = 0.8，加速比体现的是训练集群的效率与可扩展性，越高的加速比表明训练集群的资源利用率越高，但是越高的加速比要求对训练集群的技术要求也越高。比如 一个 1000张卡的训练集群，要求 加速比 0.9以上，那么对于主机间的网络、主机内的网络、全栈软件、训练卡内部的硬件架构、集合通信算法、训练算法的优化等的要求都极高，这就涉及到整个分布式训练系统的问题，而不是单个点能彻底解决的；</p>
+</li>
+<li><p>收敛时间与训练次数（epoch），生产过程中对训练所有的时间是有要求的，假设给定一个模型的训练次数(epoch)为100，如果要把这个100次都训练完需要 好几天，甚至好几个星期，那么可以认为生产不适用，基本上可以定义 训练一个模型到收敛需要 24小时以上，都可以看做是生产不适用，需要扩大训练集群的规模，使之训练时间控制在24小时之内；</p>
+</li>
+<li>平均准确率(eval Accuracy)，平均准确率是训练是否收敛的重要评判标准之一，比如定义一个 Resnet50 v3 的训练模型的准确率为 75.8%，如果训练结束的平均准确率能达到这个值就认为训练是收敛的；</li>
+<li>可收敛，训练的最终结果可以达到 平均准确率的要求，即认为可收敛，否者即任务训练失败；</li>
+<li>学习率(Learning rate)与损失率(Loss)，学习率大模型训练学习速度快，但是易导致损失率爆炸, 学习率小模型训练学习速度慢，而且容易过拟合，收敛速度慢；</li>
+<li>曲线拟合(Curve Fitting)，这是一个非常重要的评价手段，在XPU训练的场景下，通常先用一个已有的之前训练好模型为基础或先用GPU训练出一个基础模型，然后把XPU训练的结果指标跟GPU训练模型的指标进行比较，曲线拟合即认为XPU的训练结果达标，这也是调试XPU训练结果的一个重要手段。这里埋一个问题，按照曲线拟合的说法，假设有一个2000张XPU卡的集群，怎样评价这个集群训练的结果是正确的？以GPU训练的结果做比较，那么找一个这么大规模的GPU集群进行训练然后得到想要的模型做基础匹配也是不大现实的，那么需要采用什么技术方案才能解决这个问题？</li>
+</ul>
+<p>以TensorBoard为例，说明模型的评价指标，在下面的命令行列输入一个baseline:/log_path_2：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined"># tensorboard --logdir=training_model:/log_path_1, baseline:/log_path_2<br></code></pre></td></tr></table></figure>
+<p>这个baseline 的模型已经确定是精度达标，生产可用的。然后 XPU训练的模型的 <code>training_model:/log_path_1</code> 与这个GPU训练处的baseline进行比，在tensorboard里可以表现如下图：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/2/training-results.png" alt="训练结果"></p>
+<p>在上图里，新的模型的eval_accuracy值与baseline的值最终是一样的，这说明训练结果是收敛且精度达标，eval_accuracy中间的线有点差异是由于按不同的训练次数进行tensorboard指标保存所造成。新模型的Loss线与Learning_rate 线也与基础线吻合，这说明XPU训练的模型质量可生产适用。eval_accuracy、Loss、Learning_rate是三个最重要的度量指标，只要这样三个指标达标，那么大概率即可判断这个在XPU下新训练的模型具备生产可用能力。</p>
+<h2 id="训练系统评价"><a href="#训练系统评价" class="headerlink" title="训练系统评价"></a><font color="#FF8C00">训练系统评价</font></h2><p>分布式训练系统其本身也是一个分布式系统，因此除了训练领域相关的度量指标，也有与分布式系统质量有关的一套度量指标，其中比较重要的几项内容如下：</p>
+<ul>
+<li><p>可用性(Availability)，可用性指的是分布式训练系统长时间可对外提供服务的能力，通常采用小数点后的9的个数作为度量指标，按照这种约定“五个九”等于0.99999（或99.999％）的可用性，默认企业级达标的可用性为6个9。但是当前从时间维度来度量可用性已经没有太大的意义，因为设计得好的系统可以在系统出现故障得情况下也能保证对外提供得服务不中断，因此，当前更合适得可用性度量指标 是请求失败率;</p>
+</li>
+<li><p>可靠性(Reliability)，可靠性一般指系统在一定时间内、在一定条件下可以无故障地执行指定功能的能力或可能性， 也是采用小数点后的9的个数作为度量指标，通常5个9的可靠性就可以满足企业级达标；</p>
+</li>
+<li><p>可伸缩性(Scalability)，是指通过向系统添加资源来处理越来越多的工作并且维持高质量服务的能力，其受可用性以及可靠性的制约，集群规模越大出故障的概率越高从而降低可用性、可靠性，为了保证可用性以及可靠性达标，需要适配合理的可伸缩性指标；</p>
+</li>
+<li><p>韧性(resilience)，通常也叫容错性（fault-tolerant），也就是健壮和强壮的意思，指的是系统的对故障与异常的处理能力，比如在软件故障、硬件故障、认为故障这样的场景下，系统还能保持正常工作的能力，分布式训练系统的容错能力是一个非常重要的指标。</p>
+</li>
+</ul>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文从实践的角度讲述了分布式训练的训练结果评价指标与系统评价指标，这些指标是度量一个分布式训练系统与训练的模型是否生产可用的重要参考。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，某AI独角兽深度学习首席软件工程师，前EMC 大数据资深首席工程师，主要工作背景在深度学习、流式大数据、云计算、分布式中间件以及Linux内核。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1] <a href="https://www.changping.me">https://www.changping.me</a></p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/AI/" rel="tag"><i class="fas fa-tags"></i>AI</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2021/04/18/ai-training-inference-1/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -127,7 +221,7 @@
     </div>
     <header class="post-header">
       <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2021/04/18/ai-training-inference-1/" itemprop="url">人工智能训练与推理实战 – 第1式 - 什么是分布式训练</a>
+        <a class="post-title-link post-title-link-external" href="/2021/04/18/ai-training-inference-1/" itemprop="url">分布式训练与推理实战 – 第1式 - 什么是分布式训练</a>
       </h1>
       <div class="post-meta">
         
@@ -151,7 +245,7 @@
       
       <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>深度学习软件工程具有一体两面性：单卡的功能完备性、质量、用户体验以及多卡大规模。多卡大规模的出现是为了解决这样一个主要矛盾，即：“日益增长的数据、模型训练的需求与当前单卡计算能力无法满足这个需求之间的矛盾”，而分布式训练可以通过扩展卡子的规模解决这个矛盾，因此，这就是分布式训练的价值。</p>
 <p>然而，正如懂得很多道理，仍旧过不好这一生一样，懂得很多分布式训练的理论与知识，也不一定就能做好一个分布式训练系统。把这么多机器连接跑起来、跟跑好也是两回事，分布式训练是一门实践的软件工程，只有你PK过设计方案，调试过一个个Bug，手把手的敲过一行行的代码，为了性能指标能达标无所不用其极的去验证各种性能优化方案，才能知道细节在哪里，难点在哪里，痛点、挑战点在哪里。因此，宏观处着眼，微观处着手，才能完全理解分布式训练的道理。</p>
-<p>一个知识领域里的 “道 法 术 器” 这四个境界需要从 微观、中观以及宏观 三个角度来把握，微观是实践，中观讲方法论，宏观靠领悟。本系列文章我把它命名为《分布式训练实战18式》，从工程实战的角度拆解分布式训练里最重要的十八个套路，也是从“微观实践、中观方法论、宏观领悟”这三个维度系统性的讲述分布式训练技术，本文讲述第1式，也是最难讲清楚的一式（也后续再迭代更新），即本质的一问：<strong>“什么是分布式训练“</strong>。</p>
+<p>一个知识领域里的 “道 法 术 器” 这四个境界需要从 微观、中观以及宏观 三个角度来把握，微观是实践，中观讲方法论，宏观靠领悟。本系列文章我把它命名为《分布式训练与推理实战》，从工程实战的角度拆解分布式训练里最重要的十八个套路，也是从“微观实践、中观方法论、宏观领悟”这三个维度系统性的讲述分布式训练技术，本文讲述第1式，也是最难讲清楚的一式（也后续再迭代更新），即本质的一问：<strong>“什么是分布式训练“</strong>。</p>
 <h2 id="什么是分布式训练"><a href="#什么是分布式训练" class="headerlink" title="什么是分布式训练"></a><font color="#FF8C00">什么是分布式训练</font></h2><p>简单来说，<strong>分布式训练 = 分布式训练系统 = 分布式系统 + 训练系统</strong>，因此，要解答什么是分布式训练就需要解答什么是分布式系统以及什么是训练系统，而<strong>“系统 = 要素x连接 + 目的”</strong>，因此进一步的就是需要分析分布式系统的要素、连接与目的以及训练系统的要素、连接与目的。</p>
 <h3 id="分布式系统"><a href="#分布式系统" class="headerlink" title="分布式系统"></a>分布式系统</h3><p>在AI训练过程中采用单卡总会遇到一些问题，比如原始的数据样本太大无法加载进训练卡，或者模型太大无法训练，那么这就需要用到分布式技术把大量的数据分割成小块由多个训练卡分别进行计算，在更新运算结果后，再将结果统一合并得出最终的可用模型。百科上对分布式系统的定义有：</p>
 <figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">A distributed system is a system whose components are located on different networked computers, which communicate and coordinate their actions by passing messages to one another. The components interact with one another in order to achieve a common goal.<br></code></pre></td></tr></table></figure>
@@ -949,130 +1043,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2020/08/28/distributed-product_and_producibility/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2020/08/28/distributed-product_and_producibility/" itemprop="url">分布式系统架构设计 – 第22式 - 什么是产品以及如何将一个开源软件项目产品化</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-08-28T15:23:38+08:00">2020-08-28 15:23:38</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/product/" itemprop="url" rel="index"><span itemprop="name">product</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="导言"><a href="#导言" class="headerlink" title="导言"></a><font color="#FF8C00">导言</font></h2><p>架构师是业务与产品之间的桥梁，其应该具备技术与产品的商业意识并且需要有将技术转化为产品的能力。而当前软件架构师在工作过程中往往离不开开源的软件项目，因此经常面临两个问题：”什么是产品？“以及“如何将一个开源的软件项目产品化？”</p>
-<p>一套科学技术分析方法的背后有一定有着深刻的理论基础和哲学背景。找到了这套技术分析的源头，才能从本质上把握这套技术，看清其全貌，明了其长处和短处，这样在具体应用中，才能得心应手，提高胜算，并不断的丰富和发展这套技术。基于此，本文提出了一套如何将开源软件项目产品化的方法论。</p>
-<p>然而理论与实践是相互作用的，宏观角度知道方法论之后还需要从微观上进行实践，不然就如同知道很多道理却过不好这一生，知道很多原则却写不好代码一样一样的。</p>
-<h2 id="什么是产品"><a href="#什么是产品" class="headerlink" title="什么是产品"></a><font color="#FF8C00">什么是产品</font></h2><p>产品的定义：</p>
-<blockquote>
-<p>产品是指做为商品提供给市场，被人们使用和消费，并能满足人们某种需求的任何东西，包括有形的物品、无形的服务、组织、观念或它们的组合。</p>
-</blockquote>
-<p>从产品的定义中我们可以看到以下几点：</p>
-<ul>
-<li><p>属性：有形的物品、无形的服务、组织、观念或它们的组合，因此产品自带有形或无形属性；</p>
-<ul>
-<li>有形属性：狭义上产品是被生产出的能满足人们需求的具有物理属性的有形的物品。在绝大多数人的认知里，对产品的理解是停留在这一层次的，产品具有看得见、摸得着的物理形态；</li>
-<li>无形属性：广义上产品是可以满足人们需求的任何东西，无形的服务、组织、观念或者它们的组合也是产品。广义上的产品定义对人的认知有更高的要求。服务是产品、企业是产品、团队是产品、认知是产品、本文是产品，这些东西的组合也是产品。万物皆产品，它目前不是产品，那只是没被产品化、或者不在对的时间与空间里；</li>
-</ul>
-</li>
-<li><p>价值：产品首先是商品，其具有交易的价值，能提供给市场，供人们使用与消费，所有不能交易的东西不在产品的定义范围之内，因此这里可以推导出产品是具有价值的，没有价值的东西不属于产品的范畴；</p>
-</li>
-<li>交易：产品是做为商品提供给市场，被人们使用和消费，因此具有交易的价值，能满足市场的某种需求；</li>
-</ul>
-<p>因此基于以上的产品的公理化定义以及定理化推导得出产品的第一性原理定义：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">产品 = 属性 + 价值 + 交易<br></code></pre></td></tr></table></figure>
-<p>从以上公式中可以认为产品是<font color="#FF8C00"><strong>以属性为要素，以价值为连接，以交易为目的</strong></font>，属性又可分为有形属性与无形属性，二者之间有时候并不是割裂的，价值是能满足人们的某些需求，是物品与货币之间的连接关系，交易是产品生产的目的。</p>
-<p>然而这些都是教科书式的 定义，对产品的认知到这一层次已经可以超越绝大部分人，但它也只是停留在”产品“层次，而不是“作品”，更不是“艺术品”。</p>
-<p>在我看来 产品 还是具有灵魂的，产品是由人创造的，其自然会带有人的思想、人的创造、人的理念在里头，宗师与学徒画同样的一幅画，虽然东西都一样但是那个味道往往是不一样的。因此，要理解一款产品还需要理解其背后的人的设计理念，在此，我给产品注入人的灵魂，即“理念”，从而进一步扩展产品的第一性原理：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">产品 = 属性 + 价值 + 交易 + 理念<br></code></pre></td></tr></table></figure>
-<p>开源软件是信息的载体，其表现形式是具有无形的信息属性，是作为计算机程序的形式而存在的，要将开源软件产品化就需要将开源软件的属性价值化、可交易化以及注入人的设计理念。</p>
-<h2 id="如何将一个软件产品化"><a href="#如何将一个软件产品化" class="headerlink" title="如何将一个软件产品化"></a><font color="#FF8C00">如何将一个软件产品化</font></h2><h3 id="价值与交付"><a href="#价值与交付" class="headerlink" title="价值与交付"></a><font color="#00CED1">价值与交付</font></h3><p>如何将一个软件产品化回答的是<strong>“How”</strong> 的问题，在此之前还应该搞明白<strong>“Why”</strong>的问题，一个软件产品或者其特性为什么需要做也有一套方法论，这里我称之为 <font color="#E01000"><strong>“产品交付之双轮驱动模型”</strong></font>（如下图）：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/product-value-and-delivery.PNG" alt="价值与交付"></p>
-<p>在这个双轮驱动思维模型里有以下几个原则：</p>
-<ul>
-<li>以客户价值为前轮，前轮把握方向，解决的是需求探索、价值确定、特性探讨以及价值精炼的过程。首先是以客户价值为导向输入客户需求、但是这个需求还需要去伪存真、去粗纯精、过滤提炼，才能作为产品交付轮的输入，而不是只要是客户需求，不管是真需求还是假需求、也不管是有价值的、还是无价值的都全部输出到产品交付轮，无效的消耗产品交付资源；</li>
-<li>以产品交付为后轮，后轮提供驱动力，解决的是开发、测试、运维以及获取客户反馈，再根据这个客户反馈的结果作为开发的输入的过程。在产品交付轮中很重要的一环是<strong>“反馈“</strong>，其角色是作为客户与交付之间的桥梁，开发需要依据”客户反馈”作为输入，而不是自个闭门造车；</li>
-<li><p>客户价值又可分为主动式客户价值与被动式客户价值，获取客户需求的方式也需要合理取舍：</p>
-<ul>
-<li>主动式客户价值：有些客户”久病成医“，非常清楚自个痛点、难点、挑战点在哪里，也非常清楚自个需要什么样的解决方案可以药到病除，从而可以精确的输出自我的需求。这种客户对产品交付来说可遇而不可得，成本最低，需求最精确；</li>
-<li>被动式客户价值：这种情况下，光是在那里等待，从而期望客户能给出明确的需求作为输入，那是缘木求鱼、刻舟求剑，效率也非常低下。如同医院里的医生给病人看病一样，绝大多数客户其实只能知道表征，而不知道根因，因此就需要由产品交付轮以客户专家的角色提出解决方案，作为客户价值需求输入给客户，再看客户的使用效果得出反馈，再依据这个反馈调整解决方案。</li>
-</ul>
-</li>
-<li><p>在双轮驱动模型里，二者谁都离不开谁，不是厚此薄彼的关系，而是二者互相协作从而推动产品往商业成功这个目标前进的关系；</p>
-</li>
-<li><p>先有买家需求再有产品交付，而不是先有产品交付再找买家需求，需要明晰这个先后关系，为客户找出差异化需求才是产品交付的本质，寻求差异化、避免同质化，才是真正的以客户为中心。</p>
-</li>
-</ul>
-<p>因此，在将一个技术产品化之前，先花几分钟时间问问其价值在哪里，为什么需要做这个，这一点很重要，要能区分客户要的是能马上就能解决痛点的止痛片还是可有可无的无关紧要的维生素，从而以此进行任务排序，明晰产品交付与客户价值的双轮驱动关系，要能清楚的理解<font color="#00CED1"><strong>“以客户为中心”</strong></font>的价值理念以及让产品的获得<font color="#00CED1"><strong>“商业成功”</strong></font>的终极目标。</p>
-<h3 id="技术产品化"><a href="#技术产品化" class="headerlink" title="技术产品化"></a><font color="#00CED1">技术产品化</font></h3><p>通常来讲开源软件的产品化可以从价值、交易以及理念这三个方面进行。价值：可服务化、无形化有形、价值竞争，交易：可度量化、个性标准化，以及融入人的设计理念：复杂简单化等。</p>
-<h4 id="可服务化"><a href="#可服务化" class="headerlink" title="可服务化"></a><font color="#E01000">可服务化</font></h4><p>可服务化指的是从技术实现上支持可服务化，ToB产品常常是半产品半服务的，而且一般会签约服务质量保证协议SLA，因此除了团队需要有替客户解决问题的能力外，还需要从技术与流程上支持可服务化，其中包括：</p>
-<ul>
-<li>可运维性：易用的部署（步骤量化）、升级（AB测试、in-place、replace、rolling-back等）、数据迁移、自动化运维支持等。在一个产品的全生命周期里，开发也许只占20%不到的时间，而将近80%的时间都需要运维，因此需要拿出近4倍比的开发重视程度，重视可运维的设计与实现；</li>
-<li>可观测性：可观测性主要分为四大类: 监控、告警、日志、追踪；</li>
-<li>可操作性：支持远程接入、开放服务接口、后台管理UI、CLI、特性参数配置开关；</li>
-<li>健康管理：健康检查支持、健康报告支持、自动提交故障问题单支持；</li>
-<li>安全性：安全性是企业级产品必备，数据保护、密码安全、连接检查、LIB库授权协议等；</li>
-<li>多租户：多租户可以支持多团队、多部门小规模部署，进行业务隔离，也是非常重要的企业级特性；</li>
-<li>可视化：提供易用的用户UI、CLI;</li>
-<li>可支持：如何指定进行客户支持规则？如何升级成工程师团队介入提供服务定位问题或者排除问题？</li>
-</ul>
-<p>当看到以上类目，脑海里就能闪现出需要怎么去实现这些以及用什么组件可以最佳实践的快速完成交付，而不是停留在概念的阶段，那才算对可服务化有了自己的理解。</p>
-<h4 id="无形化有形"><a href="#无形化有形" class="headerlink" title=" 无形化有形"></a><font color="#E01000"> 无形化有形</font></h4><p>无形化有形指的是将无形的软件硬件化或者云化，单单一个软件包是难以让用户买单的，需要把它硬件化，打包到服务器里以有形产品的形态销售出去，或者云化后以服务的无形形态销售出去。</p>
-<h4 id="价值竞争"><a href="#价值竞争" class="headerlink" title=" 价值竞争"></a><font color="#E01000"> 价值竞争</font></h4><p>价值竞争指的是<strong>“参与到客户的购买周期中，在每个阶段为客户创造价值”</strong>[3]，从单纯的销售产品到提供整套生态化的解决方案。单纯的依靠销售产品往往已经难以给客户提供差异化的价值，并且也会面临低利润的同质化竞争，那么这个时候就需要更进一步的提供生态化的解决方案，针对行业需求做端到端的全生态化的解决方案。</p>
-<p>生态化的解决方案化能给客户提供差异化的价值关系。比如，一份药品在药店里只能卖30块，而且只是一次销售无法挖掘后续价值。但是到了医院就不一样了，其依据客户的”恐惧“为刚需的基石，提供一整套的类生态化的医疗解决方案，从挂号预约、望闻问切、到各种仪器设备过一遍、再到开出药方、再依据客户的反应效果把这个过程再来几遍，因此在药店里30块钱的药，在医院里就能卖到 300块、3000块，获取十倍、百倍、千倍利润。</p>
-<font color="#E01000"><strong>PS: 做生意要走正道，有良心的医院“以客户为中心”药到病除，无良医院“以利润为中心”无尽压榨客户，祝早日倒闭。</strong></font>
-
-<h4 id="可度量化"><a href="#可度量化" class="headerlink" title="可度量化"></a><font color="#E01000">可度量化</font></h4><p>可度量化指的是质量要可以量化，可预测的业务指标（比如AI训练里的精度、加速比、收敛时间、训练次数等）、性能、可靠性、可用性、可伸缩性、稳定性、容错性、可测试性等，这些很抽象的指标要能量化。在产品功能同质化的场景下，质量是最重要的差异化竞争力。</p>
-<p>业务性能、可靠性、可用性、可伸缩性这几者之间页互相制约，质量与成本、时间也互相制约，同时在云化的场景下客户又有SLA要求，不满足SLA要求的服务，除了要赔钱，还严重影响商业信誉，因此质量指标之间也需要合理取舍。</p>
-<h4 id="个性标准化"><a href="#个性标准化" class="headerlink" title=" 个性标准化"></a><font color="#E01000"> 个性标准化</font></h4><p>个性标准化指的是将个性化的、“DIY”化的开源项目转成标准化的、可复制的、可量化的，同时依据资源的规格约束进行标准化，比如依据服务器规格、虚机规格，机架规格等进行标准化，例如AI服务器的配置就需要定义CPU、内存、磁盘、带宽以及训练卡的标准的规格，这样才能提供可预测的性能、可预测的加速比等质量指标，再比如云端场景下的服务监控，除了定义指标的名称之外，还需要定义监控指标的类型、故障码、输出的标记以及对应的处理措施等，所有的这些都要能标准化、可操作性化。</p>
-<h4 id="复杂简单化"><a href="#复杂简单化" class="headerlink" title=" 复杂简单化"></a><font color="#E01000"> 复杂简单化</font></h4><p>复杂简单化指的是把复杂的体验简单化， 抽象及简化API、量化的安装步骤、高内聚低耦合的设计、易用的UI等，这里又涉及到产品设计哲学、人类的心理学等，也跟人的设计理念相关。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文以方法论的形式解读了软件开发过程当中经常会遇到的两个问题：”什么是产品以及如何将一个开源的软件项目产品化“，讲的是“无用”的知识。</p>
-<p>日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用，另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，某AI独角兽深度学习首席软件工程师，前EMC 大数据资深首席工程师，主要工作背景在深度学习、流式大数据、云计算、分布式中间件以及Linux内核。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1] <a href="https://a16z.com/2019/10/04/commercializing-open-source/" target="_blank" rel="noopener">https://a16z.com/2019/10/04/commercializing-open-source/</a></p>
-<p>[2] <a href="https://baike.baidu.com/item/%E4%BA%A7%E5%93%81/105875" target="_blank" rel="noopener">https://baike.baidu.com/item/%E4%BA%A7%E5%93%81/105875</a></p>
-<p>[3] 《价值竞争：以客户为中心的销售转型》 - 付遥</p>
-<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
-<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/product/" rel="tag"><i class="fas fa-tags"></i>product</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -1098,7 +1068,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">84</a></div>
+      <div><a href="/archives">85</a></div>
     </div>
     
     

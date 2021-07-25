@@ -115,6 +115,103 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/distributed-microservice-weifuwunaxieshier/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/23/distributed-microservice-weifuwunaxieshier/" itemprop="url">微服务-微服务解惑</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-23T19:38:30+08:00">2018-09-23 19:38:30</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="微服务解惑"><a href="#微服务解惑" class="headerlink" title="微服务解惑"></a>微服务解惑</h2><h3 id="微服务与容器"><a href="#微服务与容器" class="headerlink" title="微服务与容器"></a>微服务与容器</h3><p>微服务又指的是在传统应用架构的基础上，按照业务能力将系统拆分成多个服务，每个服务都是一个独立的应用，对外提供一些列的公共服务API，服务之间以轻量的方式互相调用。<br>微服务里的每个服务都是一个组件，通过编排组合从而达到独立、解耦、组件化、易维护、可复用、可替换、高可用的设计原则。微服务后，自动化部署以及运维是比较头疼的事，容器技术解决了这个问题。</p>
+<ul>
+<li>好的架构需要考虑后面的扩展以及修改</li>
+<li>好的架构是解耦的，需改一个地方不会影响另外一个地方</li>
+<li>好的架构是轻便灵活的，一个应用最好只解决一个问题，而不是叠加功能</li>
+</ul>
+<h3 id="微服务的标签"><a href="#微服务的标签" class="headerlink" title="微服务的标签"></a>微服务的标签</h3><ul>
+<li>单一职责</li>
+<li>微</li>
+<li>面向服务</li>
+<li>自治</li>
+<li>易扩展</li>
+<li>流程化</li>
+</ul>
+<h3 id="微服务的不足"><a href="#微服务的不足" class="headerlink" title="微服务的不足"></a>微服务的不足</h3><ul>
+<li>时效性·服务间的调用延时可能导致系统相应慢的问题</li>
+<li>一致性·微服务在保证一致性上需要做更多的工作</li>
+</ul>
+<h3 id="微服务的价值"><a href="#微服务的价值" class="headerlink" title="微服务的价值"></a>微服务的价值</h3><ul>
+<li>资源价值，资源不足是自动扩容，资源过量时自动缩容；</li>
+<li>业务价值，工作量、人员数量、交付质量、交付周期；</li>
+<li>技术价值，技术是为业务来服务的（个人标注：技术也是业务的一部分而不只是为业务而服务）</li>
+<li>用户价值，用户体验好，服务上线快</li>
+<li>未来价值，技术不成为业务的瓶颈</li>
+</ul>
+<h3 id="微服务的小目标"><a href="#微服务的小目标" class="headerlink" title="微服务的小目标"></a>微服务的小目标</h3><ul>
+<li>持续交付</li>
+<li>业务敏捷</li>
+<li>独立演进</li>
+<li>高可用</li>
+<li>高性能</li>
+</ul>
+<h3 id="微服务的拆与不拆"><a href="#微服务的拆与不拆" class="headerlink" title="微服务的拆与不拆"></a>微服务的拆与不拆</h3><p>依据：数据模型、业务模型、关键指标，粒度平衡，边界合理</p>
+<h3 id="DevOPS"><a href="#DevOPS" class="headerlink" title="DevOPS"></a>DevOPS</h3><p>开发与运维是一个整体，devops是一种思维方式，微服务与devops是天生一对</p>
+<h3 id="SpringCloud特点"><a href="#SpringCloud特点" class="headerlink" title="SpringCloud特点"></a>SpringCloud特点</h3><ul>
+<li>功能齐全</li>
+<li>标准化</li>
+<li>简单方便</li>
+<li>按需取用</li>
+<li>轻量</li>
+<li>易扩展、易维护</li>
+<li>可复用性</li>
+</ul>
+<h3 id="分布式系统组件及操作"><a href="#分布式系统组件及操作" class="headerlink" title="分布式系统组件及操作"></a>分布式系统组件及操作</h3><p>配置管理（Spring cloud config）、服务发现/调用(Feign)、断路器、智能路由（ZUUL）、微代理、控制总线、一次性Token、全局锁、决策竞选、分布式会话、集群状态。</p>
+<p>注册中心(Eureka)、负载均衡(Ribbon)、断路器（Hystrix）、服务追踪（Sleuth，zipkin）、权限（string security）、接口可视化（Swagger）。</p>
+<p>以上内容为《微服务那些事儿》读书笔记。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1]. 微服务那些事儿，纪晓峰著</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/22/bigdata-streaming-native-platform/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -722,76 +819,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/flink-deployment-docker/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/20/flink-deployment-docker/" itemprop="url">Flink handbook - flink 集群与部署之docker篇</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T06:46:03+08:00">2018-09-20 06:46:03</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="作者标注"><a href="#作者标注" class="headerlink" title="作者标注"></a>作者标注</h2><p>经过验证， 到当前版本为止 flink-1.7 snapshot，构建 flink docker镜像需要采用这个flink docker 构建工具 <code>https://github.com/docker-flink/docker-flink</code>，按照<a href="https://github.com/apache/flink/tree/master/flink-container" target="_blank" rel="noopener">flink官方代码库</a>里的构建出来的flink镜像有些功能不能用，比如 flink-standalone模式，report metrics等。</p>
-<h2 id="Docker设置"><a href="#Docker设置" class="headerlink" title="Docker设置"></a>Docker设置</h2><p>Docker Hub上有关于Apache Flink的Docker镜像，可用于部署flink群集。Flink镜像库还包含用于创建容器映像以部署flink工作集群的一些工具以及说明。</p>
-<h2 id="Flink-session群集"><a href="#Flink-session群集" class="headerlink" title="Flink session群集"></a>Flink session群集</h2><p>Flink会话群集可用于运行多个业务。在部署后，每个业务都需要提交到集群才能跑起来。</p>
-<h2 id="Docker镜像"><a href="#Docker镜像" class="headerlink" title="Docker镜像"></a>Docker镜像</h2><p>该<a href="https://hub.docker.com/_/flink/" target="_blank" rel="noopener">Flink镜像库</a>托管在docker hub，提供了flink1.2.1以及之后的版本镜像。</p>
-<p>注意： Docker镜像是由个人提供的社区项目，它们并不是Apache Flink PMC的官方版本（作者标注：所以需要用这个个人的<a href="https://github.com/docker-flink/docker-flink" target="_blank" rel="noopener">构建工具</a>，而不是官方代码库里的构建工具）。</p>
-<h2 id="Flink作业集群"><a href="#Flink作业集群" class="headerlink" title="Flink作业集群"></a>Flink作业集群</h2><p>Flink作业集群是运行单个作业的专用集群，这是镜像内容的一部分，因此，不需要额外的工作。</p>
-<h2 id="Docker镜像-1"><a href="#Docker镜像-1" class="headerlink" title="Docker镜像"></a>Docker镜像</h2><p>Flink作业集群镜像需要包含启动集群的作业的用户代码jar。因此，需要为每个作业构建专用的容器镜像。该flink-container模块包含一个build.sh脚本，可用于创建此类镜像。有关详细信息，请参阅<a href="https://github.com/apache/flink/blob/master/flink-container/docker/README.md" target="_blank" rel="noopener">说明</a>。（作者注：这个是官方的构建方式，试过有问题，比如跑 flink-standalone再 report metrics）</p>
-<h2 id="Flink与Docker-Compose"><a href="#Flink与Docker-Compose" class="headerlink" title="Flink与Docker Compose"></a>Flink与Docker Compose</h2><p>Docker Compose是一种很方便的用于在本地启动一组Flink Docker容器的方式。</p>
-<p>GitHub上提供了<a href="https://github.com/docker-flink/examples/blob/master/docker-compose.yml" target="_blank" rel="noopener">集群部署实例</a>和<a href="https://github.com/apache/flink/blob/master/flink-container/docker/docker-compose.yml" target="_blank" rel="noopener">作业群集示例</a>的配置文件。</p>
-<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><p>启动集群</p>
-<p><code>$docker-compose up</code></p>
-<p>以deamon的方式启动集群</p>
-<p> <code>$docker-compose up -d</code></p>
-<p>集群扩展 N 个 TaskManagers</p>
-<p><code>$docker-compose scale taskmanager=&lt;N&gt;</code></p>
-<p>销毁集群</p>
-<p><code>$docker-compose kill</code></p>
-<p>当拉起一个Flink群集后，您可以访问 <code>http：// localhost：8081</code>的Web UI ，在界面里您还可以将作业提交到群集。</p>
-<p>如果要通过命令行将作业提交到会话群集，必须将JAR复制到JobManager容器里并从那里执行作业。</p>
-<p>例如：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$ JOBMANAGER_CONTAINER=$(docker ps --filter name=jobmanager --format=&#123;&#123;.ID&#125;&#125;)<br>$ docker cp path/to/jar &quot;$JOBMANAGER_CONTAINER&quot;:/job.jar<br>$ docker exec -t -i &quot;$JOBMANAGER_CONTAINER&quot; flink run /job.jar<br></code></pre></td></tr></table></figure>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/7/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><span class="page-number current">8</span><a class="page-number" href="/page/9/">9</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/9/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -817,7 +844,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">84</a></div>
+      <div><a href="/archives">85</a></div>
     </div>
     
     

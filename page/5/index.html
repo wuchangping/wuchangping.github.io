@@ -115,6 +115,195 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/24/distributed-servicegovernance-flowcontrol-1/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/03/24/distributed-servicegovernance-flowcontrol-1/" itemprop="url">分布式系统架构设计 – 第4式 - 服务治理之纵向限流模式</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-03-24T08:17:18+08:00">2019-03-24 08:17:18</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="导读"><a href="#导读" class="headerlink" title="导读"></a><font color="#FF8C00">导读</font></h2><p>日拱一卒，功不唐捐，分享是最好的学习，一个知识领域里的 <font color="#00CED1"> <strong>“道 法 术 器”</strong> </font> 这四个境界需要从 <font color="#00CED1"> <strong>微观、中观以及宏观</strong> </font>三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计三十六式》，讲诉分布式系统里最重要的三十六个虚数的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
+<p>实现一个分布式系统通常会面临三大难题： <font color="#00CED1"> <strong>故障传播性、业务拆分与聚合以及分布式事务</strong> </font>。本系列中的服务治理章节主要是为了解决故障传播性的难题，它包括： <font color="#00CED1"> <strong>隔离、熔断、降级、限流、容错以及资源管控</strong> </font>，本文将讲诉服务治理里的 <font color="#00CED1"> <strong>“限流-纵向限流”</strong> </font>模式，下一篇将讲诉<font color="#00CED1"> <strong>“限流-横向限流”</strong> </font>模式。</p>
+<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><font color="#00CED1"> <strong>可靠性</strong> </font>： 在分布式系统里，每个系统都有自己的容量限制，它所能处理的业务请求能力是有限的，如果不控制这些输入的请求数，突发输入过多的请求量会造成过度的资源竞争从而引发系统故障降低系统的可靠性。<br><br><font color="#00CED1"> <strong>可用性</strong> </font>： 限流有利于控制系统资源的消耗速率有利于过载保护，有利于保护业务资源不被耗尽。例如，当服务A所依赖的下游服务B由于某种原因不稳定、响应增加、延迟增加，对于调用者服务A意味着吞吐量下降和更多的资源占用，极端情况下甚至导致资源耗尽造成服务可用性故障。<br><br><font color="#00CED1"> <strong>流量监管</strong> </font>： 流量监管就是对输入的请求流量进行细粒度的控制，通过监管输入的请求量速率，对超出的部分进行”惩罚”， 比如直接丢弃，使得进入系统里的请求量被限制在一个系统所能承受的合理的范围之内，流量监管比较适合对延时要求较高的业务。<br><br><font color="#00CED1"> <strong>流量整形</strong> </font>： 流量整形就是控制最大输出请求速率提供可能，以确保请求量符合系统容量配置的最大传输速率规定。请求的流量被整形，以使它符合下游服务的速率需求，流量整形比较适合可靠性要求较高的业务。<br><br><font></font>
+
+<h2 id="限流限的是什么"><a href="#限流限的是什么" class="headerlink" title=" 限流限的是什么 "></a><font color="#FF8C00"> 限流限的是什么 </font></h2><p>限流其原理是监控输入的请求量，当达到指定的阈值时对量进行控制，以避免系统被瞬时的请求量高峰冲垮，从而保障系统的高可用、高可靠。因此，限流的限的自然是“流”，对于不同的场景“流”是不同的：</p>
+<ul>
+<li>网络限流，流指的是带宽、流量；</li>
+<li>I/O限流的“流”指的是TPS或QPS；</li>
+<li>并发限流的“流”指的是并发请求数；</li>
+<li>线程资源限流的“流”指的是线程数。</li>
+</ul>
+<p>这些“流” 通常具有资源竞用性、延迟性、抖动性以及不可靠性的特征。资源竞用性以及不可靠性需要控制流的资源使用，延迟性、抖动性需要对“流”进行整形，削峰填谷，控制请求的指标波形图。</p>
+<h2 id="限流处理策略"><a href="#限流处理策略" class="headerlink" title="限流处理策略"></a><font color="#FF8C00">限流处理策略</font></h2><ul>
+<li><p>直接拒绝：当请求量超过阈值后，新的请求就会被直接拒绝，方式为直接返回或者抛出异常。这种方式比较适合于对分布式系统的负载容量已知的情况下，比如通过全链路压测已经确定了准确的系统处理能力及系统容量，对应固定窗口、滑动窗口算法。</p>
+</li>
+<li><p>冷启动：当分布式系统长期处于低负载的情况下，请求量突发时，会把系统负载很快拉到很高的水准，这样就可能瞬间就把系统击垮。通过”冷启动”方式，让输入的请求量缓慢增加，在一个时间段内慢慢增加到系统所能承载的阈值上限，给冷系统一个预热的时间，避免系统被压垮，对应令牌桶算法。</p>
+</li>
+<li><p>匀速排队：匀速排队的方式也就是控制请求以均匀的速率通过，对应的是漏桶算法。</p>
+</li>
+</ul>
+<h2 id="限流模式设计思路"><a href="#限流模式设计思路" class="headerlink" title="限流模式设计思路"></a><font color="#FF8C00">限流模式设计思路</font></h2><p>如下图所示，在分布式系统里，限流通常可以按空间维度划分为纵向限流以及横向限流，本文讲述纵向限流，下一篇将讲诉 横向限流。</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control.png" alt="流量控制"></p>
+<div align="left"> 
+
+<p>常用的纵向限流算法有两窗算法：固定窗口、滑动窗口以及两桶算法：令牌桶算法、漏桶算法，按其工作原理又可以划分为 保险丝模式以及变压器模式。</p>
+<h2 id="保险丝模式"><a href="#保险丝模式" class="headerlink" title="保险丝模式"></a><font color="#FF8C00">保险丝模式</font></h2><p>在电路中保险丝主要是起电流过载保护作用，当电路中的电流过载时，保险丝自身就会烧坏从而切断电流，保护后续电路的安全运行，但是保险丝有个问题就是在切断电流后，需要人工或者自动更换保险丝后，电路才能继续运行。</p>
+<p>限流算法里的固定窗口算法以及滑动窗口算法应用原理与此类似，在拒绝请求后，需要重新设置计数，因此我定义它们为限流保险丝模式。</p>
+<h3 id="固定窗口"><a href="#固定窗口" class="headerlink" title="固定窗口"></a><font color="#00CED1">固定窗口</font></h3><p>固定窗口算法类似人工保险丝模式，在切断流量后需要等很久才能重新工作。固定窗口算法将时间线划分成一个个固定大小的时间窗口，并且每个窗口都有一个计数器用于统计这一时间窗口内的访问次数，如果访问的次数超过了一个预先定义的阈值，则拒绝接下来的请求直到下一个时间窗口开始重新计数，又超过则继续拒绝，再在下一个时间窗口重新设置计数器继续计数，依次类推。</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control-fixedwindow.png" alt="固定窗口"></p>
+<div align="left"> 
+
+
+
+<p>如上图所示，如果我们将时间线的窗口大小设置为5秒，上图里的窗口有[0, 5), [5, 10), …。假设限制是每5秒500个请求，如果在这个5秒内 计数器没超过 500就继续，超过500就拒绝后续的请求进入，直到下一个[5,10]的时间窗口内计数器被重新置0 再继续开始计数服务，再超过500，就继续拒绝服务，依次类推。</p>
+<p>很明显，固定窗口的优点很明确，那就是实现很简单，一个计数器就可以实现。但是缺点也很明显，例如：</p>
+<ol>
+<li><p>边界场景，在第一个[0,5]的时间窗口内，第1秒就把计数器打到超过500，则后续的4秒将无法服务，得等到下一个[5,10]的时间窗口内计数器被重新置0，才可以对外提供服务。</p>
+</li>
+<li><p>跨窗口场景，当在第一个时间窗口的 [4,5]计数器的计数是300，没有超过阈值，然后第二个时间窗口的[5,6]计数器是320，也没超过阈值，但是 在 [4,6]的时间窗口内计数器的计数是 300+320=620,很明显超过阈值，因此，固定窗口的缺陷也很明显。</p>
+</li>
+</ol>
+<h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a><font color="#00CED1">滑动窗口</font></h3><p>滑动窗口算法类似自动保险丝模式，在切断流量不像固定窗口那样需要等较长的时间才能重新工作。滑动窗口的计数器也类似固定窗口的计数器，但是将时间线做了进一步的细分，每次往后移动一个细分单元，再每一次都对一个小的窗口进行计数统计实现流量控制，这种方法可以很好的解决之前的固定窗口的跨窗口问题。</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control-slidewindow.png" alt="滑动窗口"></p>
+<div align="left"> 
+
+
+
+<p>如上图所示，还是定义请求的阈值为500，我们将[0,5]划分为5个窗口，则每个窗口对应1s。假设还是在[4,5]有300个请求和下一秒的[5,6]有320个突发请求，按照滑动窗口的原理，此时统计的将是[1,6]窗口，很明显 300+320=620 &gt; 500，超出了阈值，从而触发拒绝服务，避免了固定窗口算法的请求量突增的问题。</p>
+<p>但是对于边界场景，例如[0,5]秒的窗口内，因为是按1s的时间单元进行窗口划分的，假设在第1ms的时间内，请求就超过500，然后就拒绝服务，然后需要等到下一个1s才可以继续出发服务，这很明显有59ms的时间窗式不能提供服务的，因此体现出来请求的指标也不大平滑。</p>
+<h2 id="变压器模式"><a href="#变压器模式" class="headerlink" title="变压器模式"></a><font color="#FF8C00">变压器模式</font></h2><p>因为保险丝模式都不能解决请求的边界问题，因此引出变压器模式，变压器是电路中将某一等级的电压或电流转换成另外一种同频率的电压或电流的设备，有利于稳流稳压。限流算法里的漏桶算法以及令牌桶算法工作原理与此类似，因此我定义它们为变压器模式。</p>
+<h3 id="漏桶"><a href="#漏桶" class="headerlink" title="漏桶"></a><font color="#00CED1">漏桶</font></h3><div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control-leakybucket-1.png" alt="漏桶算法"></p>
+<div align="left"> 
+
+
+<p>上图显示了漏桶算法在流量整形和速率限制中的用法，突发的不均匀的请求到达后被扔到一个桶里，这个桶底下有个固定大小的孔，请求按固定大小稳定的输出。</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control-leakybucket-2.png" alt="漏桶算法"></p>
+<div align="left"> 
+
+
+
+<p>如上图所示，漏桶算法工作步骤：</p>
+<ul>
+<li>请求随意的被输入，有突发的请求量也有比较小的请求量，有快的请求也有慢的请求，然后这些请求进入系统后不是立马被处理，而是被扔到一个桶里；</li>
+<li>当桶里缓冲的请求超过设定的水位时，输入的请求将被拒绝进入，从而丢失的后续请求</li>
+<li>这个桶以恒定的速率将输入的请求输出；</li>
+<li>对比窗口算法，漏桶算法多了一个缓冲。</li>
+</ul>
+<p>优点：</p>
+<ul>
+<li>漏桶算法里，桶的存在有利于削峰填谷，且输出总是按恒定的速率输出的，因此有利于流量整形，从而平滑了突发的请求量。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li><p>很明显，漏桶里的请求超过水位后，后续请求会被丢弃，在需要保证幂等性请求的场景不适合使用。</p>
+</li>
+<li><p>漏桶总是按恒定速率输出请求，这是在假设后续的服务能承接这个速率的前提下的，它无法保证这些输出的请求能够稳定地在一个固定的时间内处理完，假如后续的服务出现资源抢用，或者故障，那么将无法处理这个很定的输出速率，从而引发更大的级联故障。</p>
+</li>
+</ul>
+<p>如上图所示，如果服务2变慢，就会一直占用线程资源不释放，从而导致无法响应服务1的请求，而服务1还是以恒定的速率处理漏桶的请求，而其下游资源不够，因此也会引起级联故障。</p>
+<h3 id="令牌桶"><a href="#令牌桶" class="headerlink" title="令牌桶"></a><font color="#00CED1">令牌桶</font></h3><p>下图显示了令牌桶的主要工作步骤：</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/flowcontrol/flow-control-tockenbucket.png" alt="令牌桶算法"></p>
+<div align="left"> 
+
+
+<p>如上图所示，令牌桶算法工作步骤：</p>
+<ul>
+<li>在这个桶中有按一定时间周期定期生成的令牌，令牌按预先定义的时间周期进行填充；</li>
+<li>令牌桶有最大的令牌个数限制；</li>
+<li>如果请求到来时，必须从令牌桶中取得令牌，之后才可以对这个请求进行处理，并且从令牌桶中删除这个被获取的令牌；</li>
+<li>如果令牌桶中没有令牌，则无法发送请求，请求必须稍后重试。</li>
+</ul>
+<p>优点</p>
+<ul>
+<li>如果令牌桶中令牌已满，则丢令牌而不是丢请求。</li>
+<li>可以支持突发的请求。</li>
+</ul>
+<p>缺点</p>
+<ul>
+<li>令牌被耗光后需要等下一次令牌填充，这意味着需要等待一段时间令牌填充后后续请求才可以使用。</li>
+<li>对请求的处理速率没做限制，这意味着输入的请求处理速率有可能高过设置的阈值从而引发故障。</li>
+</ul>
+<h3 id="漏桶VS令牌桶-3"><a href="#漏桶VS令牌桶-3" class="headerlink" title="漏桶VS令牌桶[3]"></a><font color="#00CED1">漏桶VS令牌桶[3]</font></h3><ul>
+<li><p>漏桶算法控制输出的请求量，输入的请求量可以变化，但输出的请求量保持恒定不变。令牌桶算法控制输入的令牌量，但不限制输出的请求量，输出的请求量可以根据突发的大小而变化。</p>
+</li>
+<li><p>漏桶算法不依赖令牌。令牌桶算法是令牌依赖的。</p>
+</li>
+<li><p>在漏桶算法中，如果桶已满，则丢弃请求。在令牌桶中，如果桶已满，则丢弃令牌但不会丢弃该请求。</p>
+</li>
+<li><p>在漏桶中，请求不断被输出。在令牌桶中，只有在拿到令牌时请求才能通过。</p>
+</li>
+<li><p>漏桶以恒定速率发送请求。令牌桶允许在恒定速率之后以更快的速率发送突发请求。</p>
+</li>
+</ul>
+<h2 id="算法实践"><a href="#算法实践" class="headerlink" title="算法实践"></a><font color="#FF8C00">算法实践</font></h2><ul>
+<li><p>固定窗口与滑动窗口实现都比较简单，性能较好，但是在超出限流阈值后，请求都会被直接拒绝，因此适用于非幂等性的请求场景；</p>
+</li>
+<li><p>漏桶算法，有利于控制输出的请求速率，但是在超出桶的水位后请求也会被丢失，也不适用于幂等性请求的场景;</p>
+</li>
+<li><p>令牌算法，可以支持突发的请求量，但是不控制输出的请求速率，在超出阈值后，只丢失令牌但不丢失请求，因此可以结合在幂等性请求的场景使用;</p>
+</li>
+<li><p>权衡利弊，根据业务场景合理组合以上4个算法，才是最佳实践。</p>
+</li>
+</ul>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲诉了服务治理里的 <font color="#00CED1"><strong>“纵向限流”</strong></font>模式，在前一篇《分布式系统架构设计三十六式之服务治理-降级模式》里讲诉了分布式系统服务治理的降级模式。另作者能力与认知都有限，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及大数据，现就职于DELL EMC。个人技术博客：<a href="https://changping.me" target="_blank" rel="noopener">https://changping.me</a></p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a> ，可以自由阅读、分享、转发、复制、分发等，限制是需署名、非商业使用（以获利为准）以及禁止演绎。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1]<a href="https://tech.domain.com.au/2017/11/protect-your-api-resources-with-rate-limiting" target="_blank" rel="noopener">https://tech.domain.com.au/2017/11/protect-your-api-resources-with-rate-limiting</a><br>[2]<a href="https://github.com/alibaba/Sentinel/wiki/%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6" target="_blank" rel="noopener">https://github.com/alibaba/Sentinel/wiki/%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6</a><br>[3]<a href="https://www.quora.com/What-is-the-difference-between-token-bucket-and-leaky-bucket-algorithms" target="_blank" rel="noopener">https://www.quora.com/What-is-the-difference-between-token-bucket-and-leaky-bucket-algorithms</a><br>[4]<a href="https://en.wikipedia.org/wiki/Rate_limiting" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Rate_limiting</a><br>[5]<a href="https://en.wikipedia.org/wiki/Bandwidth_throttling" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Bandwidth_throttling</a><br>[6]<a href="https://en.wikipedia.org/wiki/Bandwidth_management" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Bandwidth_management</a><br>[7]<a href="https://en.wikipedia.org/wiki/Token_bucket" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Token_bucket</a><br>[8]<a href="https://en.wikipedia.org/wiki/Leaky_bucket" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Leaky_bucket</a></p>
+</div></div></div></div></div></div></div></div></div></div></div></div>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/03/21/distributed-servicegovernance-degraded/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -898,146 +1087,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/01/25/pravega-arch-IO-transaction-autoscaling/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/01/25/pravega-arch-IO-transaction-autoscaling/" itemprop="url">分布式流存储 - 架构、自动缩放、IO隔离与事务</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-01-25T21:23:39+08:00">2019-01-25 21:23:39</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="Pravega架构"><a href="#Pravega架构" class="headerlink" title=" Pravega架构  "></a><font color="#FF8C00"> Pravega架构  </font></h2><blockquote>
-<p> ”技术在某种程度上一定是来自此前已有技术的新的组合“  – 《技术的本质》，布莱恩·阿瑟</p>
-</blockquote>
-<p>Pravega为连续而又无限的数据提供了一种新的存储原语 - 流存储，然而Pravega也并不是凭空发明出来的，它是以前成熟技术与新技术的组合，例如Pravega的 范围、流、段、事件就跟Kafka的主题、分区、段、消息对应，而一层存储又用了Bookkeeper，协调器用了Zookeeper等。</p>
-<h3 id="设计原则与目标"><a href="#设计原则与目标" class="headerlink" title=" 设计原则与目标"></a><font color="#00CED1"> 设计原则与目标</font></h3><ul>
-<li><p>持久化：在客户端确认写入前，数据被复制并且写入磁盘；</p>
-</li>
-<li><p>保序：段内严格保序；</p>
-</li>
-<li><p>恰好一次：支持恰好一次语义；</p>
-</li>
-<li><p>轻量级：一个流就如同一个文件，可以在单集群里创建千万量级起的流；</p>
-</li>
-<li><p>可弹性：可基于负载和吞吐量智能地动态扩展或者收缩流；</p>
-</li>
-<li><p>无限性：存储空间大小不受单个节点的容量限制；</p>
-</li>
-<li><p>高性能：写入延迟低于10ms，吞吐量仅受网络带宽限制，读模式（例如：追赶读）不影响写性能;</p>
-</li>
-</ul>
-<h3 id="Pravega设计创新"><a href="#Pravega设计创新" class="headerlink" title="Pravega设计创新"></a><font color="#00CED1">Pravega设计创新</font></h3><ol>
-<li><p>支持“无限流”分层</p>
-</li>
-<li><p>零接触动态缩放</p>
-<ul>
-<li><p>根据负载和SLO自动调整读/写并行度</p>
-</li>
-<li><p>没有服务中断</p>
-</li>
-<li>无需手动重新配置客户端</li>
-<li>无需手动重新配置服务资源</li>
-</ul>
-</li>
-<li><p>智能工作负载分配</p>
-<ul>
-<li>无需为峰值负载过度配置服务器</li>
-</ul>
-</li>
-<li><p>I / O路径隔离</p>
-<ul>
-<li>支持尾部写入</li>
-<li>支持尾部读</li>
-<li>支持追赶读</li>
-</ul>
-</li>
-<li><p>支持“恰好一次”事务</p>
-</li>
-</ol>
-<h3 id="逻辑架构"><a href="#逻辑架构" class="headerlink" title="  逻辑架构"></a><font color="#00CED1">  逻辑架构</font></h3><p>下图为Pravega的逻辑架构图：</p>
-<p><div align="center"><br><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch.png" alt="逻辑架构图"></div></p>
-<div align="left"> 
-
-<ol>
-<li>首先，Pravega提供了一个用Java编写的客户端库，抽象出了流协议层接口，用于支持客户端应用，例如Flink、Spark以及一些检索系统等；</li>
-<li>其次，Pravega实现了一个流数据抽象层，用于事件流和字节流的抽象；</li>
-<li>再者，从整体架构上来讲Pravega符合软件定义存储的设计规则，其控制面与数据面分离，数据面的集合统称为段存储层，控制实例组成控制面，实现了检索流信息、监控集群、收集相关指标等功能，同时为了实现高可用，通常有多个（建议至少3个）控制实例同时对外提供服务。 </li>
-<li>Pravega采用Zookeeper作为集群中的协调组件。 </li>
-<li>Pravega的存储系统由两部分组成：第1层为短期存储层，主要关注性能，用于存储热点数据，由bookkeeper实现，保证了存储系统的低时延、高性能。第2层为长期存储层，主要关注成本，提供数据的持久性以及长期存储，由开源的或者商业的存储产品组成。第1层保留热点数据，随着第1层中数据的老化，数据将自动分层流入第2层。</li>
-</ol>
-<h3 id="数据架构"><a href="#数据架构" class="headerlink" title=" 数据架构"></a><font color="#00CED1"> 数据架构</font></h3><p>下图展示了Pravega的数据架构图以及数据流分层：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-data-path.png" alt="数据架构图"></p>
-<ol>
-<li>Pravega客户端可以通过调用控制器接口管理流的创建、删除和缩放以及进行事务管理：启动事务、创建事务、跟踪事务状态；</li>
-<li>所有的数据对读来说都是透明的，客户端的读写操作直接与段存储（数据面）进行交互，而不通过控制器；</li>
-<li>段存储里有缓存组件保证了读写的高性能，热点数据放在bookkeeper里作为一层存储；</li>
-<li>数据老化后会自动流转到长期存储（例如：对象存储系统，文件存储系统，HDFS等）里以便降低存储成本；</li>
-</ol>
-<h3 id="关键子功能-零接触缩放"><a href="#关键子功能-零接触缩放" class="headerlink" title="关键子功能 - 零接触缩放"></a><font color="#00CED1">关键子功能 - 零接触缩放</font></h3><h4 id="零接触缩放：段的动态拆分与合并"><a href="#零接触缩放：段的动态拆分与合并" class="headerlink" title="零接触缩放：段的动态拆分与合并"></a>零接触缩放：段的动态拆分与合并</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-2.png" alt="段的拆分与合并"></p>
-<p>如上图所示，1）拆分：在t1时刻系统负载加大，段0被拆分成段1和段2，同时段0封装不再写入；t2时刻系统负载继续加大，段2被拆分成段3与段4，同时段2被封装不再写入；t3时刻系统负载又继续加大，段1被拆分成段5和段6，同时段1被封装不再写入；2）合并：t4时刻系统负载降低，段6与段3被合并成段7，同时段6与段3被封装不再写入。而且所有的这些行为都是Pravega里自动完成的无需人工干预。</p>
-<h4 id="零接触缩放：写并行-与Kafka比较"><a href="#零接触缩放：写并行-与Kafka比较" class="headerlink" title="零接触缩放：写并行 - 与Kafka比较"></a>零接触缩放：写并行 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-3.png" alt="写并行"></p>
-<p>当并行写入的时候：</p>
-<ol>
-<li><p>在Pravega里流段的数量会根据负载和服务质量目标而动态变化，并且段的拆分与合并都是自动进行的无需人工干预，同时拆分或合并流段是，写客户端的配置是静态不变的；</p>
-</li>
-<li><p>在Kafka里主题分区数（写并行性）是静态的，添加或删除分区时需要手动配置服务并且当分区数更改时，必须手动更新生产者配置。</p>
-</li>
-</ol>
-<h4 id="零接触缩放：读并行-与Kafka比较"><a href="#零接触缩放：读并行-与Kafka比较" class="headerlink" title="零接触缩放：读并行 - 与Kafka比较"></a>零接触缩放：读并行 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-4.png" alt="读并行"></p>
-<p>并行读取时：</p>
-<ol>
-<li>在Pravega里，当拆分或者合并流段时，读客户端通过流协议获得通知从而使得读并行与流段缩放保持同步；</li>
-<li>在Kafka里，当分区数更改时，必须手动更改使用者配置。</li>
-</ol>
-<h4 id="关键子功能-智能工作负载分配"><a href="#关键子功能-智能工作负载分配" class="headerlink" title="关键子功能 - 智能工作负载分配 "></a><font color="#00CED1">关键子功能 - 智能工作负载分配 </font></h4><h4 id="智能工作负载分配-与Kafka比较"><a href="#智能工作负载分配-与Kafka比较" class="headerlink" title="智能工作负载分配 - 与Kafka比较"></a>智能工作负载分配 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-5.png" alt="智能工作负载分配"></p>
-<p>在Pravega里，热点段会自动拆分，子段在整个集群中重新分配缓解热点，同时最大限度地利用集群的可用IOPS能力；而在Kafka里没有减轻“热点”分区的机制，其强制部署并且过度配置资源以获得处理其“峰值负载”的能力。</p>
-<h3 id="关键子功能-I-O路径隔离"><a href="#关键子功能-I-O路径隔离" class="headerlink" title="关键子功能 - I/O路径隔离"></a><font color="#00CED1">关键子功能 - I/O路径隔离</font></h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-6.png" alt="I/O路径隔离"></p>
-<p>流存储的基础数据结构为仅附加写入的日志结构。考虑到高吞吐量，Pravega支持追赶读，同时为了保证低时延，Pravega还支持尾部读取以及尾部写入，从而进行了IO路径的隔离。</p>
-<h3 id="关键子功能-事务"><a href="#关键子功能-事务" class="headerlink" title="关键子功能 - 事务"></a><font color="#00CED1">关键子功能 - 事务</font></h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-7.png" alt="智能工作负载分配"></p>
-<p>Pravega提供了事务功能，事务是写客户端可以“批处理”一堆事件并将它们作为一个处理单元原子性地提交到流中。这一堆事件要么所有都处理成功，要么所有都处理失败。在提交事务之前，发布到事务中的事件永远不会被读客户端看到。如上图所示，第一步，先将一堆事件封装在一个事务里；第二步，提交这个事务。这个事务里所有的事件要么全部都处理成功要么全部都处理失败。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a><font color="#FF8C00">总结</font></h2><p>本文分析了物联网场景下的数据存储商业现状以及技术现状，为平衡商业成本与技术成本推出了分布式流存储系统Pravega，同时本文还介绍了流存储的特殊需求点以及与Kafka做了简要对比，此外还介绍了一些Pravega的关键架构以及一些关键特性。有关Pravega的更多详细信息，请参阅官方网站。另作者能力有限，如有不足之处欢迎留言批评指正。</p>
-</div>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/4/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/6/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -1063,7 +1112,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">84</a></div>
+      <div><a href="/archives">85</a></div>
     </div>
     
     
