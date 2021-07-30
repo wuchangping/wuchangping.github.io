@@ -1962,16 +1962,7 @@
       <link href="/about/index.html"/>
       <url>/about/index.html</url>
       
-        <content type="html"><![CDATA[<h2 id="关于作者"><a href="#关于作者" class="headerlink" title="关于作者"></a><font color="#FF8C00">关于作者</font></h2><ul><li>毕业于中国科学技术大学，获硕士研究生学历学位</li><li>主要工作背景：深度学习，流式大数据、云计算、分布式中间件以及Linux内核</li><li>某AI独角兽深度学习架构师、资深技术主管，前EMC大数据资深首席工程师，亦曾就职于AMD、Marvell等</li></ul><h2 id="联系方式"><a href="#联系方式" class="headerlink" title="联系方式"></a><font color="#FF8C00">联系方式</font></h2><ul><li>Email : <a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a></li><li>Blog : <a href="https://www.changping.me">https://www.changping.me</a></li><li>Github : <a href="https://github.com/wuchangping" target="_blank" rel="noopener">https://github.com/wuchangping</a></li><li>微信公众号 : 分布式系统架构设计师</li></ul><h2 id="网站声明"><a href="#网站声明" class="headerlink" title="网站声明"></a><font color="#FF8C00">网站声明</font></h2><p>文章内容仅为作者愚见，与任何组织机构无关，如有错误及不足之处欢迎发信批评指正。</p><h2 id="版权声明"><a href="#版权声明" class="headerlink" title="版权声明"></a><font color="#FF8C00">版权声明</font></h2><p>非商业用途在注明作者及本网站前提下无需授权即可转载。</p><h2 id="免责声明"><a href="#免责声明" class="headerlink" title="免责声明"></a><font color="#FF8C00">免责声明</font></h2><p>文章坚持原创，且仅供技术交流及研究使用，如有不小心侵犯您的版权， 请联系：<a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a>，会尽快删除。</p><p>–</p>]]></content>
-      
-    </entry>
-    
-    <entry>
-      <title>archives</title>
-      <link href="/archives/index.html"/>
-      <url>/archives/index.html</url>
-      
-        <content type="html"><![CDATA[]]></content>
+        <content type="html"><![CDATA[<h2 id="关于作者"><a href="#关于作者" class="headerlink" title="关于作者"></a><font color="#FF8C00">关于作者</font></h2><ul><li>毕业于中国科学技术大学，获硕士研究生学历学位</li><li>主要工作背景：深度学习、机器学习、流式大数据、云计算、分布式中间件以及Linux内核</li><li>某AI独角兽深度学习架构师、资深技术主管工程师，前EMC机器学习资深首席工程师，亦曾就职于AMD、Marvell等</li></ul><h2 id="联系方式"><a href="#联系方式" class="headerlink" title="联系方式"></a><font color="#FF8C00">联系方式</font></h2><ul><li>Email : <a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a></li><li>Blog : <a href="https://www.changping.me">https://www.changping.me</a></li><li>Github : <a href="https://github.com/wuchangping" target="_blank" rel="noopener">https://github.com/wuchangping</a></li><li>微信公众号 : 分布式系统架构设计师</li></ul><h2 id="网站声明"><a href="#网站声明" class="headerlink" title="网站声明"></a><font color="#FF8C00">网站声明</font></h2><p>文章内容仅为作者愚见，与任何组织机构无关，如有错误及不足之处欢迎发信批评指正。</p><h2 id="版权声明"><a href="#版权声明" class="headerlink" title="版权声明"></a><font color="#FF8C00">版权声明</font></h2><p>非商业用途在注明作者及本网站前提下无需授权即可转载。</p><h2 id="免责声明"><a href="#免责声明" class="headerlink" title="免责声明"></a><font color="#FF8C00">免责声明</font></h2><p>文章坚持原创，且仅供技术交流及研究使用，如有不小心侵犯您的版权， 请联系：<a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a>，会尽快删除。</p><p>–</p>]]></content>
       
     </entry>
     
@@ -1979,6 +1970,15 @@
       <title>categories</title>
       <link href="/categories/index.html"/>
       <url>/categories/index.html</url>
+      
+        <content type="html"><![CDATA[]]></content>
+      
+    </entry>
+    
+    <entry>
+      <title>archives</title>
+      <link href="/archives/index.html"/>
+      <url>/archives/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       
