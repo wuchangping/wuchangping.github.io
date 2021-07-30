@@ -115,7 +115,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/01/pravega-working-with-state-synchronizer/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/22/distributed-tradeoff/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
         <meta itemprop="description" content="“分布式系统架构设计师”">
@@ -127,12 +127,12 @@
     </div>
     <header class="post-header">
       <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/10/01/pravega-working-with-state-synchronizer/" itemprop="url">pravega handbook - 开发pravega应用 - stateSynchronizer</a>
+        <a class="post-title-link post-title-link-external" href="/2018/09/22/distributed-tradeoff/" itemprop="url">算命先生的阴阳五行学说与码农们的分布式系统设计理论</a>
       </h1>
       <div class="post-meta">
         
         <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-01T09:16:01+08:00">2018-10-01 09:16:01</time></span>
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-22T15:26:02+08:00">2018-09-22 15:26:02</time></span>
         </span>
         
         
@@ -141,7 +141,7 @@
         
         <span class="post-categories">
           
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
         </span>
         
         
@@ -149,109 +149,443 @@
     </header>
     <main class="post-main" itemprop="articleBody">
       
-      <p>Pravega即可以作为流式存储系统，也可以作为 pub-sub消息系统，还可以将Pravega作为一种在分布式集群中共享多个进程状态的方法。<br>运行示例应用，请参阅 Pravega Samples文件。<br>在看本文之前，需要熟悉Pravega Concepts（请参考  Pravega Concepts）。特别是，对State Synchronizer 概念有所了解。</p>
-<h2 id="共享的状态和Pravega"><a href="#共享的状态和Pravega" class="headerlink" title="共享的状态和Pravega"></a>共享的状态和Pravega</h2><p>State Synchronizer是Pravega编程模型提供的一种工具，它使得开发人员可以轻松地使用Pravega来协调进程之间的共享状态。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/state.synchronizer.png" alt=""></p>
-<p>其思想是使用Stream来保持共享状态的变化序列，并且各种应用使用其Pravega Java客户端库以一致的方式同时读取和写入共享状态。 </p>
-<h2 id="SharedStateMap和共享配置示例"><a href="#SharedStateMap和共享配置示例" class="headerlink" title="SharedStateMap和共享配置示例"></a>SharedStateMap和共享配置示例</h2><p>在深入了解如何使用状态同步器之前，我们先快速看一下一个使用状态同步器的简单示例 。<br>该示例使用State Synchronizer构建Java 映射数据结构的实现，称为SharedMap。我们使用该SharedMap数据结构来构建一个共享配置，该配置允许一组进程一致地读/写键/值对属性的共享配置对象。此外，作为该示例的一部分，我们提供了一个简单的基于命令行的应用程序，允许您使用SharedConfig。  </p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/state.sync.example.png" alt=""></p>
-<p>以下是SharedConfigCLI中可用的命令菜单：<br><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs undefined">在命令行提示符处输入以下命令之一：<br><br>GET_ALL  - 打印出共享配置中的所有属性。<br>GET &#123;key&#125;  - 打印出给定键的配置属性。<br>PUT &#123;key&#125;，&#123;value&#125;  - 使用给定的键/值对更新共享配置。打印出以前的值（如果存在）。<br>PUT_IF_ABSENT &#123;key&#125;，&#123;value&#125;  - 仅在尚未定义属性的情况下，使用给定的键/值对更新共享配置。<br>REMOVE &#123;key&#125; [，&#123;currentValue&#125;]  - 从共享配置中删除给定的属性。如果给出&#123;currentValue&#125;，则仅在属性的当前值与&#123;currentValue&#125;匹配时删除。<br>REPLACE &#123;key&#125;，&#123;newValue&#125; [，&#123;currentValue&#125;]  - 更新属性的值。如果给出&#123;currentValue&#125;，则仅在属性的当前值与&#123;cuurentValue&#125;匹配时才更新。<br>CLEAR - 从共享配置中删除所有密钥。<br>REFRESH  - 强制从同步状态更新。<br>HELP - 打印出命令列表。<br>QUIT - 终止程序。<br></code></pre></td></tr></table></figure></p>
-<p>安装Pravega-Samples并使用相同的范围和流名称启动SharedConfigCLI的两个实例。这将模拟两个不同的进程如何将SharedConfig的本地副本与一个共享状态对象进行协调。您可以按照以下步骤来了解SharedConfig的如何协调：</p>
+      <h2 id="阴阳五行"><a href="#阴阳五行" class="headerlink" title="阴阳五行"></a>阴阳五行</h2><p>一说到阴阳五行就容易让人想到大街上的算命先生，然而阴阳五行学说却是中国古代解释世间万物的起源和多样性的哲学理论依据，是中国古代朴素的唯物论和自发的辩证法思想。</p>
+<p>中国古代哲学的核心思想之一用“老子”的话来说就是：</p>
+<blockquote>
+<p>“道生一、一生二、二生三、三生万物，万物负阴而抱阳，冲气以为和。”。</p>
+</blockquote>
+<p>而五行学说讲的是:<code>“金 木 水 火 土”</code>这五行,五行相生又相克。<code>木头烧火——木生火；火烧木头成灰——火生土，土长期聚在一起生石头、石头里炼金——土生金，金销水——金生水，水又生土。</code>,<code>水克火，火克金，金克木，木克土，土克水。</code></p>
+<p>但是如下图,五行虽然相生相克但都是为“和”字而服务的，即平衡：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-tradeoff-1.PNG" alt="五行"></p>
+<p>解读开来就是：</p>
+<p><code>“天道生阴阳，阴阳成五行，五行变化成万物，而万物的存在方式和相互关系一直在追求一种“和谐”。</code>“道”在阴阳的相互作用下，产生五行，五行之间相互作用产生世间万物的无穷变化，并且阴阳之间对立消长，五行之间相生相克，自此万物得以和谐发展。借助于阴阳五行的核心要素以及由此而生的非核心要素关系把宇宙看成一个统一的整体，这样的整体：<code>循环平衡、相生相克、有刚有柔、和谐统一</code>。</p>
+<p>那么这些玄乎的哲学理论跟码农又有什么关系呢？对于本人这么个靠技术混饭吃卖身又卖艺的码农来说，这实在太重要，归纳成一个字就是”和”，对应到技术实现体系里就是一个理念 ”权衡“，英文叫<code>tradeoff</code>。<code>“tradeoff”</code>这词实在是太妙了，啥都可以往上套，比如你十一准备到哪旅游啦，中午到哪吃饭啦，买哪里的房子啦，准备追哪个姑娘做老婆啦…….，都需要 <code>tradeoff</code>。技术如此人生又何尝不如是。</p>
+<h2 id="分布式系统"><a href="#分布式系统" class="headerlink" title="分布式系统"></a>分布式系统</h2><p>通常来讲设计分布式系统的时候需要考虑的最重要的<code>核心要素</code>有五个，这里不是说其他要素就不重要，这是指经过<code>tradeoff</code>过的五个最重要的核心要素，如下图：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-tradeoff-2.PNG" alt="分布式系统要素"></p>
+<ol>
+<li><p><code>Capacity</code>，容量，其实这个词翻译成”能力“会更合适，指的是分布式系统里的CPU，内存，硬盘，网络，文件描述符，socket连接数，老板的预期，开发周期，成本预算之类的限制条件,以下所有的要素都受 “容量”的限制，这是前提条件，就比如一辆车最多能跑多快，一个人最多能跳多高都是受自身“容量/能力”的限制的；</p>
+</li>
+<li><p><code>Performant</code>, performance + conformant, performant这词也是造的，指的是合适的性能，分布式系统的IOPS，TPS, QPS，Latency,Jitter之类的性能指标要求，性能受限于容量，性能同时又影响了可靠性以及可用性；</p>
+</li>
+<li><p><code>Availability</code>，可用性，可用性通常指的是产品或服务在随机时间内调用时处于可服务状态的概率，通常被定义为正常运行时间除以总时间（正常运行时间加停机时间），比如 5个9，6个9，还有个厂家都喜欢的号称的9个9之类的，可用性受容量的限制同时也受可伸缩性的影响，可用性又影响了性能；</p>
+</li>
+<li><p><code>Reliability</code>，可靠性，一般指的是出保证不出故障的概率，比如，企业级产品 5个9是保底，可测试性和可维护性通常被定义为可靠性当中的一部分，可伸缩性影响了可靠性，而可靠性又影响了可用性，同时性能又影响了可靠性，可靠性也影响着性能。</p>
+</li>
+<li><p><code>Scalability</code>，可伸缩性，这里很容易跟“可扩展性”混淆，可伸缩性可以指的是集群处理越来越多或越来越少的工作的能力，或者是为了适应这种增长或减少而扩大或缩小其能力的能力。可伸缩性影响了可用性，也影响了性能与可靠性，受限于容量。</p>
+</li>
+</ol>
+<p>当然还有另外一些由此而衍生的非核心要素，就不多做详细解释了，比如：</p>
+<ul>
+<li>Testability，可测试性</li>
+<li>Security，安全性</li>
+<li>Observability，可观测性</li>
+<li>Predictability，可预测性</li>
+<li>Extensibility，可扩展性</li>
+<li>Maintainability，可维护性</li>
+<li>Serviceability， 可服务性</li>
+</ul>
+<p>这些非核心要素虽然是非核心但是也不是说就不重要，是<code>开源产品与商业产品</code>差异的关键，关键在如何<code>tradeoff</code>。</p>
+<h2 id="阴阳五行与分布式系统"><a href="#阴阳五行与分布式系统" class="headerlink" title="阴阳五行与分布式系统"></a>阴阳五行与分布式系统</h2><p>将阴阳五行理论与分布式系统设计理论结合起来解读就是：</p>
+<p><code>分布式系统里的“道”就是“产品”，“阴阳“ 就是 ”功能“ 与 “非功能”，五行就是 ”容量、性能、可用性、可伸缩性以及可靠性“，阴阳五行衍生的一些其他关系对应分布式系统五要素衍生的一些其他要素。</code></p>
+<p>用人话来讲就是 开发产品的时候需要考虑功能与非功能两个方面，而要保证产品质量又需要考虑”容量、性能、可用性、可伸缩性以及可靠性“这些核心要素，但是也不能忽略由此而生的一些非核心要素。</p>
+<p>那么从这些理论到产品又需要怎么做才能落地呢？ 那自然是需要 <code>懂得如何把从这些概念性的、功能的、非功能的、这些核心的、非核心的要素进行设计实现成代码</code>，这就涉及到 “术”的层面了，“道”的层面可以通过看书看论文获得，而<code>“术”</code>的获得除了自身努力还得靠机会，而且每个人的悟性还不一样，这些个”术“以后有空慢慢讲。</p>
+<h2 id="思考题"><a href="#思考题" class="headerlink" title="思考题"></a>思考题</h2><p>最后给大家留一个思考题： 前面提过老子曰：<code>”道生一、一生二、二生三、三生万物，万物负阴而抱阳，冲气以为和。“</code>， 三之后就是万物，为什么不是 五、不是六、不是七之类的呢？为什么三之后就是万物了？</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a>作者简介</h2><p>常平，毕业于中国科学技术大学，获硕士研究生学历学位，10年+ 存储、布式系统、云计算以及大数据经验，曾就职于Marvell、AMD等，现就职于EMC，资深首席工程师，主要负责流式大数据处理平台的架构设计、编码及产品交付等。</p>
+<hr>
+<h4 id="注："><a href="#注：" class="headerlink" title="注："></a>注：</h4><ol>
+<li>这个用五行解释分布式系统的观点，以前在一个业内微信群里提出并且聊过，所以这个解读的方式为本人原创非COPY.</li>
+<li>个人愚钝，悟性有限，欢迎拍砖，砖多了我就拿回去砌墙。</li>
+</ol>
+<h3 id="参考资料："><a href="#参考资料：" class="headerlink" title="参考资料："></a>参考资料：</h3><p>[1]. <a href="https://baike.sogou.com/v7556185.htm" target="_blank" rel="noopener">https://baike.sogou.com/v7556185.htm</a></p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/flink-deployment-kubernetes/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/20/flink-deployment-kubernetes/" itemprop="url">Flink handbook - flink集群与部署之kubernetes篇</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T06:46:49+08:00">2018-09-20 06:46:49</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>本页介绍如何在Kubernetes上部署Flink作业和会话群集。</p>
+<h2 id="设置Kubernetes"><a href="#设置Kubernetes" class="headerlink" title="设置Kubernetes"></a>设置Kubernetes</h2><p>请参照<a href="https://kubernetes.io/docs/setup/" target="_blank" rel="noopener">Kubernetes的设置指南</a>来部署Kubernetes集群。如果您想在本地运行Kubernetes，我们建议使用<a href="https://kubernetes.io/docs/setup/minikube/" target="_blank" rel="noopener">MiniKube</a>来部署集群。</p>
+<blockquote>
+<p>注意：如果使用MiniKube，请确保<code>minikube ssh &#39;sudo ip link set docker0 promisc on&#39;</code>在部署Flink群集之前执行。否则，Flink组件无法通过Kubernetes服务自行引用。</p>
+</blockquote>
+<h2 id="Kubernetes上的Flink会话群集"><a href="#Kubernetes上的Flink会话群集" class="headerlink" title="Kubernetes上的Flink会话群集"></a>Kubernetes上的Flink会话群集</h2><p>Flink会话群集作为长期运行的Kubernetes部署来执行，请注意，可以在会话群集上运行多个Flink作业。在部署了集群之后，每个作业都需要提交到群集。</p>
+<p>一个基本的部署在Kubernetes上的Flink会话群集一般会有三个组件：</p>
+<ul>
+<li>一个运行JobManager的deployment或job</li>
+<li>一个TaskManagers池 deployment</li>
+<li>一个公开JobManager的REST和UI端口的service</li>
+</ul>
+<h2 id="在Kubernetes上部署Flink会话群集"><a href="#在Kubernetes上部署Flink会话群集" class="headerlink" title="在Kubernetes上部署Flink会话群集"></a>在Kubernetes上部署Flink会话群集</h2><p>使用会话群集的资源定义，采用kubectl命令启动群集：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">kubectl create -f jobmanager-service.yaml<br>kubectl create -f jobmanager-deployment.yaml<br>kubectl create -f taskmanager-deployment.yaml<br></code></pre></td></tr></table></figure>
+<p>然后，您可以通过kubectl proxy按以下方式访问Flink UI ：</p>
+<p>第一步，保证kubectl proxy在终端中运行</p>
+<p>第二步，在浏览器里输入 <code>http://localhost:8001/api/v1/namespaces/default/services/flink-jobmanager:ui/proxy</code></p>
+<p>如果要终止Flink会话群集，可以使用如下命令：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">kubectl delete -f jobmanager-deployment.yaml<br>kubectl delete -f taskmanager-deployment.yaml<br>kubectl delete -f jobmanager-service.yaml<br></code></pre></td></tr></table></figure>
+<h2 id="Kubernetes上的Flink作业集群"><a href="#Kubernetes上的Flink作业集群" class="headerlink" title="Kubernetes上的Flink作业集群"></a>Kubernetes上的Flink作业集群</h2><p>Flink作业集群是运行单个作业的专用集群，这项作业是打包在flink镜像里的，因此，不需要提交额外的作业对象，步骤如下：</p>
+<h3 id="创建特定于作业的镜像"><a href="#创建特定于作业的镜像" class="headerlink" title="创建特定于作业的镜像"></a>创建特定于作业的镜像</h3><p>Flink作业集群镜像需要包含启动集群的作业的用户代码jar。因此，需要为每个作业构建专用的容器镜像。请按照这些<a href="https://github.com/apache/flink/blob/master/flink-container/docker/README.md" target="_blank" rel="noopener">说明</a>构建Docker镜像。</p>
+<h3 id="在Kubernetes上部署Flink作业集群"><a href="#在Kubernetes上部署Flink作业集群" class="headerlink" title="在Kubernetes上部署Flink作业集群"></a>在Kubernetes上部署Flink作业集群</h3><p>要在Kubernetes上部署作业集群，请按照这些<a href="https://github.com/apache/flink/blob/master/flink-container/kubernetes/README.md#deploy-flink-job-cluster" target="_blank" rel="noopener">说明</a>进行操作。</p>
+<h2 id="高级群集部署"><a href="#高级群集部署" class="headerlink" title="高级群集部署"></a>高级群集部署</h2><p>GitHub上提供了早期版本的<a href="https://github.com/docker-flink/examples" target="_blank" rel="noopener">Flink Helm chart</a>。</p>
+<h1 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h1><h2 id="会话群集资源定义"><a href="#会话群集资源定义" class="headerlink" title="会话群集资源定义"></a>会话群集资源定义</h2><p>部署使用的最新镜像 <code>flink:latest</code> 可在<a href="https://hub.docker.com/r/_/flink/" target="_blank" rel="noopener">Docker Hub</a>上找到。该镜像是用这个工具 <code>https://github.com/docker-flink/docker-flink</code> 构建的</p>
+<p>jobmanager-deployment.yaml</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&quot;<br>apiVersion: extensions/v1beta1<br>kind: Deployment<br>metadata:<br>  name: flink-jobmanager<br>spec:<br>  replicas: 1<br>  template:<br>    metadata:<br>      labels:<br>        app: flink<br>        component: jobmanager<br>    spec:<br>      containers:<br>      - name: jobmanager<br>        image: flink:latest<br>        args:<br>        - jobmanager<br>        ports:<br>        - containerPort: 6123<br>          name: rpc<br>        - containerPort: 6124<br>          name: blob<br>        - containerPort: 6125<br>          name: query<br>        - containerPort: 8081<br>          name: ui<br>        env:<br>        - name: JOB_MANAGER_RPC_ADDRESS<br>          value: flink-jobmanager<br>&quot;<br></code></pre></td></tr></table></figure>
+<p>taskmanager-deployment.yaml</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&quot;<br>apiVersion: extensions/v1beta1<br>kind: Deployment<br>metadata:<br>  name: flink-taskmanager<br>spec:<br>  replicas: 2<br>  template:<br>    metadata:<br>      labels:<br>        app: flink<br>        component: taskmanager<br>    spec:<br>      containers:<br>      - name: taskmanager<br>        image: flink:latest<br>        args:<br>        - taskmanager<br>        ports:<br>        - containerPort: 6121<br>          name: data<br>        - containerPort: 6122<br>          name: rpc<br>        - containerPort: 6125<br>          name: query<br>        env:<br>        - name: JOB_MANAGER_RPC_ADDRESS<br>          value: flink-jobmanager<br>&quot;<br></code></pre></td></tr></table></figure>
+<p>jobmanager-service.yaml</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&quot;<br>apiVersion: v1<br>kind: Service<br>metadata:<br>  name: flink-jobmanager<br>spec:<br>  ports:<br>  - name: rpc<br>    port: 6123<br>  - name: blob<br>    port: 6124<br>  - name: query<br>    port: 6125<br>  - name: ui<br>    port: 8081<br>  selector:<br>    app: flink<br>    component: jobmanager<br>&quot;<br></code></pre></td></tr></table></figure>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/flink-deployment-docker/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/20/flink-deployment-docker/" itemprop="url">Flink handbook - flink 集群与部署之docker篇</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T06:46:03+08:00">2018-09-20 06:46:03</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="作者标注"><a href="#作者标注" class="headerlink" title="作者标注"></a>作者标注</h2><p>经过验证， 到当前版本为止 flink-1.7 snapshot，构建 flink docker镜像需要采用这个flink docker 构建工具 <code>https://github.com/docker-flink/docker-flink</code>，按照<a href="https://github.com/apache/flink/tree/master/flink-container" target="_blank" rel="noopener">flink官方代码库</a>里的构建出来的flink镜像有些功能不能用，比如 flink-standalone模式，report metrics等。</p>
+<h2 id="Docker设置"><a href="#Docker设置" class="headerlink" title="Docker设置"></a>Docker设置</h2><p>Docker Hub上有关于Apache Flink的Docker镜像，可用于部署flink群集。Flink镜像库还包含用于创建容器映像以部署flink工作集群的一些工具以及说明。</p>
+<h2 id="Flink-session群集"><a href="#Flink-session群集" class="headerlink" title="Flink session群集"></a>Flink session群集</h2><p>Flink会话群集可用于运行多个业务。在部署后，每个业务都需要提交到集群才能跑起来。</p>
+<h2 id="Docker镜像"><a href="#Docker镜像" class="headerlink" title="Docker镜像"></a>Docker镜像</h2><p>该<a href="https://hub.docker.com/_/flink/" target="_blank" rel="noopener">Flink镜像库</a>托管在docker hub，提供了flink1.2.1以及之后的版本镜像。</p>
+<p>注意： Docker镜像是由个人提供的社区项目，它们并不是Apache Flink PMC的官方版本（作者标注：所以需要用这个个人的<a href="https://github.com/docker-flink/docker-flink" target="_blank" rel="noopener">构建工具</a>，而不是官方代码库里的构建工具）。</p>
+<h2 id="Flink作业集群"><a href="#Flink作业集群" class="headerlink" title="Flink作业集群"></a>Flink作业集群</h2><p>Flink作业集群是运行单个作业的专用集群，这是镜像内容的一部分，因此，不需要额外的工作。</p>
+<h2 id="Docker镜像-1"><a href="#Docker镜像-1" class="headerlink" title="Docker镜像"></a>Docker镜像</h2><p>Flink作业集群镜像需要包含启动集群的作业的用户代码jar。因此，需要为每个作业构建专用的容器镜像。该flink-container模块包含一个build.sh脚本，可用于创建此类镜像。有关详细信息，请参阅<a href="https://github.com/apache/flink/blob/master/flink-container/docker/README.md" target="_blank" rel="noopener">说明</a>。（作者注：这个是官方的构建方式，试过有问题，比如跑 flink-standalone再 report metrics）</p>
+<h2 id="Flink与Docker-Compose"><a href="#Flink与Docker-Compose" class="headerlink" title="Flink与Docker Compose"></a>Flink与Docker Compose</h2><p>Docker Compose是一种很方便的用于在本地启动一组Flink Docker容器的方式。</p>
+<p>GitHub上提供了<a href="https://github.com/docker-flink/examples/blob/master/docker-compose.yml" target="_blank" rel="noopener">集群部署实例</a>和<a href="https://github.com/apache/flink/blob/master/flink-container/docker/docker-compose.yml" target="_blank" rel="noopener">作业群集示例</a>的配置文件。</p>
+<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><p>启动集群</p>
+<p><code>$docker-compose up</code></p>
+<p>以deamon的方式启动集群</p>
+<p> <code>$docker-compose up -d</code></p>
+<p>集群扩展 N 个 TaskManagers</p>
+<p><code>$docker-compose scale taskmanager=&lt;N&gt;</code></p>
+<p>销毁集群</p>
+<p><code>$docker-compose kill</code></p>
+<p>当拉起一个Flink群集后，您可以访问 <code>http：// localhost：8081</code>的Web UI ，在界面里您还可以将作业提交到群集。</p>
+<p>如果要通过命令行将作业提交到会话群集，必须将JAR复制到JobManager容器里并从那里执行作业。</p>
+<p>例如：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$ JOBMANAGER_CONTAINER=$(docker ps --filter name=jobmanager --format=&#123;&#123;.ID&#125;&#125;)<br>$ docker cp path/to/jar &quot;$JOBMANAGER_CONTAINER&quot;:/job.jar<br>$ docker exec -t -i &quot;$JOBMANAGER_CONTAINER&quot; flink run /job.jar<br></code></pre></td></tr></table></figure>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/distributed-dht-update/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/16/distributed-dht-update/" itemprop="url">分布式系统中DHT算法改进</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T21:32:38+08:00">2018-09-16 21:32:38</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>通常，分布式存储系统以及分布式缓存系统习惯采用分布式哈希（DHT）算法来实现数据的分区分配（路由）以及负载均衡，普通的分布式hash算法通过增添虚拟节点，对物理的热点区间进行划分，将负载分配至其他节点，从而达到负载均衡的状态，但是这并不能保证集群的负载就一定很是的均衡。</p>
+<p>而一种改进过的一致性Hash算法，即带边界因子的一致性Hash算法，其严格控制每个节点的负载从而能获得更好的负载均衡效果[1][2]。</p>
+<h2 id="普通的DHT算法"><a href="#普通的DHT算法" class="headerlink" title="普通的DHT算法"></a>普通的DHT算法</h2><p>假设有8个Object，通过下图的DHT算法:</p>
+<ol>
+<li>object 0,1,2映射到了虚拟节点vNode0 ： object 0,1,2 –&gt; vNode0</li>
+<li>Object 3,4,5 映射到了vNode1：object 3,4,5 –&gt; vNode1</li>
+<li>Object 6映射到 vNode2：object 6 –&gt; vNode2</li>
+<li>Object 7映射到 vNodeN：object 7 –&gt; vNodeN</li>
+</ol>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-1.png" alt="distributed-DHT-1"></p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-2.png" alt="distributed-DHT-2"></p>
+<p>很明显，Vnode0和vNode1 都落了三个 object，而 vNode2和vNodeN 都只落了 1个Object，这里的DHT算法负债均衡因子并不是很好。</p>
+<h2 id="带负载边界因子的DHT算法"><a href="#带负载边界因子的DHT算法" class="headerlink" title="带负载边界因子的DHT算法"></a>带负载边界因子的DHT算法</h2><p>假设有8个Object，通过如下图的DHT with bounded loads算法:</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-3.png" alt="distributed-DHT-3"></p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-4.png" alt="distributed-DHT-4"></p>
+<p>第一轮映射：</p>
+<ol>
+<li>object 0,1,2 需要映射到了虚拟节点vNode0，但是vNode0的权重因子是 2，因此只完成了 object 0,1 –&gt; vNode0， object 2不能映射到节点 vNode0；</li>
+<li>Object 3,4,5 需要映射到了虚拟节点vNode1：但是vNode1的权重因子是 2，因此只完成了 object 3,4 –&gt; vNode1， object 5不能映射到节点 vNode1；</li>
+<li>Object 6映射到 vNode2：object 6 –&gt; vNode2</li>
+<li>Object 7映射到 vNodeN：object 7 –&gt; vNodeN</li>
+</ol>
+<p>第二轮映射：</p>
+<ol>
+<li>Object 2 映射到 vNode1，但是vNode1权重因子=0， 不能被接收，继续往下一个节点走，发现vNode2 权重因子是2,还剩权重因子1，可以被映射，因此 object 2–&gt;vNode2</li>
+<li>Object 5 映射到 vNode2，但是vNode2现在的权重因子=0， 不能被接收，继续往下一个节点走，发现vNodeN 权重因子是2,还剩权重因子1，可以被映射，因此 object 5–&gt;vNodeN</li>
+</ol>
+<p>最终的映射结果是:</p>
+<ol>
+<li>object 0,1映射到了虚拟节点vNode0 ： object 0,1 –&gt; vNode0</li>
+<li>Object 3,4 映射到了vNode1：object 3,4 –&gt; vNode1</li>
+<li>Object 2,6映射到 vNode2：object 2,6 –&gt; vNode2</li>
+<li>Object 5,7映射到 vNodeN：object 5,7 –&gt; vNodeN</li>
+</ol>
+<p>很明显，Vnode0，vNode1，vNode2, vNodeN 每个节点都分到2个 object，<br>显然带负载边界因子的DHT算法负债均衡比普通的DHT算法来的好。</p>
+<p>这些节点的负载因子可以从IO，CPU，MEM，Disk，Network等输入因子计算出来。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a>作者简介</h2><p>常平，毕业于中国科学技术大学，获硕士研究生学历学位，10年+ 存储、布式系统、云计算以及大数据经验，曾就职于Marvell、AMD等，现就职于EMC，资深首席工程师，主要负责流式大数据处理平台的架构设计、编码及产品交付等。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] <a href="https://research.googleblog.com/2017/04/consistent-hashing-with-bounded-loads.html" target="_blank" rel="noopener">https://research.googleblog.com/2017/04/consistent-hashing-with-bounded-loads.html</a></p>
+<p>[2] <a href="https://medium.com/vimeo-engineering-blog/improving-load-balancing-with-a-new-consistent-hashing-algorithm-9f1bd75709ed" target="_blank" rel="noopener">https://medium.com/vimeo-engineering-blog/improving-load-balancing-with-a-new-consistent-hashing-algorithm-9f1bd75709ed</a></p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/distributed-streaming-storage/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/16/distributed-streaming-storage/" itemprop="url">下一个分布式存储系统，为万物互联的智能世界而发</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T21:32:38+08:00">2018-09-16 21:32:38</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>如果说互联网和云计算使得对象存储在存储市场上与块存储、文件存储三分天下，相应的业务需求直接奠定了对象存储与块存储、文件存储并列存储江湖一哥的地位，那么接下来也许我们需要为下一场数据变革的大事做好准备 – <font color="#00CED1"><strong>万物互联这样的商业场景将给数据存储带来极大的商业挑战和技术挑战。</strong></font></p>
+<h2 id="万物互联下的数据"><a href="#万物互联下的数据" class="headerlink" title="万物互联下的数据"></a><font color="#FF8C00">万物互联下的数据</font></h2><p>纵观人类历史，各种技术变革都是以人类活动为中心，然后发明各种工具。石器时代，原始人发明了石器以及用火从而提升了生活品质和社会文明。现代社会，人类为了解决各种寂寞空虚冷吃穿住用行、生理和心理上的各种需求从而发明了各种社交空间、社交工具、网络购物、生活服务APP等，为了更好的服务这些应用场景，挖掘这些场景所生产的数据的价值，从而有了今天的各种大数据技术。</p>
+<p>在互联网时代，数据主要来源于网页、APP以及一些相应的日志系统，而在万物互联的世界，数据还可以来源于有各种传感器、工业设备、监控设备、检测设备、智能家居、自动驾驶等。大数据的四个特征：数据量、时效性、多样性、价值密度在万物互联的场景下被进一步的深化，这就意味着商业成本以及技术成本的增加。</p>
+<p>理论奠定技术的基础，业务驱使技术的变革。在万物互联的智能时代，我们有一个愿景：<font color="#FF0000"> <strong>能够将万物互联下生成的海量原始数据转化为可用的信息以及行为决策，并且这个转换的时间差需要能够接近于零。</strong></font>而需要实现这个愿景，从技术角度来看，需要有计算层面的解决方案也需要有存储层面的，如今在计算层面已经有Flink、Spark等这类成熟的分布式计算应用，然而在存储层面还没有。</p>
+<h2 id="流数据与流存储"><a href="#流数据与流存储" class="headerlink" title="流数据与流存储  "></a><font color="#FF8C00">流数据与流存储  </font></h2><p>在万物互联的场景下，各种传感器以及设备生成的数据有其原生的属性，这种数据自带时间戳、实时性要求高，而且是<font color="#FF0000"> <strong>“流数据”</strong></font>。</p>
+<p>首先流数据在百度百科里是这样被定义的：</p>
+<blockquote>
+<p>流数据是一组顺序、大量、快速、连续到达的数据序列，一般情况下，数据流可被视为一个随时间延续而无限增长的动态数据集合。应用于网络监控、传感器网络、航空航天、气象测控和金融服务等领域。</p>
+</blockquote>
+<p>从数据的生产与传输场景来看流数据具有几个与众不同的带有破坏性的特性：</p>
+<ol>
+<li>数据随时间延续而无限增长，这意味着数据的无限性；</li>
+<li>数据到达的速度有快有慢、负载有高有低，这意味着灵活又细粒度的资源弹性需求；</li>
+<li>数据有序、无序、持久化以及复杂的传输环境而又要保证数据处理结果的唯一正确性。</li>
+</ol>
+<p>这是三个特性转换成存储技术的语义对应着：<font color="#FF0000"> <strong>无限性、可伸缩性以及恰好一次：持久化、有序、一致性以及事务。</strong></font></p>
+<p>从<font color="#FF0000"> <strong>存储的视角</strong></font>来说，每种类型的数据都有其原生的属性和需求，对应有最佳的适用场景以及最合适的存储系统。跑在数据库里的数据对实时性和可靠性要求非常的高，因此适合采用块存储系统。文件共享场景下需要向用户共享文件，多个用户可以共享读取一个文件，因此适合采用文件存储系统。而互联网网页与APP里的文件、图像、视频可以看作一个个的数据对象又需要租户隔离以及无限扩展，因此又非常适合采用对象存储系统。那么目前又有哪种存储系统最适合用于<font color="#FF0000"> <strong>“流数据”</strong></font>呢？</p>
+<p>正如当前技术条件下最适合<font color="#FF0000"> <strong>“流数据”</strong></font>计算的是类似Flink这样的分布式流计算应用，最适合“流数据”的应当是<font color="#00CED1"><strong>分布式流存储系统。</strong></font> </p>
+<h2 id="分布式流存储系统"><a href="#分布式流存储系统" class="headerlink" title="分布式流存储系统"></a><font color="#FF8C00">分布式流存储系统</font></h2><h3 id="产品定位"><a href="#产品定位" class="headerlink" title="产品定位"></a><font color="#00CED1">产品定位</font></h3><p>分布式流存储系统的产品定位是给万物互联这样的应用场景服务的，从技术角度来看它具有自身的特点，正如标题里提到的三个关键词：<font color="#FF8C00"> <strong>“分布式”、“流”、“存储”</strong></font>。首先是分布式的，它具有分布式系统本身所具有的一切能力，接着表示是专门给流式数据设计和实现的，最后的存储表示的是一个原生的存储解决方案，它讲究数据的<font color="#FF8C00"> <strong>可靠性、持久化、一致性、资源隔离等</strong></font>，它从<font color="#FF0000"> <strong>存储的视角</strong></font>处理流数据。分布式流存储针对 <strong>“流数据”</strong> 的自身属性以及相应的特殊的业务需求场景做了专门的设计与实现，下面从<font color="#FF8C00"> <strong>命名空间、业务场景、无限性、可伸缩性、恰好一次、字节流、数据管道、租户隔离、海量小文件、数据治理、流式架构</strong></font>的角度依据 <strong>最佳实践原则</strong> 讲述了为什么需要专门设计和实现一个流式存储系统。</p>
+<h3 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a><font color="#00CED1">命名空间</font></h3><p>通常，块存储系统以<font color="#FF0000"><strong>分区、目录、文件</strong></font>，文件存储系统以<font color="#FF0000"><strong>目录、文件</strong></font>，以及对象存储以<font color="#FF0000"><strong>租户、桶、对象</strong></font>来定义数据的存储路径以及命名空间，而流存储系统则以<font color="#FF0000"><strong>范围(scope)、流(stream)、段(segment)、事件(event)</strong></font>来描述数据的存储路径以及命名空间。</p>
+<div align="center"> 
+
 <table>
 <thead>
 <tr>
-<th>#</th>
-<th>过程1</th>
-<th>过程2</th>
-<th>讨论</th>
+<th>类型</th>
+<th>命名空间</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>1</td>
-<td>GET_ALL</td>
-<td>GET_ALL</td>
-<td>显示两个进程都看到一个空的SharedConfig</td>
+<td>块存储</td>
+<td>分区、目录、文件</td>
 </tr>
 <tr>
-<td>2</td>
-<td>PUT  p1, v1</td>
-<td></td>
-<td>进程1添加名为p1的属性</td>
+<td>文件存储</td>
+<td>目录、文件</td>
 </tr>
 <tr>
-<td>3</td>
-<td>GET p1</td>
-<td>GET p1</td>
-<td>过程1看到属性的值v1, 进程2没有名为p1的属性。为什么？因为它没有, 使用共享状态刷新其状态</td>
+<td>对象存储</td>
+<td>租户、桶、对象</td>
 </tr>
 <tr>
-<td>4</td>
-<td></td>
-<td>REFRESH</td>
-<td>将进程2的状态与共享状态重新同步</td>
-</tr>
-<tr>
-<td>5</td>
-<td></td>
-<td>GET p1</td>
-<td>现在，流程2看到了步骤2中所做的更改流程1</td>
-</tr>
-<tr>
-<td>6</td>
-<td></td>
-<td>REPLACE p1, newVal, v1</td>
-<td>进程2尝试更改p1的值，但使用条件替换，这意味着仅当p1的旧值为v1（此时为此）时才应进行更改</td>
-</tr>
-<tr>
-<td>7</td>
-<td></td>
-<td>GET p1</td>
-<td>果然，p1的值改为newVal</td>
-</tr>
-<tr>
-<td>8</td>
-<td>REPLACE p1, anotherVal, v1</td>
-<td></td>
-<td>进程1尝试以与进程2在步骤6中所做的相同的方式更改p1的值。这将失败，因为共享状态中p1的值不再是v1</td>
-</tr>
-<tr>
-<td>9</td>
-<td>GET p1</td>
-<td></td>
-<td>步骤8中的失败替换操作导致进程1的共享状态, 副本被更新，由于步骤6，其值现在是newVal。</td>
+<td>流存储</td>
+<td>范围、流、段、事件</td>
 </tr>
 </tbody>
 </table>
-<p>您可以使用类似的序列，以探索PUT_IF_ABSENT的语义以及修改共享状态的其他操作。<br>这个想法是，只有在对最新的值进行操作时，对SharedConfig的修改才会成功。我们使用乐观并发来实现SharedConfig对象的多个消费者之间实现有效的一致性。<br>您可以同时运行多个不同的SharedConfig状态对象，每个单独的SharedConfig使用基于不同Pravega Stream的State Synchronizer对象。当然，如果使用由同一Stream支持的State Synchronizer对象启动两个应用，则两个进程会同时访问共享状态，这正是我们上面说明的情况。</p>
-<h2 id="使用State-Synchronizer构建SharedMap"><a href="#使用State-Synchronizer构建SharedMap" class="headerlink" title="使用State Synchronizer构建SharedMap"></a>使用State Synchronizer构建SharedMap</h2><p>我们使用State Synchronizer在Pravega-Samples中构建SharedMap对象。State Synchronizer可用于构建几乎任何数据结构的共享版本。也许你的应用只需要共享一些简单的整数计数; 我们可以使用State Synchronizer来构建一个简单的共享计数器。也许您共享的数据是集群中当前运行的服务器集; 我们可以使用State Synchronizer来构建共享Set。可能性是多方面的。<br>让我们通过使用如何构建共享映射来探讨如何使用State Synchronizer构建共享对象。</p>
-<h2 id="State-Synchronizer"><a href="#State-Synchronizer" class="headerlink" title="State Synchronizer"></a>State Synchronizer</h2><p>State Synchronizer是一种Pravega客户端，类似于EventStreamReader或EventStreamWriter。状态同步器是通过ClientFactory对象创建的。每个状态同步器在范围内都有唯一的名称。SynchronizerConfig对象用于定制StateSynchronizer的行为（尽管目前State Synchronizer上没有可配置的属性）。State Synchronizer使用Java泛型类型来允许开发人员指定类型特定的State Synchronizer。所有这些都以类似于使用EventStreamReaders和EventStreamWriters的方式进行。</p>
-<h2 id="StateT"><a href="#StateT" class="headerlink" title="StateT"></a>StateT</h2><p>在设计使用State Synchronizer的应用时，开发人员需要决定要同步（共享）哪种类型的状态。我们共享一个map吗？一个 set ? 一个Pojo？正在共享的数据结构是什么？这定义了状态同步器的核心“类型”（状态同步器接口中的StateT泛型类型）。StateT对象可以是实现Pravega定义的Revisioned接口的任何Java对象。  Revisioned是一个简单的接口，允许Pravega确保它能够正确地比较两个不同的StateT对象。<br>在我们的示例中，SharedMap是State Synchronizer的一个应用。它定义了一个简单的Map对象，该对象表示您期望从键值对映射对象获得的典型get（key），set（key，value）等操作。它根据需要使用状态同步器的实现了  Revisioned接口，并使用简单的ConcurrentHashMap作为Map的内部实现。因此，在我们的示例中，StateT对应于SharedStateMap \&lt;K，V&gt;。</p>
-<h2 id="UpdateT和InitialUpdateT"><a href="#UpdateT和InitialUpdateT" class="headerlink" title="UpdateT和InitialUpdateT"></a>UpdateT和InitialUpdateT</h2><p>除了StateT之外，还有另外两种需要由StateSynchronizer定义的泛型类型：Update类型和InitialUpdate类型。UpdateType表示Pravega Stream上持久存储的“delta”或更改对象。InitialUpdateType是一个特殊的更新对象，用于启动状态同步器。UpdateType和InitialUpdateType都是根据StateT定义的。<br>StateSynchronizer使用Stream上的单个Segment来将更新（更改）存储到共享状态对象的，以Initial或Update类型对象的形式进行的更改将根据更新是否与Stream中状态的最新副本相关而写入Stream。如果更新是基于旧版本的状态，则不进行更新。<br>StateSynchronizer对象本身在本地内存中保存状态的本地副本，它还保留有关该状态副本的版本元数据。可以使用getState（）操作检索本地状态。内存中的本地副本可能是过时的，应用可以使用fetchUpdates（）操作来刷新它，该操作将检索对给定版本的状态所做的所有更改。<br>应用的大多数更改都是通过updateState（）操作进行的。updateState（）操作将Function作为参数。使用最新的状态对象调用Function，并计算要应用的更新。<br>在我们的示例中，InitialUpdateT实现为：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/**<br> * Create a Map. This is used by StateSynchronizer to initialize shared state.<br> */<br>private static class CreateState&lt;K, V&gt; implements InitialUpdate&lt;SharedStateMap&lt;K,V&gt;&gt;, Serializable &#123;<br>    private static final long serialVersionUID = 1L;<br>    private final ConcurrentHashMap&lt;K, V&gt; impl;<br><br>    public CreateState(ConcurrentHashMap&lt;K, V&gt; impl) &#123;<br>        this.impl = impl;<br>    &#125;<br><br>    @Override<br>    public SharedStateMap&lt;K, V&gt; create(String scopedStreamName, Revision revision) &#123;<br>        return new SharedStateMap&lt;K, V&gt;(scopedStreamName, impl, revision);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>在这种情况下，CreateState类用于通过创建一个新的、空的SharedStateMap对象来初始化Stream中的共享状态。您可以想象InitialUpdate的其他示例将计数器设置为1，或者将Set初始化为固定的初始成员集。<br>像“initialize”和“update”这样的函数表示为类似乎有点奇怪，但是当你考虑到它时，这是有意义的。这些更改（如初始化和更新）需要存储在Pravega中，因此它们需要的是可序列化的对象。客户端应用必须能够随时启动，计算当前状态，然后在将更改写入Stream时保持运行状态。如果我们只是在Stream中存储“最新状态值”，就不可能始终如一地提供使用乐观并发的并发更新和读取。<br>UpdateT有点棘手。不仅有一种对Map的更新，而是有各种更新：放置一个键/值对，放置一组键/值对，删除键/值对并清除所有键/值对，这些“更新类型”中的每一个都由它们自己的类表示。我们定义了一个名为StateUpdate的抽象类，所有这些“操作”更新类都从该类继承。  </p>
-<h3 id="StateUpdate抽象类"><a href="#StateUpdate抽象类" class="headerlink" title="StateUpdate抽象类"></a>StateUpdate抽象类</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/**<br> * A base class for all updates to the shared state. This allows for several different types of updates.<br> */<br>private static abstract class StateUpdate&lt;K,V&gt; implements Update&lt;SharedStateMap&lt;K,V&gt;&gt;, Serializable &#123;<br>    private static final long serialVersionUID = 1L;<br><br>    @Override<br>    public SharedStateMap&lt;K,V&gt; applyTo(SharedStateMap&lt;K,V&gt; oldState, Revision newRevision) &#123;<br>        ConcurrentHashMap&lt;K, V&gt; newState = new ConcurrentHashMap&lt;K, V&gt;(oldState.impl);<br>        process(newState);<br>        return new SharedStateMap&lt;K,V&gt;(oldState.getScopedStreamName(), newState, newRevision);<br>    &#125;<br><br>    public abstract void process(ConcurrentHashMap&lt;K, V&gt; updatableList);<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>通过定义抽象类，我们可以用抽象StateUpdate类来定义UpdateT。抽象类实现StateSynchronizer调用的“applyTo”方法，以便将更新应用于当前状态对象并返回更新后的状态对象。实际的工作是在对旧状态的底层Map（impl）对象的副本上进行的，对impl对象和新版本的SharedState应用“特定于每个子类”的“进程”操作，使用后处理的impl作为内部状态。抽象类定义了一个process（）方法，该方法实际上需要应用任何更新的工作。此方法由表示共享映射上的Put，PutAll等操作的各种具体类实现。<br>例如，我们在SharedMap对象上实现Put（key，value）操作的方式：</p>
-<h3 id="作为更新对象"><a href="#作为更新对象" class="headerlink" title="作为更新对象"></a>作为更新对象</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/**<br> * Add a key/value pair to the State.<br> */<br>private static class Put&lt;K,V&gt; extends StateUpdate&lt;K,V&gt; &#123;<br>    private static final long serialVersionUID = 1L;<br>    private final K key;<br>    private final V value;<br><br>    public Put(K key, V value) &#123;<br>        this.key = key;<br>        this.value = value;<br>    &#125;<br><br>    @Override<br>    public void process(ConcurrentHashMap&lt;K, V&gt; impl) &#123;<br>        impl.put(key, value);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>这里，process（）操作是向map添加键/值对，或者如果key已经存在，则更改该值。SharedMap上的每个“操作”都是根据创建StateUpdate的各个子类的实例来实现的。</p>
-<h2 id="在SharedMap上执行操作"><a href="#在SharedMap上执行操作" class="headerlink" title="在SharedMap上执行操作"></a>在SharedMap上执行操作</h2><p>SharedMap演示了StateSynchronizer的典型操作。SharedMap提供了一个API，非常类似于Java的Map \ &lt;K，V&gt;接口。它通过操作StateSynchronizer来实现了Map操作，使用StateUpdate的各种子类来执行状态更改（写入）操作。</p>
-<h3 id="创建-初始化"><a href="#创建-初始化" class="headerlink" title="创建/初始化"></a>创建/初始化</h3><h3 id="创建SharedMap"><a href="#创建SharedMap" class="headerlink" title="创建SharedMap"></a>创建SharedMap</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/**<br>  * Creates the shared state using a synchronizer based on the given stream name.<br>  *<br>  * @param clientFactory - the Pravega ClientFactory to use to create the StateSynchronizer.<br>  * @param streamManager - the Pravega StreamManager to use to create the Scope and the Stream used by the StateSynchronizer<br>  * @param scope - the Scope to use to create the Stream used by the StateSynchronizer.<br>  * @param name - the name of the Stream to be used by the StateSynchronizer.<br>  */<br> public SharedMap(ClientFactory clientFactory, StreamManager streamManager, String scope, String name)&#123;<br>     streamManager.createScope(scope);<br><br>     StreamConfiguration streamConfig = StreamConfiguration.builder().scope(scope).streamName(name)<br>             .scalingPolicy(ScalingPolicy.fixed(1))<br>             .build();<br><br>     streamManager.createStream(scope, name, streamConfig);<br><br>     this.stateSynchronizer = clientFactory.createStateSynchronizer(name,<br>                                             new JavaSerializer&lt;StateUpdate&lt;K,V&gt;&gt;(),<br>                                             new JavaSerializer&lt;CreateState&lt;K,V&gt;&gt;(),<br>                                             SynchronizerConfig.builder().build());<br><br>     stateSynchronizer.initialize(new CreateState&lt;K,V&gt;(new ConcurrentHashMap&lt;K,V&gt;()));<br> &#125;<br></code></pre></td></tr></table></figure>
-<p>SharedMap对象是通过定义范围和流来创建的（几乎总是如此，范围和流可能已经存在，因此第10-16行中的步骤通常是无操作的）。StateSynchronizer对象本身使用ClientFactory以类似于创建Pravega Reader或Writer的方式在第18-21行中构造。请注意，UpdateT对象和InitialUpdateT对象可以指定单独的Java序列化程序。目前，SynchronizerConfig对象非常枯燥; StateSynchronizer上当前没有可用的配置选项。<br>StateSynchronizer提供了一个带InitialUpdate对象的初始化（）API。这在SharedMap构造函数中被调用，以确保SharedState被正确初始化。请注意，在许多情况下，SharedMap对象将在已经包含SharedMap的共享状态的流上创建。即使在这种情况下，也可以调用initialize（），因为initialize（）不会修改Stream中的共享状态。</p>
-<h2 id="读操作"><a href="#读操作" class="headerlink" title="读操作"></a>读操作</h2><p>读操作，即不改变共享状态的操作，如get（key）containsValue（value）等，针对StateSynchronizer的本地副本工作。所有这些操作都使用getState（）检索当前本地状态，然后从该状态执行读取操作。StateSynchronizer的本地状态可能是过时的。在这些情况下，SharedMap客户端将使用refresh（）来强制StateSynchronizer使用StateSynchronizer对象上的fetchUpdates（）操作从共享状态刷新其状态。<br>请注意，这是一个设计决策，用于平衡响应性的单调性。我们可以很容易地实现读取操作，而不是在对本地状态执行读取之前总是执行刷新。如果开发人员预计将对共享状态进行频繁更新，这将是一种非常有效的策略。在我们的例子中，我们曾想象过，SharedMap会被频繁地读取，但更新相对较少，因此选择针对本地状态进行读取。</p>
-<h2 id="写（更新）操作"><a href="#写（更新）操作" class="headerlink" title="写（更新）操作"></a>写（更新）操作</h2><p>每一个写操作都是根据我们前面讨论过的各种具体StateUpdate对象实现的。clear（）操作使用StateUpdate的Clear子类删除所有键/值对，put（）使用Put类等。<br>让我们深入了解put（）操作的实现，以更详细地讨论StateSynchronizer编程：</p>
-<h3 id="实现put（键，值）"><a href="#实现put（键，值）" class="headerlink" title="实现put（键，值）"></a>实现put（键，值）</h3><figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/**<br> * Associates the specified value with the specified key in this map.<br> *<br> * @param key - the key at which the value should be found.<br> * @param value - the value to be entered into the map.<br> * @return - the previous value (if it existed) for the given key or null if the key did not exist before this operation.<br> */<br>public V put(K key, V value)&#123;<br>    final AtomicReference&lt;V&gt; oldValue = new AtomicReference&lt;V&gt;(null);<br>     stateSynchronizer.updateState((state, updates) -&gt; &#123;<br>        oldValue.set(state.get(key));<br>        updates.add(new Put&lt;K,V&gt;(key,value));<br>    &#125;);<br>    return oldValue.get();<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>需要注意的是，提供给StateSynchronizer的updateState（）的函数可能会被多次调用。将函数应用于旧状态的结果仅在对最新的状态修订应用时才会写入。如果存在竞争并且乐观并发检查失败，则将再次调用它。大多数时候只会有少量的调用。在某些情况下，开发人员可以选择使用fetchUpdates（）在运行updateState（）之前将StateSynchronizer与流中的最新共享状态副本同步。这是优化预期更新的频率与您希望更新效率之间的权衡的问题。如果您期望进行大量更新，请在调用updateState（）之前调用fetchUpdates（）。在我们的例子中，我们没有期望进行很多更新，因此每次调用put()时，都可能处理函数的几个调用。</p>
-<h2 id="删除操作"><a href="#删除操作" class="headerlink" title="删除操作"></a>删除操作</h2><p>我们选择实现删除（删除）操作以利用StateSynchronizer的compact（）功能。我们有一个策略，在每5个删除操作之后，并且在每次clear（）操作之后，我们都会进行compact()操作。现在，我们可以选择在每5次更新操作后执行compact（）操作，但是我们希望隔离使用compact（）仅删除操作的说明。<br>您可以将compact（）视为StateSynchronizer中的“垃圾收集”形式。在将一定数量的更改写入SharedState之后，将新的初始状态（所有更改的累积表示）写入Stream可能是有效的。这样，可以忽略比compact()操作更旧的数据，并最终从Stream中删除。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/ss.compact.png" alt=""></p>
-<p>作为compact（）操作的结果，新的初始状态（Initial2）被写入流。现在，来自Change3及更旧版本的所有数据不再相关，可以从Stream中回收垃圾。</p>
+<div align="left"> 
 
+<p>在流存储系统里，如下图所示，数据的组织形式被抽象成范围、流、段和事件，范围由流组成，流由段组成，段由事件组成，事件由字节(bytes)组成。</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-scope-stream.png" alt="流的组成"></p>
+<div align="left"> 
+
+<h3 id="业务场景"><a href="#业务场景" class="headerlink" title="业务场景"></a><font color="#00CED1">业务场景</font></h3><h5 id="可穿戴设备、自动驾驶与工业厂房"><a href="#可穿戴设备、自动驾驶与工业厂房" class="headerlink" title=" 可穿戴设备、自动驾驶与工业厂房"></a><font color="#FF00ff"> 可穿戴设备、自动驾驶与工业厂房</font></h5><p>可以想象一下这样的业务场景：某个商家销售了几千万个智能手表，这些智能手表可以记录每个用户每天走了多少步，同时还可以分析过往的历史数据，用柱状图给用户展示历史数据，如下图所示：</p>
+<div align="center"> 
+
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-watch.png" alt="步数分析"></p>
+<div align="left">  
+
+<p>考虑到信息安全，用户A是不能看到用户B的数据的，那么就需要按智能手表为单位进行租户隔离，这种的场景下就有几千万个租户，同时每个租户还有自己的存储空间配额，比如给每个智能手表分配5GB 存储空间。光是这样的租户隔离场景，依据<strong>最佳实践</strong>的系统设计原则，不管是块存储系统、文件存储系统、对象存储系统还是Kafka这样的消息系统，按他们本身的隔离特性以及支持的租户规模都是难以在单个系统里支持这样的租户隔离场景。但是用流存储来实现就很方便，比如以智能手表的业务场景为例：</p>
+<ul>
+<li>默认分配5GB存储空间给一个智能手表，然后定义一个智能手表类型的命名空间用于与其他智能设备进行隔离，给每个智能手表分配一个流，每个智能手表上报的字节数据以事件为单位存储在流内的段里。</li>
+<li>也可以这样来定义：给每个智能手表分配一个5GB 存储空间的命名空间，手表里的每个传感器都对应一个流，每个传感器以事件为单位上报字节数据存储到流的段里。</li>
+</ul>
+<p>还可以想象一下这样的业务场景：自动驾驶。采用分布式流存储的话，我们可以这样处理自动驾驶的数据：给每一辆无人车定义一个1TB存储空间的范围，车上的每个传感器都归属于一个流，传感器上报的事件都在段内持久化。再假设每辆车都有1000个传感器（实际情况只多不少），那么10万辆车就需要定义1亿个流，可以想象要进行这种规模的隔离也就只有这种专门针对流数据而设计的流存储系统能够支持。</p>
+<p>在工业互联网的场景下，还可以这样定义工业设备的数据：给一个厂房里的每台设备定义一个范围，每台设备里的每个传感器都对应一个流，传感器上传的事件数据保存在流内的段里，这样就很方便的对工业设备进行了大规模的租户数据隔离。</p>
+<p>因此，以<font color="#FF0000"><strong>“范围、流、段、事件”</strong></font>的方式很方便的进行了大规模的租户隔离保证了用户信息安全同时又进行了存储资源配额的隔离。</p>
+<h5 id="大数据处理平台"><a href="#大数据处理平台" class="headerlink" title=" 大数据处理平台"></a><font color="#FF00FF"> 大数据处理平台</font></h5><p>万物互联场景下无限量的数据给数据处理技术带来巨大的挑战与压力，不同的应用场景意味着不同的数据处理要求与复杂度，要把这些不同的甚至矛盾的数据处理要求都很好的综合在一个大数据处理系统里，对现有的大数据处理技术来说是个非常大的挑战，比如无人车的处理要求毫秒甚至纳秒级的数据处理实时性、而有些工业设备数据只需要分析历史数据，要让一个大数据处理系统既能能处理历史数据又能提供毫秒级甚至纳秒级的实时性处理能力还能应对各种不同格式不同传输场景的数据，而且每种数据处理都能达到这些应用场景原生指标的处理需求。相信这样的场景对工程技术人员来说是个很大的挑战。为了解决上述问题，按照现有的成熟的技术能力，通常开发人员采用类似Lambda架构（如下图）这样的大数据处理平台来处理大数据。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/streaming-bigdata-lambda-arch.PNG" alt="Lambda架构"></p>
+<p>Lambda架构即支持批处理也支持实时处理，能应对数据的多样性、具有容错功能、复杂性分离、能处理流式数据也能处理历史数据等优点，但是缺点也很明显：<strong>批处理一套独立的数据处理路径，实时处理又一套数据处理路径，然后还要合并结果再输出展示，同时系统里同样的数据存在存储多份的问题，比如同样的数据在Elasticsearch里有、HDFS里有、ceph里有、Kafka里也有，除了这些甚至还存在其他一些复杂的存储组件，而且同样的数据还都是多份冗余的，因此存储成本太高太过于复杂。Lambda架构里为了提供一个功能却引入一个组件，在复杂之上堆积复杂，存储成本、开发与运维成本都太过于复杂。</strong></p>
+<p>那么应当如何解决Lambda架构带来的这些缺点？<font color="#FF0000"><strong>以数据流向为核心</strong></font>重构大数据处理平台是一个比较好的方案，它具体包括数据的采集、聚合、传输、缓存、持久化、处理、展示等。依据这种设计理念我们可以推出一个端到端的原生的流式大数据处理平台：原生的流式计算加上一个原生的流式存储并且可以平衡商业成本与技术成本。</p>
+<p>流式计算可以采用Flink，然而并没有发现当前有合适的流式存储可以使用，如果采用Flink加上传统的文件存储或者块存储、对象存储的方式，也只能认为是半原生的大数据处理平台：<font color="#FF0000"><strong>计算是原生的流式计算而存储却不是原生的流式存储</strong></font>。</p>
+<p>因此，综合思考万物互联场景下的数据处理场景也需要一个原生的分布式流存储系统，<font color="#FF0000"><strong>重构Lambda架构里的存储栈</strong></font>，使得分布式流计算加上分布式流存储即为原生的流式大数据处理系统，同时还能很好的平衡商业成本与技术成本之间的关系。</p>
+<h3 id="数据无限性"><a href="#数据无限性" class="headerlink" title="数据无限性"></a><font color="#00CED1">数据无限性</font></h3><p>无限性是分布式流存储最为重要的设计原则。从流数据的角度来看，数据是大量、快速、连续而又无限的，这就给流存储系统的设计与实现带来极大的困难，无限的数据使得存储系统必须能支持连续且无限规模的数据流，光这一点就对存储系统的可扩展性要求非常的高，同时还要求存储系统能够根据到达的数据量动态而又优雅地进行扩容与缩容。从技术与成本的角度来看，数据无限性意味着冷热数据分离，长期不用的数据淘汰到长期存储系统里，热点数据需要缓存，同时还需要能支持历史数据的读取与实时数据的读取与写入。</p>
+<h3 id="可伸缩性"><a href="#可伸缩性" class="headerlink" title="可伸缩性"></a><font color="#00CED1">可伸缩性</font></h3><p>可伸缩性也是分布式流存储最为重要的设计原则之一，而且流存储里的可伸缩性要求还是自动化的资源细粒度的可伸缩。通常，在云原生的场景下，资源的缩放是以主机、虚机或容器为单位的，这样的缩放对流存储来说粒度太大。在流存储的场景下需要能够以数据的<strong>“流段”</strong>为单位，比如一个流段2MB，那么就需要能支持一次自动扩容或缩容2MB的存储空间。另外在流存储里还要求写入与读取对数据子集的操作是解耦分离的，并且写入与读取二者之间跟数据流段还要有一个合理的平衡。</p>
+<h3 id="恰好一次"><a href="#恰好一次" class="headerlink" title="恰好一次"></a><font color="#00CED1">恰好一次</font></h3><p>恰好一次也是分布式流存储最为重要的设计原则之一，恰好一次意味着数据的可持久化、有序、一致性以及事务性的支持。持久性意味着一旦得到确认，即使存储组件发生故障，写入的数据也不会丢失。有序意味着读客户端将严格按照写入的顺序处理数据。一致性意味着所有的读客户端即使面对存储故障、网络故障也都会看到相同的有序数据视图。事务性写入对于保证Flink这样的计算应用处理结果的完全正确是非常必要的。</p>
+<h3 id="字节流"><a href="#字节流" class="headerlink" title="字节流"></a><font color="#00CED1">字节流</font></h3><p>分布式流存储里采用字节流的格式组织数据而不是像消息系统里采用消息报文的方式，这意味着接口的通用性。二进制的字节流是与数据格式无关的，字节流可以组成事件封装在分布式存储的流段里。而消息系统里数据是消息头消息体的格式封装的，在兼容性上不如字节流。</p>
+<h3 id="数据管道"><a href="#数据管道" class="headerlink" title=" 数据管道"></a><font color="#00CED1"> 数据管道</font></h3><p>在存储界通常喜欢用跑车、卡车、渡轮来比喻块存储、文件存储以及对象存储，打个比方来说块存储类似跑车：极快、极稳、装的人少、成本高；文件存储类似卡车：快、稳、装的人比跑车多，但是没跑车那么快；对象存储类似渡轮：可以装非常多的货，讲究量大、成本低；那么分布式流存储像什么呢？ 在我们的定义里它就像管道：<font color="#FF0000"><strong>数据如同流水一般流过管道，又快又稳源源不断而又永无止境</strong>。</font></p>
+<h3 id="租户隔离"><a href="#租户隔离" class="headerlink" title="租户隔离"></a><font color="#00CED1">租户隔离</font></h3><p>分布式流存储从一开始设计的时候就将”租户隔离“作为其基本特性进行实现，”隔离“是分布式流存储的最基本的特性之一，在分布式流存储里租户隔离不只是租户B绝对不能看的到租户A的任何信息这样的信息安全层面的隔离，它支持范围、流、段、事件层面的隔离还将支持的租户规模作为设计的目标之一，在分布式流存储里单集群需要能支持千万量级起的租户数，另外还有资源、命名、可视空间、权限以及服务质量层面的隔离。</p>
+<h3 id="海量小文件"><a href="#海量小文件" class="headerlink" title="海量小文件"></a><font color="#00CED1">海量小文件</font></h3><p>对巨量小文件的支持是分布式流存储的设计原则之一。正如前面提到的，万物互联下的海量数据来源于传感器，而传感器上传的数据都是类似温度、地理位置、告警信息这样的几个字节几个字节的小数据，这就意味着在万物互联的场景下会有巨量的小数据上传，而且90%以上的数据操作行为都是写入。为了保证数据写入的性能以及可靠性、正确性、持久性以及保证介质的使用寿命降低成本，这也需要存储系统针对这种业务场景进行专门的设计。</p>
+<p>在分布式流存储里每个事件第一步是被仅附加写入一个缓存的段内进行封装的，在段达到一定的尺寸（比如64MB）后会被封闭不再写入，这时再将整个段写入下一级的持久化存储里。通过这样的设计，实现小数据在缓存里封装成大块的数据，再将大块数据写入持久化存储设备的方式保证了存储系统整体的性能。</p>
+<h3 id="数据治理"><a href="#数据治理" class="headerlink" title="数据治理"></a><font color="#00CED1">数据治理</font></h3><p>当前的大数据处理平台，不管是Kappa架构还是lambda架构，数据的存储都是多组件化、多份化的。比如同样的数据在Kafka里有、在HDFS里有、在Elasticsearch里又有，有些用户还使用了更多的存储中间件，而且这些数据还是多份冗余的。这一方面增加了数据的存储成本，另一方面也降低了数据的可信性、可靠性、合规性，给数据标准化以及数据的重复利用带来了困难，不利于数据的分享、合规、降低成本以及安全可靠地支持业务和决策。数据治理也是分布式流存储的基本设计原则之一，通过使用分布式流存储，大数据处理平台的架构可以进化成<font color="#FF0000"><strong>”分布式流计算+ 分布式流存储“</strong></font>这样的原生流式数据处理平台架构。</p>
+<h3 id="流式架构"><a href="#流式架构" class="headerlink" title="流式架构"></a><font color="#00CED1">流式架构</font></h3><p>下图体现了<font color="#FF0000"><strong>”分布式流计算+ 分布式流存储“</strong></font>这样的原生流式大数据处理平台的架构理念。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/streaming-bigdata-processor.PNG" alt="流式架构"></p>
+<p>这个架构体现了<font color="#FF0000"> <strong>“流原生”(stream native)式</strong> </font>的设计哲学，“流原生”的计算加上“流原生”的存储管道组成了“流原生”的大数据处理平台。数据从分布式流存储输入经过map算子计算，输出中间计算结果到分布式流存储里，数据又从分布式流存储里读入到Filter算子里，再经过计算，中间结果放到了分布式流存储里，再最后的计算结果经过聚合算子的计算放到了目的地的分布式流存储里。这个过程体现了算子编排和管道式编程的设计哲学，在这里分布式流存储起了大数据处理平台里的管道的作用。</p>
+<p>同时，在分布式流存储里数据的存储单位是流段，当输入的数据速率或者负载增加时，流段就会自动扩容，通过流协议联动，流计算应用的算子也相应扩容。相应的，如果输入的数据速率或负载降低，流段就自动收缩，通过流协议联动，流计算应用的算子也相应的缩容，所有这些行为都是自动完成的，无需人工干预，这种行为体现了分布式流存储的细粒度可伸缩性。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>综上所述，在万物互联的智能世界里，为了实现将海量数据近实时转化成信息和决策的愿景，除了流式计算应用还需要一个流式存储系统，未来已来，已有开源的分布式流存储系统正走在这条路上。另本文仅为作者愚见，与任何组织机构无关，作者能力也很有限，如有不足之处欢迎留言批评指正。</p>
+<h2 id="问题思考"><a href="#问题思考" class="headerlink" title="问题思考"></a><font color="#FF8C00">问题思考</font></h2><p>最后给大家留一个思考题：<font color="#00CED1"><strong>如果让你来设计一个分布式流存储产品，你会如何定义它的产品灵魂？</strong></font></p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及大数据，现就职于DELL EMC。个人技术博客：<a href="https://changping.me" target="_blank" rel="noopener">https://changping.me</a></p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a> ，可以自由阅读、分享、转发、复制、分发等，限制是需署名、非商业使用（以获利为准）以及禁止演绎。</p>
+</div></div></div></div></div></div>
       
     </main>
     <footer class="post-footer">
       
       <div class="post-tags">
         
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
         
       </div>
       
@@ -260,7 +594,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/01/pravega-working-with-reader-and-writer/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/13/hello-world/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
         <meta itemprop="description" content="“分布式系统架构设计师”">
@@ -272,642 +606,32 @@
     </div>
     <header class="post-header">
       <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/10/01/pravega-working-with-reader-and-writer/" itemprop="url">pravega handbook - 开发pravega应用 - Basic reader and writer</a>
+        <a class="post-title-link post-title-link-external" href="/2018/09/13/hello-world/" itemprop="url">Hello World</a>
       </h1>
       <div class="post-meta">
         
         <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-01T09:15:18+08:00">2018-10-01 09:15:18</time></span>
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-13T11:30:35+08:00">2018-09-13 11:30:35</time></span>
         </span>
         
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
         
         
       </div>
     </header>
     <main class="post-main" itemprop="articleBody">
       
-      <p>本文讲述如何构建简单的Pravega应用程序。最简单的Pravega应用程序使用Pravega Reader读取Pravega Stream或写入Pravega Stream的Pravega Writer。两个简单的例子都可以在Pravega Samples <code>“hello world”</code> 中找到。这些示例提供了一个非常基本的例子，说明Java应用程序如何使用Pravega Java Client Library来访问Pravega功能。</p>
-<p>有关运行示例的说明，请参阅Pravega Samples自述文件。在阅读本页之前，您应该熟悉Pravega Concepts（请参阅Pravega Concepts）。</p>
-<h2 id="HelloWorldWriter"><a href="#HelloWorldWriter" class="headerlink" title="HelloWorldWriter"></a>HelloWorldWriter</h2><p>HelloWorldWriter应用是使用EventStreamWriter将事件写入Pravega的简单演示。<br>首先看一下HelloWorldWriter示例应用，代码的关键部分在run（）方法中：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>public void run(String routingKey, String message) &#123;<br>    StreamManager streamManager = StreamManager.create(controllerURI);<br><br>    final boolean scopeCreation = streamManager.createScope(scope);<br>    StreamConfiguration streamConfig = StreamConfiguration.builder()<br>            .scalingPolicy(ScalingPolicy.fixed(1))<br>            .build();<br>    final boolean streamCreation = streamManager.createStream(scope, streamName, streamConfig);<br><br>    try (ClientFactory clientFactory = ClientFactory.withScope(scope, controllerURI);<br>         EventStreamWriter&lt;String&gt; writer = clientFactory.createEventWriter(streamName,<br>                                                          new JavaSerializer&lt;String&gt;(),<br>                                                   EventWriterConfig.builder().build())) &#123;<br><br>         System.out.format(&quot;Writing message: &apos;%s&apos; with routing-key: &apos;%s&apos; to stream &apos;%s / %s&apos;%n&quot;,<br>                message, routingKey, scope, streamName);<br>         final CompletableFuture&lt;Void&gt; writeFuture = writer.writeEvent(routingKey, message);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>run（）方法的目的是创建一个Stream（第2-9行）并将给定的Event输出到该Stream（第10-18行）。</p>
-<h2 id="创建流和StreamManager接口"><a href="#创建流和StreamManager接口" class="headerlink" title="创建流和StreamManager接口"></a>创建流和StreamManager接口</h2><p>Stream是在Scope的上下文中创建的; Scope充当命名空间机制，以便可以为不同的目的对不同的Streams集进行分类。例如，对于每个应用程序都有可能有一个单独的作用域。可以选择创建一组Scopes，一个scope对应于一个组织中的一个部门。在多租户环境中，每个租户可能有一个单独的Scope。作为开发人员，我可以选择我需要的任何分类方案，并使用Scope概念在该分类方案中组织我的Streams。</p>
-<p>通过StreamManager接口创建和操作Scopes和Streams到Pravega控制器。您需要为集群中的任何Pravega Controller实例提供URI才能创建StreamManager对象。这在第2行中显示。</p>
-<p>在HelloWorld示例应用的设置中，在启动示例应用时，controllerURI被配置为命令行参数。对于Pravega的“单节点”部署，Controller正在侦听localhost，端口9090。</p>
-<p>StreamManager提供对Pravega中与Scopes和Streams相关的各种控制平面功能的访问：</p>
-<table>
-<thead>
-<tr>
-<th>方法</th>
-<th>参数</th>
-<th>讨论</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>(static) create</td>
-<td>(URI controller)</td>
-<td>给定Pravega集群中某个Pravega Controller实例的URI，创建一个Stream Manager对象。</td>
-</tr>
-<tr>
-<td>createScope</td>
-<td>（String scopeName）</td>
-<td>创建具有给定名称的Scope。如果创建了Scope，则返回true;如果Scope已存在，则返回false。即使Scope已经存在，您也可以调用此方法，它不会对任何内容造成任何伤害。</td>
-</tr>
-<tr>
-<td>deleteScope</td>
-<td>（String scopeName）</td>
-<td>删除具有给定名称的范围。如果删除范围，则返回true，否则返回false。请注意，如果Scope包含Streams，则deleteScope操作将失败并出现异常。如果删除不存在的Scope，则该方法将成功并返回false。</td>
-</tr>
-<tr>
-<td>createStream</td>
-<td>（String scopeName，String streamName，StreamConfiguration config）</td>
-<td>在给定范围内创建流。请注意，范围名称和流名称都受以下模式限制：[a-zA-Z0-9] +（即仅字母和数字，没有标点符号）,另请注意：Scope必须存在，如果在不存在的作用域中创建Stream，则抛出异常。StreamConfiguration使用构建器模式构建.如果创建了Stream，则返回true;如果Stream已存在，则返回false。即使Stream已经存在，您也可以调用此方法，它不会损害任何内容。</td>
-</tr>
-<tr>
-<td>updateStream</td>
-<td>（String scopeName，String streamName，StreamConfiguration config）</td>
-<td>交换Stream的配置。请注意，Stream必须已存在，如果更新不存在的流，则会引发异常。如果Stream已更改，则返回true</td>
-</tr>
-<tr>
-<td>sealStream</td>
-<td>（String scopeName，String streamName）</td>
-<td>防止对Stream进行任何进一步写入,注意Stream必须已经存在，如果密封不存在的流，则抛出异常。如果Stream成功密封，则返回true</td>
-</tr>
-<tr>
-<td>deleteStream</td>
-<td>（String scopeName，String streamName）</td>
-<td>从Pravega中删除Stream并恢复该Stream使用的所有资源,请注意，Stream必须已存在，如果删除不存在的流，则会引发异常。如果删除了流，则返回true。</td>
-</tr>
-</tbody>
-</table>
-<p>在代码中的第3行完成之后，我们已经建立Scope，然后我们可以继续在第5-8行创建Stream。 </p>
-<p>StreamManager需要3个输入来创建Stream，Scope的名称，Stream的名称和StreamConfiguration。最有趣的任务是创建StreamConfiguration。</p>
-<p>与Pravega中的许多对象一样，Stream使用配置对象，允许开发人员控制Stream的各种行为。Pravega中的所有配置对象都使用builder模式进行构造。实际上有两个与流相关的重要配置项：保留策略和扩展策略。 </p>
-<p>保留策略允许开发人员控制数据在删除之前保存在Stream中的时间。他/她可以指定数据应保留一段时间（对于强制执行某些保留期的法规遵从性这样的情况是理想的）或保留数据直到消耗了一定数量的字节。目前，保留政策尚未完全实施。默认情况下，RetentionPolicy设置为“无限制”，意味着数据不会从Stream中删除。</p>
-<p>缩放策略允许开发人员配置Stream以利用Pravega自动缩放功能的方式。在第6行中，我们使用固定策略，这意味着Stream配置了给定数量的流段，并且不会改变。其他选项是按每秒给定数量的事件或每秒给定的千字节数进行缩放。在这两个策略中，开发人员指定目标速率，缩放因子和最小段数。目标速率是直接的，如果摄取率在一段时间内超过一定数量的事件或几千字节的数据，Pravega将尝试向流添加新的流段。如果速率在一段持续的时间内降至该阈值以下，Pravega将尝试合并相邻的流段。缩放因子是缩放策略上的一个设置，用于确定在超过目标速率（事件或千字节）时应添加的流段数。最小段数是设置要保持的最小读取并行度的因素; 例如，如果此值设置为3，则流上始终会有3个Stream Segments可用。目前，此属性仅在创建流时有效; 在未来的某个时刻，更新流将允许使用此因子来更改现有流上的最小读取并行度。例如，如果此值设置为3，则流上始终会有3个Stream Segments可用。目前，此属性仅在创建流时有效; 在未来的某个时刻，更新流将允许使用此因子来更改现有流上的最小读取并行度。</p>
-<p>一旦创建StreamConfiguration对象后，创建Stream是直接的（第8行）。在创建Stream之后，我们都准备开始向Stream写入Event。</p>
-<h2 id="使用EventWriter编写事件"><a href="#使用EventWriter编写事件" class="headerlink" title="使用EventWriter编写事件"></a>使用EventWriter编写事件</h2><p>应用程序使用EventStreamWriter对象将事件写入Stream。创建EventStreamWriter的关键对象是ClientFactory。ClientFactory用于创建Readers，Writers和其他类型的Pravega Client对象，例如State Synchronizer（请参阅  使用Pravega：状态同步器）。</p>
-<p>第10行显示了ClientFactory的创建。ClientFactory是在Scope的上下文中创建的，因为ClientFactory创建的所有Readers，Writers和其他客户端都是在该Scope的上下文中创建的。ClientFactory还需要一个Pravega控制器的URI，就像StreamManager一样。</p>
-<p>因为ClientFactory及其创建的对象消耗Pravega的资源，所以在try-with-resources语句中创建这些对象。由于ClientFactory及其创建的对象都实现了Autocloseable，因此try-with-resources方法可确保无论应用程序如何结束，Pravega资源都将以正确的顺序正确关闭。<br>现在我们有了ClientFactory，我们可以用它来创建一个Writer。在创建Writer之前，开发人员需要了解一些事项：</p>
-<ol>
-<li>要写入的Stream的名称是什么？注意：在创建ClientFactory时已经确定了Scope</li>
-<li>什么类型的Event对象将被写入Stream？</li>
-<li>什么序列化器将用于将Event对象转换为字节？回想一下，Pravega只知道字节序列，它对Java对象一无所知。</li>
-<li>Writer是否需要配置任何特殊行为？</li>
-</ol>
-<p>在我们的例子中，第11-13行显示了所有这些决定。此Writer写入在HelloWorldWriter对象本身的配置中指定的Stream（默认情况下，流在“示例”Scope中命名为“helloStream”）。Writer将Java String对象作为Events处理，并使用内置的Java序列化程序进行Strings。<br>EventWriterConfig允许开发人员指定诸如在放弃之前尝试重试请求的次数以及相关的指数返回设置。在连接失败或Pravega组件中断可能暂时阻止请求成功的情况下，Pravega会小心重试请求，因此应用程序逻辑不需要处理间歇性群集故障。在我们的例子中，我们在第13行中采用了EventWriterConfig的默认设置。</p>
-<p>现在我们可以将事件写入Stream，如第17行所示.EventStreamWriter提供了一个writeEvent（）操作，它使用给定的路由键将给定的非null Event对象写入Stream，以确定它应该出现在哪个Stream Segment上。Pravega中的许多操作，例如writeEvent（），都是异步的，并返回某种Future对象。如果应用程序需要确保将事件持久地写入Pravega并可供读者使用，那么它可以在继续之前等待Future。在我们简单的“hello world”的例子中，我们不必等待。</p>
-<p>EventStreamWriter也可用于开始事务。我们在其他地方更详细地介绍事务事务（使用Pravega：事务）。<br>这就是写事件的原因。现在让我们来看看如何使用Pravega读取事件。</p>
-<h2 id="HelloWorldReader"><a href="#HelloWorldReader" class="headerlink" title="HelloWorldReader"></a>HelloWorldReader</h2><p>HelloWorldReader是使用EventStreamReader的简单演示。应用只是从给定的Stream读取事件，并将这些事件的字符串表示形式打印到控制台上。<br>就像HelloWorldWriter示例一样，HelloWorldReader应用的关键部分是在run（）方法中：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>public void run() &#123;<br>   StreamManager streamManager = StreamManager.create(controllerURI);<br><br>   final boolean scopeIsNew = streamManager.createScope(scope);<br>   StreamConfiguration streamConfig = StreamConfiguration.builder()<br>           .scalingPolicy(ScalingPolicy.fixed(1))<br>           .build();<br>   final boolean streamIsNew = streamManager.createStream(scope, streamName, streamConfig);<br><br>   final String readerGroup = UUID.randomUUID().toString().replace(&quot;-&quot;, &quot;&quot;);<br>   final ReaderGroupConfig readerGroupConfig = ReaderGroupConfig.builder()<br>                                                                .stream(Stream.of(scope, streamName))<br>                                                                .build();<br>   try (ReaderGroupManager readerGroupManager = ReaderGroupManager.withScope(scope, controllerURI)) &#123;<br>       readerGroupManager.createReaderGroup(readerGroup, readerGroupConfig);<br>   &#125;<br><br>   try (ClientFactory clientFactory = ClientFactory.withScope(scope, controllerURI);<br>        EventStreamReader&lt;String&gt; reader = clientFactory.createReader(&quot;reader&quot;,<br>                                                                      readerGroup,<br>                                                     new JavaSerializer&lt;String&gt;(),<br>                                                  ReaderConfig.builder().build())) &#123;<br>        System.out.format(&quot;Reading all the events from %s/%s%n&quot;, scope, streamName);<br>        EventRead&lt;String&gt; event = null;<br>        do &#123;<br>           try &#123;<br>               event = reader.readNextEvent(READER_TIMEOUT_MS);<br>               if (event.getEvent() != null) &#123;<br>                   System.out.format(&quot;Read event &apos;%s&apos;%n&quot;, event.getEvent());<br>               &#125;<br>           &#125; catch (ReinitializationRequiredException e) &#123;<br>               //There are certain circumstances where the reader needs to be reinitialized<br>               e.printStackTrace();<br>           &#125;<br>       &#125; while (event.getEvent() != null);<br>       System.out.format(&quot;No more events from %s/%s%n&quot;, scope, streamName);<br>   &#125;<br></code></pre></td></tr></table></figure>
-<p>第2-8行设置了Scope和Stream，就像在HelloWorldWriter应用中一样。第10-15行设置ReaderGroup作为创建EventStreamReader并使用它从Stream读取事件的先决条件（第17-36行）。</p>
-<h2 id="ReaderGroup基础"><a href="#ReaderGroup基础" class="headerlink" title="ReaderGroup基础"></a>ReaderGroup基础</h2><p>Pravega中的任何读者都属于某些ReaderGroup。ReaderGroup是一个或多个读取器的分组，它们并行使用Stream。在创建Reader之前，我们需要创建一个ReaderGroup（或者知道现有ReaderGroup的名称）。此应用仅使用ReaderGroup的基础知识。</p>
-<p>第10-15行显示了基本的ReaderGroup创建。ReaderGroup对象是从ReaderGroupManager对象创建的。反过来，ReaderGroupManager对象是在给定的Scope上创建的，其中包含一个Pravega控制器的URI，就像创建ClientFactory一样。在第14行创建了ReaderGroupManager对象。请注意，创建也在try-with-resources语句中，以确保正确清理ReaderGroupManager。ReaderGroupManager允许开发人员按名称创建，删除和检索ReaderGroup对象。</p>
-<p>要创建ReaderGroup，开发人员需要ReaderGroup的名称，该组件包含一组或多个要读取的Streams。  </p>
-<p>ReaderGroup的名称可能对应用程序有意义，例如“WebClickStreamReaders”。在我们的例子中，在第10行，我们有一个简单的UUID作为名称（注意修改UUID字符串以删除“ - ”字符，因为ReaderGroup名称只能包含字母和数字）。如果您有多个读者并行阅读并且每个阅读器都在一个单独的过程中，那么为ReaderGroup提供一个可读的名称会很有帮助。在我们的例子中，我们有一个Reader，单独读取，因此UUID是一种安全的方式来命名ReaderGroup。由于ReaderGroup是通过ReaderGroupManager创建的，并且由于ReaderGroupManager是在Scope的上下文中创建的，因此我们可以安全地得出结论，ReaderGroup名称由该Scope命名。  </p>
-<p>ReaderGroupConfig现在没有太多行为。开发人员指定Stream，它应该是ReaderGroup的一部分及其下限和上限。在我们的例子中，在第11行，我们从Stream的开头开始。其他配置项（例如指定检查点等）是可通过ReaderGroupConfig获得的选项。但就目前而言，我们保持简单。<br>ReaderGroup可以配置为从多个Streams读取这一事实很有意思。想象一下，我收集了来自工厂车间的传感器数据流，每台机器都有自己的传感器数据流。我可以构建每个Stream使用ReaderGroup的应用，以便应用可以从一台机器中获取数据。我可以构建其他使用ReaderGroup配置为从所有Streams读取的应用。在我们的例子中，在第14行，ReaderGroup只读取一个Stream。</p>
-<p>您可以多次使用相同的参数调用createReaderGroup（），它不会造成任何损害，并且每次最初创建后都会返回相同的ReaderGroup。<br>请注意，在其他情况下，如果开发人员知道要使用的ReaderGroup的名称并且知道它已经创建，则他/她可以使用ReaderGroupManager上的getReaderGroup（）来按名称检索ReaderGroup对象。</p>
-<p>所以在代码的这一点上，我们设置了Scope和Stream，我们创建了ReaderGroup，现在我们需要创建一个Reader并开始阅读Events。</p>
-<h2 id="使用EventStreamReader读取事件"><a href="#使用EventStreamReader读取事件" class="headerlink" title="使用EventStreamReader读取事件"></a>使用EventStreamReader读取事件</h2><p>第17-36行显示了设置EventStreamReader并使用该EventStreamReader读取事件的示例。</p>
-<p>首先，我们在第17行创建一个ClientFactory，就像我们在HelloWorldWriter应用中一样。  </p>
-<p>然后我们使用ClientFactory创建一个EventStreamReader对象。开发人员需要创建Reader的四件事：读者的名称，它应该是readerGroup的一部分，Stream上预期的对象类型，用于将存储在Pravega中的字节转换为事件的序列化器对象和ReaderConfig。第18-21行显示了EventStreamReader的创建。Reader的名称可以是任何有效的Pravega名称（数字和字母）。当然，阅读器的名称在Scope中是命名空间。我们在上一节讨论了ReaderGroup的创建。与EventStreamWriter一样，EventStreamReader使用Java泛型类型来允许开发人员指定类型安全的Reader。在我们的例子中，我们从流中读取字符串并使用标准的Java String Serializer将从流中读取的字节转换为String对象。最后，创建了ReaderConfig，但目前没有与Reader关联的配置项，因此空的ReaderConfig只是一个占位符，因为Pravega演变为在读者上包含配置项。</p>
-<p>请注意，您不能多次创建相同的Reader。基本上你需要调用createReader（）它会尝试将Reader添加到ReaderGroup。如果ReaderGroup已包含具有该名称的Reader，则会引发异常。</p>
-<p>现在我们已经创建了一个EventStreamReader，我们可以开始使用它来从流中读取事件。这是在第26行完成的。readNextEvent（）操作返回Stream上可用的下一个Event，或者如果没有这样的Event，则阻塞指定的超时时间。如果在超时期限到期且没有可用于读取的事件之后，则返回null。这就是为什么在第27行进行空检查（以避免向控制台打印出虚假的“null”事件消息）。它也用作第34行循环的终止。请注意，Event本身包含在EventRead对象中。</p>
-<p>值得注意的是，readNextEvent（）可能会抛出异常（在第30-33行中处理）。如果ReaderGroup中的Readers需要重置为检查点或者ReaderGroup本身已被更改并且因此读取的Streams集已被更改，则会处理此异常。</p>
-<p>就是这样了。简单的HelloWorldReader循环，从Stream读取事件，直到不再有更多事件，然后应用程序终止。</p>
-<h2 id="批量读取"><a href="#批量读取" class="headerlink" title="批量读取"></a>批量读取</h2><p>对于想要执行历史流数据批量读取的应用程序，BatchClient提供了执行此操作的方法。它允许列出流中的所有段，并读取其数据。<br>当以这种方式读取数据时，不是加入自动分区数据的读取器组，而是公开流的底层结构，由应用程序决定如何处理它。因此，以这种方式读取的事件不需要按顺序读取。</p>
-<p>显然，这个API并不适用于所有应用，主要优点是它允许与批处理框架（如MapReduce）进行低级集成。</p>
-<p>作为一个例子来遍历流中所有的段：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>//将null传递给fromStreamCut和toStreamCut将导致分别使用当前流的开始和流的当前结束。<br>//Passing null to fromStreamCut and toStreamCut will result in using the current start of stream and the current end of stream respectively.<br>Iterator&lt;SegmentRange&gt; segments = client.listSegments(stream, null, null).getIterator();<br>SegmentRange segmentInfo = segments.next();<br></code></pre></td></tr></table></figure>
-<p>或者从段中读取事件：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>SegmentIterator&lt;T&gt; events = client.readSegment(segmentInfo, deserializer);<br>while (events.hasNext()) &#123;<br>    processEvent(events.next());<br>&#125;<br></code></pre></td></tr></table></figure>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/26/flink-concepts-distributed-runtime/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/26/flink-concepts-distributed-runtime/" itemprop="url">flink handbook - Flink分布式运行时</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-26T22:34:39+08:00">2018-09-26 22:34:39</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="任务和算子链"><a href="#任务和算子链" class="headerlink" title="任务和算子链"></a>任务和算子链</h2><p>对于分布式执行，Flink将算子子任务链接到任务中。每个任务由一个线程执行。将算子链接到任务中是一项有用的优化：它可以减少线程到线程切换和缓冲的开销，并在降低延迟的同时提高整体吞吐量。可以配置链接行为; 有关详细信息，请参阅链接文档。</p>
-<p>下图中的示例数据流由五个子任务执行，因此具有五个并行线程。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/tasks_chains.svg" alt="算子链接到任务"></p>
-<h2 id="作业管理器，任务管理器，客户端"><a href="#作业管理器，任务管理器，客户端" class="headerlink" title="作业管理器，任务管理器，客户端"></a>作业管理器，任务管理器，客户端</h2><p>Flink运行时包含两种类型的进程：</p>
-<ul>
-<li>JobManagers（也称为主作业）协调分布式执行。他们调度任务，协调检查点，协调故障恢复等。</li>
-</ul>
-<p>总是至少有一个Job Manager。高可用性配置将具有多个JobManagers，其中一个始终是领导者，其他人则是备用者。</p>
-<ul>
-<li>TaskManagers（也叫工作者）执行数据流的任务（或者更具体地说，子任务），并且缓冲和交换数据流。</li>
-</ul>
-<p>必须至少有一个TaskManager。</p>
-<p>JobManagers和TaskManagers可以通过多种方式启动：直接作为独立集群、在容器中、或由YARN或Mesos等资源框架管理。TaskManagers连接到JobManagers，宣布它们自己是可用，并被分配工作。</p>
-<p>客户端不是运行时和程序执行的一部分，而是被用来准备和发送的数据流的JobManager。之后，客户端可以断开连接或保持连接以接收进度报告。客户端既可以作为触发执行的Java / Scala程序的一部分运行，也可以在命令行进程中运行./bin/flink run …。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/processes.svg" alt="执行Flink数据流所涉及的过程"></p>
-<h2 id="任务槽和资源"><a href="#任务槽和资源" class="headerlink" title="任务槽和资源"></a>任务槽和资源</h2><p>每个worker（TaskManager）都是一个JVM进程，可以在不同的线程中执行一个或多个子任务。为了控制worker接受的任务数量，worker有所谓的任务槽（至少一个）。</p>
-<p>每个任务槽代表TaskManager的固定资源子集。例如，具有三个插槽的TaskManager将其托管内存的1/3专用于每个插槽。对资源进行分隔意味着子任务不会与来自其他作业的子任务竞争托管内存，而是具有一定数量的保留托管内存。请注意，此处不会发生CPU隔离; 当前插槽只分离任务的托管内存。</p>
-<p>通过调整任务槽的数量，用户可以定义子任务如何相互隔离。每个TaskManager有一个插槽意味着每个任务组在一个单独的JVM中运行（例如，可以在一个单独的容器中启动）。拥有多个插槽意味着更多子任务共享同一个JVM。同一JVM中的任务共享TCP连接（通过多路复用）和心跳消息。它们还可以共享数据集和数据结构，从而减少每任务开销。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/tasks_slots.svg" alt="具有任务槽和任务的TaskManager"></p>
-<p>默认情况下，Flink允许子任务共享插槽，即使它们是不同任务的子任务，只要它们来自同一个作业。结果是一个槽可以容纳整个作业的管道。允许此插槽共享有两个主要好处：</p>
-<p>Flink集群需要与作业中使用的最高并行度一样多的任务槽。无需计算程序总共包含多少任务（具有不同的并行性）。</p>
-<p>更容易获得更好的资源利用率。如果没有插槽共享，非密集型源/ map（）子任务将阻止与资源密集型窗口子任务一样多的资源。通过插槽共享，将示例中的基本并行性从2增加到6可以充分利用插槽资源，同时确保繁重的子任务在TaskManagers之间公平分配。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/slot_sharing.svg" alt="具有共享任务槽的TaskManagers"></p>
-<p>API还包括可用于防止不期望的插槽共享的资源组机制。</p>
-<p>根据经验，一个好的默认任务槽数就是CPU核心数。使用超线程，每个插槽然后需要2个或更多硬件线程上下文。</p>
-<h2 id="状态后端"><a href="#状态后端" class="headerlink" title="状态后端"></a>状态后端</h2><p>存储键/值索引的确切数据结构取决于所选的状态后端。一个状态后端将数据存储在内存中的哈希映射中，另一个状态后端使用RocksDB作为键/值存储。除了定义保存状态的数据结构之外，状态后端还实现逻辑以获取键/值状态的时间点快照，并将该快照存储为检查点的一部分逻辑。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/checkpoints.svg" alt="检查点和快照"></p>
-<h2 id="保存点"><a href="#保存点" class="headerlink" title="保存点"></a>保存点</h2><p>用Data Stream API编写的程序可以从保存点恢复执行。保存点允许更新程序和Flink群集，而不会丢失任何状态。</p>
-<p>保存点是手动触发的检查点，它将程序的快照写入状态后端。他们依赖于常规的检查点机制。在执行期间，程序会周期性地在工作节点上创建快照并生成检查点。对于恢复，仅需要最后完成的检查点，并且一旦新的检查点完成，就可以安全地丢弃旧的检查点。</p>
-<p>保存点与这些定期检查点类似，不同之处在于它们由用户触发，并且在完成较新的检查点时不会自动过期。可以从命令行或通过REST API取消作业时创建保存点。</p>
+      <h2 id="Hello-World"><a href="#Hello-World" class="headerlink" title="Hello World"></a>Hello World</h2><p><strong>启动新的技术网站:[<a href="http://www.changping.me]">www.changping.me]</a>, [<a href="http://www.yuncunchu.org]以及微信公众号上的文章将迁移到本站。" target="_blank" rel="noopener">www.yuncunchu.org]以及微信公众号上的文章将迁移到本站。</a></strong></p>
 
       
     </main>
     <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/26/flink-concepts-programming-model/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/26/flink-concepts-programming-model/" itemprop="url">flink handbook - flink数据流编程模型</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-26T06:34:26+08:00">2018-09-26 06:34:26</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="抽象层次"><a href="#抽象层次" class="headerlink" title="抽象层次"></a>抽象层次</h2><p>Flink提供不同级别的抽象来开发流/批处理应用程序。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/levels_of_abstraction.svg" alt="抽象层次"></p>
-<ul>
-<li><p>最低级抽象只提供有状态流。它通过Process Function嵌入到DataStream API中。它允许用户自由处理来自一个或多个流的事件，并使用一致的容错状态。此外，用户可以注册事件时间和处理时间回调，允许程序实现复杂的计算。</p>
-</li>
-<li><p>实际上，大多数应用不需要上述低级抽象，而是针对Core API编程， 如DataStream API（有界/无界流）和DataSet API （有界数据集）。这些流动的API提供了用于数据处理的通用构建块，例如各种形式的用户指定的转换，连接，聚合，窗口，状态等。在这些API中处理的数据类型在相应的编程语言中表示为类。</p>
-</li>
-</ul>
-<p>低级Process Function与DataStream API集成，因此只能对某些操作进行低级抽象。DataSet API提供的有限数据集的其他原语，如循环/迭代。</p>
-<ul>
-<li>Table API是以表为中心的声明性DSL，其可以是动态地改变的表（表示流时）。Table API遵循（扩展）关系模型：表附加了一个模式（类似于在关系数据库中的表），API提供了类似的操作，如选择，项目，连接，分组依据，聚合等。Table API程序以声明方式定义应该执行的逻辑操作，而不是准确指定 操作代码的外观。虽然Table API可以通过各种类型的用户定义函数进行扩展，但它的表现力不如Core API，但使用更简洁（编写的代码更少）。此外，Table API程序还会通过优化程序，在执行之前应用优化规则。</li>
-</ul>
-<p>可以在表和DataStream / DataSet之间无缝转换，允许程序混合Table API以及DataStream 和DataSet API。</p>
-<ul>
-<li>Flink提供的最高级抽象是SQL。这种抽象在语义和表达方面类似于Table API，但是将程序表示为SQL查询表达式。在SQL抽象与 Table API紧密地相互作用，和SQL查询可以在Table API中定义的表上执行。</li>
-</ul>
-<h2 id="程序和数据流"><a href="#程序和数据流" class="headerlink" title="程序和数据流"></a>程序和数据流</h2><p>Flink程序的基本构建块是流和转换。（请注意，Flink的DataSet API中使用的DataSet也是内部流 - 稍后会详细介绍。）从概念上讲，流是（可能永无止境的）数据记录流，而转换是将一个或多个流作为输入，并产生一个或多个流输出的结果。</p>
-<p>执行时，Flink程序映射到流数据流，由流和转换运算符组成。每个数据流都以一个或多个源开头，并以一个或多个接收器结束。数据流类似于任意有向无环图 （DAG）。尽管通过迭代结构允许特殊形式的循环 ，但为了简单起见，我们将在大多数情况下对此进行掩饰。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/program_dataflow.svg" alt="DataStream程序及其数据流"></p>
-<p>通常，程序中的转换与数据流中的运算符之间存在一对一的对应关系。但是，有时一个转换可能包含多个转换运算符。</p>
-<p>源流和接收器记录在流连接器和批处理连接器文档中。DataStream运算符和DataSet转换中记录了转换。</p>
-<h2 id="并行数据流"><a href="#并行数据流" class="headerlink" title="并行数据流"></a>并行数据流</h2><p>Flink中的程序本质上是并行和分布式的。在执行期间，流具有一个或多个流分区，并且每个运算符具有一个或多个运算符子任务。运算符子任务彼此独立，并且可以在不同的线程中执行，并且可能在不同的机器或容器上执行。</p>
-<p>运算符子任务的数量是该特定运算符的并行度。流的并行性始终是其生成运算符的并行性。同一程序的不同运算符可能具有不同的并行级别。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/parallel_dataflow.svg" alt="并行数据流"></p>
-<p>流可以以一对一（或转发）模式或以重新分发模式在两个算子之间传输数据：</p>
-<ul>
-<li><p>一对一流（例如，在上图中的Source和map（）算子之间）保留元素的分区和排序。这意味着map（）算子的subtask [1] 将以与Source算子的subtask [1]生成的顺序相同的顺序看到相同的元素。</p>
-</li>
-<li><p>重新分配流（在上面的map（）和keyBy / window之间，以及 keyBy / window和Sink之间）重新分配流。每个算子子任务将数据发送到不同的目标子任务，具体取决于所选的转换。实例是 keyBy（） （其通过散列密钥重新分区），广播（） ，或重新平衡（） （其重新分区随机地）。在重新分配交换中，元素之间的排序仅保留在每对发送和接收子任务中（例如，map（）的子任务[1] 和子任务[2]keyBy / window）。因此，在此示例中，保留了每个密钥内的排序，但并行性确实引入了关于不同密钥的聚合结果到达接收器的顺序的非确定性。</p>
-</li>
-</ul>
-<p>有关配置和控制并行性的详细信息，请参阅并行执行的文档。</p>
-<h2 id="视窗"><a href="#视窗" class="headerlink" title="视窗"></a>视窗</h2><p>聚合事件（例如，计数，总和）在流上的工作方式与批处理方式不同。例如，不可能计算流中的所有元素，因为流通常是无限的（无界）。相反，流上的聚合（计数，总和等）由窗口限定，例如“在最后5分钟内计数”或“最后100个元素的总和”。</p>
-<p>Windows可以是时间驱动的（例如：每30秒）或数据驱动（例如：每100个元素）。一个典型地区分不同类型的窗口，例如翻滚窗口（没有重叠）， 滑动窗口（具有重叠）和会话窗口（由不活动的间隙打断）。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/windows.svg" alt="时间和计数Windows"></p>
-<p>更多窗口示例可以在此博客文章中找到。更多详细信息在窗口文档中。</p>
-<h2 id="时间"><a href="#时间" class="headerlink" title="时间"></a>时间</h2><p>当在流程序中引用时间（例如定义窗口）时，可以参考不同的时间概念：</p>
-<ul>
-<li><p>事件时间是创建事件的时间。它通常由事件中的时间戳描述，例如由生产传感器或生产服务附加。Flink通过时间戳分配器访问事件时间戳。</p>
-</li>
-<li><p>摄取时间是事件在源操作员处输入Flink数据流的时间。</p>
-</li>
-<li><p>处理时间是执行基于时间的操作的每个算子的本地时间。</p>
-</li>
-</ul>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/event_ingestion_processing_time.svg" alt="事件时间，摄取时间和处理时间"></p>
-<p>有关如何处理时间的更多详细信息，请参阅<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/event_time.html" target="_blank" rel="noopener">事件时间文档</a>。</p>
-<h2 id="有状态的操作"><a href="#有状态的操作" class="headerlink" title="有状态的操作"></a>有状态的操作</h2><p>虽然数据流中的许多操作只是一次查看一个单独的事件（例如事件解析器），但某些操作会记住多个事件（例如窗口操作符）的信息。这些操作称为有状态。</p>
-<p>状态操作的状态保持在可以被认为是嵌入式键/值存储的状态中。状态被分区并严格地与有状态算子读取的流一起分发。因此，只有在keyBy（）函数之后才能在键控流上访问键/值状态，并且限制为与当前事件的键相关联的值。对齐流和状态的密钥可确保所有状态更新都是本地操作，从而保证一致性而无需事务开销。此对齐还允许Flink重新分配状态并透明地调整流分区。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/state_partitioning.svg" alt="状态和分区"></p>
-<p>有关更多信息，请参阅有关状态的文档。</p>
-<h2 id="容错检查点"><a href="#容错检查点" class="headerlink" title="容错检查点"></a>容错检查点</h2><p>Flink使用流重放和检查点的组合实现容错。检查点与每个输入流中的特定点以及每个算子的对应状态相关。通过恢复算子的状态并从检查点重放事件，可以从检查点恢复流数据流，同时保持一致性（恰好一次处理语义）。</p>
-<p>检查点间隔是在执行期间用恢复时间（需要重放的事件的数量）来折衷容错开销的手段。</p>
-<p><a href="https://ci.apache.org/projects/flink/flink-docs-master/internals/stream_checkpointing.html" target="_blank" rel="noopener">容错内部</a>的描述提供了有关Flink如何管理检查点和相关主题的更多信息。有关启用和配置检查点的详细信息，请参阅检查点API文档。</p>
-<h2 id="批处理流"><a href="#批处理流" class="headerlink" title="批处理流"></a>批处理流</h2><p>Flink执行<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/index.html" target="_blank" rel="noopener">批处理程序</a>作为流程序的特殊情况，其中流是有界的（有限数量的元素）。数据集做为数据流在内部处理。因此，上述概念以适用于流程序相同的方式应用于批处理程序，只是少数例外：</p>
-<ul>
-<li><p><a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/fault_tolerance.html" target="_blank" rel="noopener">批处理程序的容错</a>不使用检查点。而是通过完全重放流来恢复。这是可能的，因为输入是有界的。这会使成本更多高，但却使常规处理更便宜，因为它避免了检查点。</p>
-</li>
-<li><p>DataSet API中的有状态操作使用简化的内存/核外数据结构，而不是键/值索引。</p>
-</li>
-<li><p>DataSet API引入了特殊的同步（基于超前的）迭代，这在有界流上是可行的。有关详细信息，请查看<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/iterations.html" target="_blank" rel="noopener">迭代文档</a>。</p>
-</li>
-</ul>
-<h2 id="下一步"><a href="#下一步" class="headerlink" title="下一步"></a>下一步</h2><p>Flink的Distributed Runtime。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/24/flink-apache-flink-home/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/24/flink-apache-flink-home/" itemprop="url">Flink handbook - Apache Flink的文档</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-24T22:01:25+08:00">2018-09-24 22:01:25</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="Apache-Flink文档"><a href="#Apache-Flink文档" class="headerlink" title="Apache Flink文档"></a>Apache Flink文档</h2><p>本文档适用于Apache Flink master版。</p>
-<p>Apache Flink是一个用于分布式流和批处理数据处理的开源平台。Flink的核心是流数据流引擎，为数据流上的分布式计算提供数据分发，通信和容错。Flink在流引擎之上构建批处理，涵盖原生的迭代支持，受管理的内存和程序优化。</p>
-<h2 id="第一步"><a href="#第一步" class="headerlink" title="第一步"></a>第一步</h2><p><strong>概念：</strong>从Flink的<a href="https://ci.apache.org/projects/flink/flink-docs-master/concepts/programming-model.html" target="_blank" rel="noopener">数据流编程模型</a>和<a href="https://ci.apache.org/projects/flink/flink-docs-master/concepts/runtime.html" target="_blank" rel="noopener">分布式运行时环境</a>的基本概念开始。这将有助于您了解文档的其他部分，包括配置和编程指南。我们建议您先阅读这部分内容。</p>
-<p><strong>教程：</strong></p>
-<ul>
-<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/tutorials/datastream_api.html" target="_blank" rel="noopener">实现并运行DataStream应用</a></li>
-<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/tutorials/local_setup.html" target="_blank" rel="noopener">配置本地Flink群集</a></li>
-</ul>
-<p><strong>编程指南：</strong>您可以阅读我们关于<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/api_concepts.html" target="_blank" rel="noopener">基本API概念</a>和<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/datastream_api.html" target="_blank" rel="noopener">DataStream API</a>或<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/index.html" target="_blank" rel="noopener">DataSet API</a>的指南，以了解如何编写您的第一个Flink程序。</p>
-<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>在将Flink作业投入生产之前，请阅读<a href="https://ci.apache.org/projects/flink/flink-docs-master/ops/production_ready.html" target="_blank" rel="noopener">生产准备清单</a>。</p>
-<h2 id="发行说明"><a href="#发行说明" class="headerlink" title="发行说明"></a>发行说明</h2><p>发行说明涵盖了Flink版本之间的重要更改。如果您计划将Flink升级到更高版本，请仔细阅读这些说明。</p>
-<ul>
-<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/release-notes/flink-1.6.html" target="_blank" rel="noopener">Flink 1.6发行说明</a></li>
-<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/release-notes/flink-1.5.html" target="_blank" rel="noopener">Flink 1.5的发行说明</a></li>
-</ul>
-<h2 id="外部资源"><a href="#外部资源" class="headerlink" title="外部资源"></a>外部资源</h2><ul>
-<li><p>Flink Forward：<a href="http://flink-forward.org/" target="_blank" rel="noopener">Flink Forward网站</a>和<a href="https://www.youtube.com/channel/UCY8_lgiZLZErZPF47a2hXMA" target="_blank" rel="noopener">YouTube</a>上提供了以往会议的讲座。<a href="http://2016.flink-forward.org/kb_sessions/robust-stream-processing-with-apache-flink/" target="_blank" rel="noopener">使用Apache Flink进行可靠的流处理</a>，那这些资料是一个很好的起点。</p>
-</li>
-<li><p>培训：data Artisans的<a href="http://training.data-artisans.com/" target="_blank" rel="noopener">培训材料</a>包括幻灯片，练习和示例。</p>
-</li>
-<li><p>博客：<a href="https://flink.apache.org/blog/" target="_blank" rel="noopener">Apache Flink</a>和<a href="https://data-artisans.com/blog/" target="_blank" rel="noopener">data Artisans</a>博客会比较频繁的发布flink相关的、深入的技术文章。</p>
-</li>
-</ul>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/24/flink-faq/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/24/flink-faq/" itemprop="url">Flink handbook - flink常见问题</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-24T07:43:34+08:00">2018-09-24 07:43:34</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>关于Flink项目，一般会经常被问到以下问题。</p>
-<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h2 id="Apache-Flink仅用于（近）实时处理用例吗？"><a href="#Apache-Flink仅用于（近）实时处理用例吗？" class="headerlink" title="Apache Flink仅用于（近）实时处理用例吗？"></a>Apache Flink仅用于（近）实时处理用例吗？</h2><p>Flink是一个非常通用的系统，用于数据处理和数据驱动的应用程序，数据流作为核心构建块。这些数据流可以是实时数据流,也可以是存储的历史数据流。例如，在Flink的视图中，文件是存储的字节流。因此，Flink支持实时数据处理和应用，以及批处理应用。</p>
-<p>流可以是无界的（没有结束，事件不断发生）或受限制（流有开始和结束）。例如，来自消息队列的Twitter馈送或事件流通常是无界流，而来自文件的字节流是有界流。</p>
-<h2 id="如果一切都是流，为什么Flink中有DataStream和DataSet-API？"><a href="#如果一切都是流，为什么Flink中有DataStream和DataSet-API？" class="headerlink" title="如果一切都是流，为什么Flink中有DataStream和DataSet API？"></a>如果一切都是流，为什么Flink中有DataStream和DataSet API？</h2><p>有界流通常比无界流更有效。在（近）实时处理无限事件流需要系统能够立即对事件起作用并产生中间结果（通常具有低延迟）。处理有界流通常不需要产生低延迟结果，因为无论如何数据都是旧的（相对而言）。这允许Flink以简单且更有效的方式处理数据。</p>
-<p>DataStream API通过支持低延时的结果和对事件和时间（包括事件时间）灵活反应的模型捕获无界流和有界流的连续处理，</p>
-<p>DataSet API具有加快有界数据流的处理的技术。将来，社区计划将这些优化与DataStream API中的技术相结合。</p>
-<h2 id="Flink如何与Hadoop堆栈相关？"><a href="#Flink如何与Hadoop堆栈相关？" class="headerlink" title="Flink如何与Hadoop堆栈相关？"></a>Flink如何与Hadoop堆栈相关？</h2><p>Flink独立于Apache Hadoop，并且在没有任何Hadoop依赖性的情况下运行。</p>
-<p>但是，Flink与许多Hadoop组件集成得非常好，例如HDFS，YARN或HBase。与这些组件一起运行时，Flink可以使用HDFS读取数据，或写入结果和检查点/快照。Flink可以通过YARN轻松部署，并与YARN和HDFS Kerberos安全模块集成。</p>
-<h2 id="Flink运行的其他堆栈是什么？"><a href="#Flink运行的其他堆栈是什么？" class="headerlink" title="Flink运行的其他堆栈是什么？"></a>Flink运行的其他堆栈是什么？</h2><p>Flink可以在Kubernetes，Mesos， Docker上运行 ，甚至作为独立服务运行。</p>
-<h2 id="使用Flink有哪些先决条件？"><a href="#使用Flink有哪些先决条件？" class="headerlink" title="使用Flink有哪些先决条件？"></a>使用Flink有哪些先决条件？</h2><p>您需要Java 8来运行Flink作业/应用。<br>Scala API（可选）依赖于Scala 2.11。<br>Apache ZooKeeper需要高度可用且没有单点故障的设置。<br>对于可以从故障中恢复的高可用流处理设置，Flink需要某种形式的分布式存储用于检查点（HDFS / S3 / NFS / SAN / GFS / Kosmos / Ceph / …）。</p>
-<h2 id="Flink支持多大的规模？"><a href="#Flink支持多大的规模？" class="headerlink" title="Flink支持多大的规模？"></a>Flink支持多大的规模？</h2><p>用户在非常小的设置（少于5个节点）和1000个节点以及状态的TB上运行Flink作业。</p>
-<h2 id="Flink是否仅限于内存数据集？"><a href="#Flink是否仅限于内存数据集？" class="headerlink" title="Flink是否仅限于内存数据集？"></a>Flink是否仅限于内存数据集？</h2><p>对于DataStream API，Flink支持大于内存的状态来配置RocksDB状态后端。</p>
-<p>对于DataSet API，所有操作（delta迭代除外）都可以扩展到主内存之外。</p>
-<h2 id="常见错误消息"><a href="#常见错误消息" class="headerlink" title="常见错误消息"></a>常见错误消息</h2><p>“ 获得帮助”页面上列出了常见错误消息。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1].<a href="https://flink.apache.org/faq.html" target="_blank" rel="noopener">https://flink.apache.org/faq.html</a></p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/flink-use-cases/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/23/flink-use-cases/" itemprop="url">Flink handbook - flink用例</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-23T21:32:26+08:00">2018-09-23 21:32:26</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="用例"><a href="#用例" class="headerlink" title="用例"></a>用例</h2><p>Apache Flink因其丰富的功能集而成为开发和运行多种不同类型应用程序的绝佳选择。Flink的功能包括对流和批处理的支持，复杂的状态管理，事件时间处理语义以及状态的恰好一次一致性保证。此外，Flink可以部署在各种资源管理集群（如YARN，Apache Mesos和Kubernetes）上，也可以部署为裸机硬件上的单个群集。Flink配置为高可用性，没有单点故障。Flink已经被证明可以扩展到数千个核心和万亿字节的应用状态，提供高吞吐量和低延迟，并为世界上一些最苛刻的流处理应用程序提供支持。</p>
-<p>下面，我们将探讨由Flink提供支持的最常见类型的应用程序，并指出实际示例。</p>
-<ul>
-<li>事件驱动的应用</li>
-<li>数据分析应用</li>
-<li>数据管道应用</li>
-</ul>
-<h2 id="事件驱动的应用"><a href="#事件驱动的应用" class="headerlink" title="事件驱动的应用"></a>事件驱动的应用</h2><h3 id="什么是事件驱动的应用？"><a href="#什么是事件驱动的应用？" class="headerlink" title="什么是事件驱动的应用？"></a>什么是事件驱动的应用？</h3><p>事件驱动的应用程序是一个有状态的应用程序，它从一个或多个事件流中提取事件，并通过触发计算，状态更新或外部操作对传入事件做出响应。</p>
-<p>事件驱动的应用程序是传统应用程序设计的演变，具有分离的计算和数据存储层。在传统应用的体系结构中，应用从远程事务数据库中读取数据并将数据持久化到远程事务数据库。</p>
-<p>相比之下，事件驱动的应用程序基于有状态流处理应用程序。在这种设计中，数据和计算是共同定位的，这产生了本地（内存或磁盘）数据访问。通过定期将检查点写入远程持久存储来实现容错。下图描绘了传统应用程序体系结构和事件驱动应用程序之间的差异。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-eventdrivenapps.png" alt=""></p>
-<h3 id="事件驱动的应用有哪些优点？"><a href="#事件驱动的应用有哪些优点？" class="headerlink" title="事件驱动的应用有哪些优点？"></a>事件驱动的应用有哪些优点？</h3><p>事件驱动的应用程序不是查询远程数据库，而是在本地访问其数据，从而在吞吐量和延迟方面发挥更好的性能。远程持久存储的定期检查点可以异步和递增完成。因此，检查点对常规事件处理的影响非常小。但是，事件驱动的应用程序设计提供的不仅仅是本地数据访问。在分层体系结构中，多个应用程序共享同一数据库是很常见的。因此，需要协调数据库的任何更改，例如由于应用程序更新或扩展服务而更改数据布局。由于每个事件驱动的应用程序都负责自己的数据，因此对数据表示的更改或扩展应用程序需要较少的协调。</p>
-<h3 id="Flink如何支持事件驱动的应用？"><a href="#Flink如何支持事件驱动的应用？" class="headerlink" title="Flink如何支持事件驱动的应用？"></a>Flink如何支持事件驱动的应用？</h3><p>事件驱动应用程序的限制由流处理器处理时间和状态的程度来定义。Flink的许多杰出功能都围绕着这些概念。Flink提供了一组丰富的状态原语，可以管理非常大的数据量（最多几TB），并且具有恰好一次的一致性保证。此外，Flink支持事件时间，高度可定制的窗口逻辑，以及通过ProcessFunction实现高级业务逻辑提供的细粒度时间控制。此外，Flink还提供了一个用于复杂事件处理（CEP）的库，用于检测数据流中的模式。</p>
-<p>但是，Flink针对事件驱动应用程序的突出特点是保存点功能。保存点是一致的状态图像，可用作兼容应用程序的起点。给定保存点，可以更新应用程序或调整其规模，或者可以启动应用程序的多个版本以进行A / B测试。</p>
-<h3 id="什么是典型的事件驱动应用？"><a href="#什么是典型的事件驱动应用？" class="headerlink" title="什么是典型的事件驱动应用？"></a>什么是典型的事件驱动应用？</h3><ul>
-<li>欺诈识别</li>
-<li>异常检测</li>
-<li>基于规则的警报</li>
-<li>业务流程监控</li>
-<li>Web应用程序（社交网络）</li>
-</ul>
-<h2 id="数据分析应用"><a href="#数据分析应用" class="headerlink" title="数据分析应用"></a>数据分析应用</h2><h3 id="什么是数据分析应用？"><a href="#什么是数据分析应用？" class="headerlink" title="什么是数据分析应用？"></a>什么是数据分析应用？</h3><p>分析工作从原始数据中提取信息和洞察力。传统上，分析是在有记录事件的有界数据集上作为批查询或应用程序来执行的。为了将最新数据合并到分析结果中，必须将其添加到分析的数据集中，并重新运行查询或应用程序。结果将写入存储系统或作为报告发出。</p>
-<p>借助先进的流处理引擎，还可以实时地执行分析。流式查询或应用程序不是读取有限数据集，而是摄取实时事件流，并在消耗事件时不断生成和更新结果。结果要么写入外部数据库，要么保持为内部状态。仪表板应用程序可以从外部数据库读取最新结果或直接查询应用程序的内部状态。</p>
-<p>Apache Flink支持流式和批量分析应用程序，如下图所示。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-analytics.png" alt=""></p>
-<h3 id="流式分析应用有哪些优势？"><a href="#流式分析应用有哪些优势？" class="headerlink" title="流式分析应用有哪些优势？"></a>流式分析应用有哪些优势？</h3><p>与批量分析相比，连续流分析的优势不仅限于因消除定期导入和查询执行而从事件到洞察的低得多的延迟。与批量查询相比，流式查询不必处理输入数据中的人为边界，这些边界是由定期导入和输入的有界性质引起的。</p>
-<p>另一方面是更简单的应用程序架构。批量分析管道由若干独立组件组成，以周期性地调度数据提取和查询执行。可靠地操作这样的管道并非易事，因为一个组件的故障会影响管道的后续步骤。相比之下，在像Flink这样的复杂流处理器上运行的流分析应用程序包含从数据摄取到连续结果计算的所有步骤。因此，它可以依赖于引擎的故障恢复机制。</p>
-<h3 id="Flink如何支持数据分析应用？"><a href="#Flink如何支持数据分析应用？" class="headerlink" title="Flink如何支持数据分析应用？"></a>Flink如何支持数据分析应用？</h3><p>Flink为连续流式传输和批量分析提供了非常好的支持。具体来说，它具有符合ANSI标准的SQL接口，具有用于批处理和流式查询的统一语义。无论是在记录事件的静态数据集上还是在实时事件流上运行，SQL查询都会计算相同的结果。对用户定义函数的丰富支持可确保在SQL查询中执行自定义代码。如果需要更多的自定义逻辑，Flink的DataStream API或DataSet API提供更多的低级控制。此外，Flink的Gelly库为批量数据集上的大规模和高性能图形分析提供算法和构建块。</p>
-<h3 id="什么是典型的数据分析应用？"><a href="#什么是典型的数据分析应用？" class="headerlink" title="什么是典型的数据分析应用？"></a>什么是典型的数据分析应用？</h3><ul>
-<li>电信网络的质量监控</li>
-<li>分析移动应用程序中的产品更新和实验评估</li>
-<li>对消费者技术中的实时数据进行特别分析</li>
-<li>大规模图分析</li>
-</ul>
-<h2 id="数据管道应用"><a href="#数据管道应用" class="headerlink" title="数据管道应用"></a>数据管道应用</h2><h3 id="什么是数据管道？"><a href="#什么是数据管道？" class="headerlink" title="什么是数据管道？"></a>什么是数据管道？</h3><p>提取 - 转换 - 加载（ETL）是在存储系统之间转换和移动数据的常用方法。通常会定期触发ETL作业，以便将数据从事务数据库系统复制到分析数据库或数据仓库。</p>
-<p>数据管道与ETL作业具有相似的用途。它们可以转换和丰富数据，并可以将数据从一个存储系统移动到另一个存储系统 但是，它们以连续流模式运行，而不是周期性地触发。因此，他们能够从连续生成数据的源中读取记录，并以低延迟将其移动到目的地。例如，数据管道可能会监视文件系统目录中的新文件并将其数据写入事件日志。另一个应用程序可能会将事件流实现到数据库，或者逐步构建和优化搜索索引。</p>
-<p>下图描述了定期ETL作业和连续数据管道之间的差异。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-datapipelines.png" alt=""></p>
-<h3 id="数据管道有哪些优势？"><a href="#数据管道有哪些优势？" class="headerlink" title="数据管道有哪些优势？"></a>数据管道有哪些优势？</h3><p>连续数据流水线优于周期性ETL作业的显著优势是减少了将数据移动到目的地的延迟。此外，数据管道更加通用，可用于更多用例，因为它们能够连续消耗和发送数据。</p>
-<h3 id="Flink如何支持数据管道？"><a href="#Flink如何支持数据管道？" class="headerlink" title="Flink如何支持数据管道？"></a>Flink如何支持数据管道？</h3><p>Flink的SQL接口（或表API）可以解决许多常见的数据转换或丰富任务，并支持用户定义的函数。通过使用更通用的DataStream API，可以实现具有更高级要求的数据管道。Flink为各种存储系统（如Kafka，Kinesis，Elasticsearch和JDBC数据库系统）提供了丰富的连接器。它还具有连续的文件系统源，用于监视以时间分区方式写入文件的目录和接收器。</p>
-<h3 id="什么是典型的数据管道应用？"><a href="#什么是典型的数据管道应用？" class="headerlink" title="什么是典型的数据管道应用？"></a>什么是典型的数据管道应用？</h3><ul>
-<li>电子商务中的实时搜索索引构建</li>
-<li>电子商务中持续的ETL</li>
-</ul>
-<h2 id="参考资料："><a href="#参考资料：" class="headerlink" title="参考资料："></a>参考资料：</h2><p>[1].<a href="https://flink.apache.org/usecases.html" target="_blank" rel="noopener">https://flink.apache.org/usecases.html</a></p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/flink-what-is-apache-flink/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/23/flink-what-is-apache-flink/" itemprop="url">Flink handbook - 什么是Apache Flink？</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-23T21:18:21+08:00">2018-09-23 21:18:21</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>Apache Flink是一个框架和分布式处理引擎，用于对无界和有界数据流进行有状态计算。Flink设计为在所有常见的集群环境中运行，以内存速度和任何规模执行计算。</p>
-<p>在这里，我们解释了Flink架构的重要方面。</p>
-<h2 id="无界和有界数据的处理"><a href="#无界和有界数据的处理" class="headerlink" title="无界和有界数据的处理"></a>无界和有界数据的处理</h2><p>任何类型的数据都是作为事件流产生的。信用卡交易，传感器测量，机器日志或网站或移动应用程序上的用户交互，所有这些数据都作为流生成。</p>
-<p>数据可以作为无界或有界流处理。</p>
-<ol>
-<li><p><strong>无界流</strong> 有一个开始，但没有定义的结束。它们不会终止并提供其生成的数据。无界流必须持续处理，即必须在摄取事件后立即处理事件。不可能等待所有的输入数据都到达，因为输入是无界的，并且在任何时间点都不会结束。处理无界数据通常要求以特定顺序（例如事件发生的顺序）摄取事件，以便能够推断结果的完整性。</p>
-</li>
-<li><p><strong>有界流</strong>具有定义的开始和结束。可以在执行任何计算之前，通过摄取所有数据来处理有界流。有界数据集是可以被排序的，因此处理有界流不需要有序摄取。有界流的处理也称为批处理。</p>
-</li>
-</ol>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fbounded-unbounded.png" alt=""></p>
-<p><strong>Apache Flink擅长处理无界和有界数据集</strong>。精确控制时间和状态使Flink的运行时能够在无界流上运行任何类型的应用程序。有界流由算法和数据结构在内部处理，这些算法和数据结构专门针对固定大小的数据集而设计，从而发挥出性能优势。</p>
-<h2 id="随处部署应用"><a href="#随处部署应用" class="headerlink" title="随处部署应用"></a>随处部署应用</h2><p>Apache Flink是一个分布式系统，需要计算资源才能执行的应用程序。Flink可以与所有常见的集群资源管理器（如Hadoop YARN，Apache Mesos和Kubernetes）集成，但也可以设置为独立的集群运行。</p>
-<p>Flink旨在很好地适用于之前列出的每个资源管理器，这是通过特定于资源管理器的部署模式实现的，这些模式允许Flink以其惯用的方式与每个资源管理器进行交互。</p>
-<p>部署Flink应用程序时，Flink会根据应用程序配置的并行性自动识别所需资源，并从资源管理器里申请它们。如果发生故障，Flink会通过申请新资源来替换发生故障的容器。所有提交或控制应用程序的通信都是通过REST调用来进行，这简化了Flink在许多环境中的集成。</p>
-<h2 id="以任何规模运行应用"><a href="#以任何规模运行应用" class="headerlink" title="以任何规模运行应用"></a>以任何规模运行应用</h2><p>Flink旨在以任何规模运行有状态的流应用，应用程序可以并行化为数千个在集群中分布和同时执行的任务。因此，应用程序可以利用几乎无限量的CPU、主内存、磁盘和网络IO。而且，Flink可以轻松维护数据量非常大的应用状态。其异步和增量检查点算法确保对处理的延迟影响最小，同时保证恰好一次状态的一致性。</p>
-<p>用户报告了在其生产环境中运行的Flink集群的规模，这样的规模有点令人印象深刻，例如</p>
-<ul>
-<li>应用程序每天处理数万亿个事件，</li>
-<li>应用程序维护多个TB的状态，以及</li>
-<li>应用程序在数千个内核的运行。</li>
-</ul>
-<h2 id="内存的性能优势"><a href="#内存的性能优势" class="headerlink" title="内存的性能优势"></a>内存的性能优势</h2><p>有状态Flink应用针对本地状态的访问进行了优化。任务状态始终保留在内存中，或者，如果状态大小超过可用内存，则保存在可高效访问的磁盘上的数据结构中。因此，任务通过访问本地（通常是内存中）状态来执行所有计算，从而产生非常低的处理延迟。Flink通过定期并且异步地把本地状态打检查点并持久化到存储设备来保证在出现故障时的恰好一次状态的一致性。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Flocal-state.png" alt=""></p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1].<a href="https://flink.apache.org/flink-architecture.html" target="_blank" rel="noopener">https://flink.apache.org/flink-architecture.html</a></p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
-        
-      </div>
       
     </footer>
   </article>
   
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/6/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/8/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/6/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span>
   </nav>
   
   
@@ -930,7 +654,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">85</a></div>
+      <div><a href="/archives">54</a></div>
     </div>
     
     

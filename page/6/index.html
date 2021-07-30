@@ -115,7 +115,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/01/25/pravega-arch-IO-transaction-autoscaling/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/26/flink-concepts-distributed-runtime/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
         <meta itemprop="description" content="“分布式系统架构设计师”">
@@ -127,12 +127,12 @@
     </div>
     <header class="post-header">
       <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/01/25/pravega-arch-IO-transaction-autoscaling/" itemprop="url">分布式流存储 - 架构、自动缩放、IO隔离与事务</a>
+        <a class="post-title-link post-title-link-external" href="/2018/09/26/flink-concepts-distributed-runtime/" itemprop="url">flink handbook - Flink分布式运行时</a>
       </h1>
       <div class="post-meta">
         
         <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-01-25T21:23:39+08:00">2019-01-25 21:23:39</time></span>
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-26T22:34:39+08:00">2018-09-26 22:34:39</time></span>
         </span>
         
         
@@ -141,7 +141,7 @@
         
         <span class="post-categories">
           
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
         </span>
         
         
@@ -149,104 +149,44 @@
     </header>
     <main class="post-main" itemprop="articleBody">
       
-      <h2 id="Pravega架构"><a href="#Pravega架构" class="headerlink" title=" Pravega架构  "></a><font color="#FF8C00"> Pravega架构  </font></h2><blockquote>
-<p> ”技术在某种程度上一定是来自此前已有技术的新的组合“  – 《技术的本质》，布莱恩·阿瑟</p>
-</blockquote>
-<p>Pravega为连续而又无限的数据提供了一种新的存储原语 - 流存储，然而Pravega也并不是凭空发明出来的，它是以前成熟技术与新技术的组合，例如Pravega的 范围、流、段、事件就跟Kafka的主题、分区、段、消息对应，而一层存储又用了Bookkeeper，协调器用了Zookeeper等。</p>
-<h3 id="设计原则与目标"><a href="#设计原则与目标" class="headerlink" title=" 设计原则与目标"></a><font color="#00CED1"> 设计原则与目标</font></h3><ul>
-<li><p>持久化：在客户端确认写入前，数据被复制并且写入磁盘；</p>
-</li>
-<li><p>保序：段内严格保序；</p>
-</li>
-<li><p>恰好一次：支持恰好一次语义；</p>
-</li>
-<li><p>轻量级：一个流就如同一个文件，可以在单集群里创建千万量级起的流；</p>
-</li>
-<li><p>可弹性：可基于负载和吞吐量智能地动态扩展或者收缩流；</p>
-</li>
-<li><p>无限性：存储空间大小不受单个节点的容量限制；</p>
-</li>
-<li><p>高性能：写入延迟低于10ms，吞吐量仅受网络带宽限制，读模式（例如：追赶读）不影响写性能;</p>
-</li>
-</ul>
-<h3 id="Pravega设计创新"><a href="#Pravega设计创新" class="headerlink" title="Pravega设计创新"></a><font color="#00CED1">Pravega设计创新</font></h3><ol>
-<li><p>支持“无限流”分层</p>
-</li>
-<li><p>零接触动态缩放</p>
+      <h2 id="任务和算子链"><a href="#任务和算子链" class="headerlink" title="任务和算子链"></a>任务和算子链</h2><p>对于分布式执行，Flink将算子子任务链接到任务中。每个任务由一个线程执行。将算子链接到任务中是一项有用的优化：它可以减少线程到线程切换和缓冲的开销，并在降低延迟的同时提高整体吞吐量。可以配置链接行为; 有关详细信息，请参阅链接文档。</p>
+<p>下图中的示例数据流由五个子任务执行，因此具有五个并行线程。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/tasks_chains.svg" alt="算子链接到任务"></p>
+<h2 id="作业管理器，任务管理器，客户端"><a href="#作业管理器，任务管理器，客户端" class="headerlink" title="作业管理器，任务管理器，客户端"></a>作业管理器，任务管理器，客户端</h2><p>Flink运行时包含两种类型的进程：</p>
 <ul>
-<li><p>根据负载和SLO自动调整读/写并行度</p>
-</li>
-<li><p>没有服务中断</p>
-</li>
-<li>无需手动重新配置客户端</li>
-<li>无需手动重新配置服务资源</li>
+<li>JobManagers（也称为主作业）协调分布式执行。他们调度任务，协调检查点，协调故障恢复等。</li>
 </ul>
-</li>
-<li><p>智能工作负载分配</p>
+<p>总是至少有一个Job Manager。高可用性配置将具有多个JobManagers，其中一个始终是领导者，其他人则是备用者。</p>
 <ul>
-<li>无需为峰值负载过度配置服务器</li>
+<li>TaskManagers（也叫工作者）执行数据流的任务（或者更具体地说，子任务），并且缓冲和交换数据流。</li>
 </ul>
-</li>
-<li><p>I / O路径隔离</p>
-<ul>
-<li>支持尾部写入</li>
-<li>支持尾部读</li>
-<li>支持追赶读</li>
-</ul>
-</li>
-<li><p>支持“恰好一次”事务</p>
-</li>
-</ol>
-<h3 id="逻辑架构"><a href="#逻辑架构" class="headerlink" title="  逻辑架构"></a><font color="#00CED1">  逻辑架构</font></h3><p>下图为Pravega的逻辑架构图：</p>
-<p><div align="center"><br><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch.png" alt="逻辑架构图"></div></p>
-<div align="left"> 
+<p>必须至少有一个TaskManager。</p>
+<p>JobManagers和TaskManagers可以通过多种方式启动：直接作为独立集群、在容器中、或由YARN或Mesos等资源框架管理。TaskManagers连接到JobManagers，宣布它们自己是可用，并被分配工作。</p>
+<p>客户端不是运行时和程序执行的一部分，而是被用来准备和发送的数据流的JobManager。之后，客户端可以断开连接或保持连接以接收进度报告。客户端既可以作为触发执行的Java / Scala程序的一部分运行，也可以在命令行进程中运行./bin/flink run …。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/processes.svg" alt="执行Flink数据流所涉及的过程"></p>
+<h2 id="任务槽和资源"><a href="#任务槽和资源" class="headerlink" title="任务槽和资源"></a>任务槽和资源</h2><p>每个worker（TaskManager）都是一个JVM进程，可以在不同的线程中执行一个或多个子任务。为了控制worker接受的任务数量，worker有所谓的任务槽（至少一个）。</p>
+<p>每个任务槽代表TaskManager的固定资源子集。例如，具有三个插槽的TaskManager将其托管内存的1/3专用于每个插槽。对资源进行分隔意味着子任务不会与来自其他作业的子任务竞争托管内存，而是具有一定数量的保留托管内存。请注意，此处不会发生CPU隔离; 当前插槽只分离任务的托管内存。</p>
+<p>通过调整任务槽的数量，用户可以定义子任务如何相互隔离。每个TaskManager有一个插槽意味着每个任务组在一个单独的JVM中运行（例如，可以在一个单独的容器中启动）。拥有多个插槽意味着更多子任务共享同一个JVM。同一JVM中的任务共享TCP连接（通过多路复用）和心跳消息。它们还可以共享数据集和数据结构，从而减少每任务开销。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/tasks_slots.svg" alt="具有任务槽和任务的TaskManager"></p>
+<p>默认情况下，Flink允许子任务共享插槽，即使它们是不同任务的子任务，只要它们来自同一个作业。结果是一个槽可以容纳整个作业的管道。允许此插槽共享有两个主要好处：</p>
+<p>Flink集群需要与作业中使用的最高并行度一样多的任务槽。无需计算程序总共包含多少任务（具有不同的并行性）。</p>
+<p>更容易获得更好的资源利用率。如果没有插槽共享，非密集型源/ map（）子任务将阻止与资源密集型窗口子任务一样多的资源。通过插槽共享，将示例中的基本并行性从2增加到6可以充分利用插槽资源，同时确保繁重的子任务在TaskManagers之间公平分配。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/slot_sharing.svg" alt="具有共享任务槽的TaskManagers"></p>
+<p>API还包括可用于防止不期望的插槽共享的资源组机制。</p>
+<p>根据经验，一个好的默认任务槽数就是CPU核心数。使用超线程，每个插槽然后需要2个或更多硬件线程上下文。</p>
+<h2 id="状态后端"><a href="#状态后端" class="headerlink" title="状态后端"></a>状态后端</h2><p>存储键/值索引的确切数据结构取决于所选的状态后端。一个状态后端将数据存储在内存中的哈希映射中，另一个状态后端使用RocksDB作为键/值存储。除了定义保存状态的数据结构之外，状态后端还实现逻辑以获取键/值状态的时间点快照，并将该快照存储为检查点的一部分逻辑。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/checkpoints.svg" alt="检查点和快照"></p>
+<h2 id="保存点"><a href="#保存点" class="headerlink" title="保存点"></a>保存点</h2><p>用Data Stream API编写的程序可以从保存点恢复执行。保存点允许更新程序和Flink群集，而不会丢失任何状态。</p>
+<p>保存点是手动触发的检查点，它将程序的快照写入状态后端。他们依赖于常规的检查点机制。在执行期间，程序会周期性地在工作节点上创建快照并生成检查点。对于恢复，仅需要最后完成的检查点，并且一旦新的检查点完成，就可以安全地丢弃旧的检查点。</p>
+<p>保存点与这些定期检查点类似，不同之处在于它们由用户触发，并且在完成较新的检查点时不会自动过期。可以从命令行或通过REST API取消作业时创建保存点。</p>
 
-<ol>
-<li>首先，Pravega提供了一个用Java编写的客户端库，抽象出了流协议层接口，用于支持客户端应用，例如Flink、Spark以及一些检索系统等；</li>
-<li>其次，Pravega实现了一个流数据抽象层，用于事件流和字节流的抽象；</li>
-<li>再者，从整体架构上来讲Pravega符合软件定义存储的设计规则，其控制面与数据面分离，数据面的集合统称为段存储层，控制实例组成控制面，实现了检索流信息、监控集群、收集相关指标等功能，同时为了实现高可用，通常有多个（建议至少3个）控制实例同时对外提供服务。 </li>
-<li>Pravega采用Zookeeper作为集群中的协调组件。 </li>
-<li>Pravega的存储系统由两部分组成：第1层为短期存储层，主要关注性能，用于存储热点数据，由bookkeeper实现，保证了存储系统的低时延、高性能。第2层为长期存储层，主要关注成本，提供数据的持久性以及长期存储，由开源的或者商业的存储产品组成。第1层保留热点数据，随着第1层中数据的老化，数据将自动分层流入第2层。</li>
-</ol>
-<h3 id="数据架构"><a href="#数据架构" class="headerlink" title=" 数据架构"></a><font color="#00CED1"> 数据架构</font></h3><p>下图展示了Pravega的数据架构图以及数据流分层：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-data-path.png" alt="数据架构图"></p>
-<ol>
-<li>Pravega客户端可以通过调用控制器接口管理流的创建、删除和缩放以及进行事务管理：启动事务、创建事务、跟踪事务状态；</li>
-<li>所有的数据对读来说都是透明的，客户端的读写操作直接与段存储（数据面）进行交互，而不通过控制器；</li>
-<li>段存储里有缓存组件保证了读写的高性能，热点数据放在bookkeeper里作为一层存储；</li>
-<li>数据老化后会自动流转到长期存储（例如：对象存储系统，文件存储系统，HDFS等）里以便降低存储成本；</li>
-</ol>
-<h3 id="关键子功能-零接触缩放"><a href="#关键子功能-零接触缩放" class="headerlink" title="关键子功能 - 零接触缩放"></a><font color="#00CED1">关键子功能 - 零接触缩放</font></h3><h4 id="零接触缩放：段的动态拆分与合并"><a href="#零接触缩放：段的动态拆分与合并" class="headerlink" title="零接触缩放：段的动态拆分与合并"></a>零接触缩放：段的动态拆分与合并</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-2.png" alt="段的拆分与合并"></p>
-<p>如上图所示，1）拆分：在t1时刻系统负载加大，段0被拆分成段1和段2，同时段0封装不再写入；t2时刻系统负载继续加大，段2被拆分成段3与段4，同时段2被封装不再写入；t3时刻系统负载又继续加大，段1被拆分成段5和段6，同时段1被封装不再写入；2）合并：t4时刻系统负载降低，段6与段3被合并成段7，同时段6与段3被封装不再写入。而且所有的这些行为都是Pravega里自动完成的无需人工干预。</p>
-<h4 id="零接触缩放：写并行-与Kafka比较"><a href="#零接触缩放：写并行-与Kafka比较" class="headerlink" title="零接触缩放：写并行 - 与Kafka比较"></a>零接触缩放：写并行 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-3.png" alt="写并行"></p>
-<p>当并行写入的时候：</p>
-<ol>
-<li><p>在Pravega里流段的数量会根据负载和服务质量目标而动态变化，并且段的拆分与合并都是自动进行的无需人工干预，同时拆分或合并流段是，写客户端的配置是静态不变的；</p>
-</li>
-<li><p>在Kafka里主题分区数（写并行性）是静态的，添加或删除分区时需要手动配置服务并且当分区数更改时，必须手动更新生产者配置。</p>
-</li>
-</ol>
-<h4 id="零接触缩放：读并行-与Kafka比较"><a href="#零接触缩放：读并行-与Kafka比较" class="headerlink" title="零接触缩放：读并行 - 与Kafka比较"></a>零接触缩放：读并行 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-4.png" alt="读并行"></p>
-<p>并行读取时：</p>
-<ol>
-<li>在Pravega里，当拆分或者合并流段时，读客户端通过流协议获得通知从而使得读并行与流段缩放保持同步；</li>
-<li>在Kafka里，当分区数更改时，必须手动更改使用者配置。</li>
-</ol>
-<h4 id="关键子功能-智能工作负载分配"><a href="#关键子功能-智能工作负载分配" class="headerlink" title="关键子功能 - 智能工作负载分配 "></a><font color="#00CED1">关键子功能 - 智能工作负载分配 </font></h4><h4 id="智能工作负载分配-与Kafka比较"><a href="#智能工作负载分配-与Kafka比较" class="headerlink" title="智能工作负载分配 - 与Kafka比较"></a>智能工作负载分配 - 与Kafka比较</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-5.png" alt="智能工作负载分配"></p>
-<p>在Pravega里，热点段会自动拆分，子段在整个集群中重新分配缓解热点，同时最大限度地利用集群的可用IOPS能力；而在Kafka里没有减轻“热点”分区的机制，其强制部署并且过度配置资源以获得处理其“峰值负载”的能力。</p>
-<h3 id="关键子功能-I-O路径隔离"><a href="#关键子功能-I-O路径隔离" class="headerlink" title="关键子功能 - I/O路径隔离"></a><font color="#00CED1">关键子功能 - I/O路径隔离</font></h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-6.png" alt="I/O路径隔离"></p>
-<p>流存储的基础数据结构为仅附加写入的日志结构。考虑到高吞吐量，Pravega支持追赶读，同时为了保证低时延，Pravega还支持尾部读取以及尾部写入，从而进行了IO路径的隔离。</p>
-<h3 id="关键子功能-事务"><a href="#关键子功能-事务" class="headerlink" title="关键子功能 - 事务"></a><font color="#00CED1">关键子功能 - 事务</font></h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-arch-7.png" alt="智能工作负载分配"></p>
-<p>Pravega提供了事务功能，事务是写客户端可以“批处理”一堆事件并将它们作为一个处理单元原子性地提交到流中。这一堆事件要么所有都处理成功，要么所有都处理失败。在提交事务之前，发布到事务中的事件永远不会被读客户端看到。如上图所示，第一步，先将一堆事件封装在一个事务里；第二步，提交这个事务。这个事务里所有的事件要么全部都处理成功要么全部都处理失败。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a><font color="#FF8C00">总结</font></h2><p>本文分析了物联网场景下的数据存储商业现状以及技术现状，为平衡商业成本与技术成本推出了分布式流存储系统Pravega，同时本文还介绍了流存储的特殊需求点以及与Kafka做了简要对比，此外还介绍了一些Pravega的关键架构以及一些关键特性。有关Pravega的更多详细信息，请参阅官方网站。另作者能力有限，如有不足之处欢迎留言批评指正。</p>
-</div>
       
     </main>
     <footer class="post-footer">
       
       <div class="post-tags">
         
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
         
       </div>
       
@@ -255,7 +195,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/11/25/pravega-blog-i-have-a-stream/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/26/flink-concepts-programming-model/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
         <meta itemprop="description" content="“分布式系统架构设计师”">
@@ -267,12 +207,12 @@
     </div>
     <header class="post-header">
       <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/11/25/pravega-blog-i-have-a-stream/" itemprop="url">pravega blog - 原生的流存储解决方案</a>
+        <a class="post-title-link post-title-link-external" href="/2018/09/26/flink-concepts-programming-model/" itemprop="url">flink handbook - flink数据流编程模型</a>
       </h1>
       <div class="post-meta">
         
         <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-11-25T11:11:37+08:00">2018-11-25 11:11:37</time></span>
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-26T06:34:26+08:00">2018-09-26 06:34:26</time></span>
         </span>
         
         
@@ -281,7 +221,7 @@
         
         <span class="post-categories">
           
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
         </span>
         
         
@@ -289,54 +229,70 @@
     </header>
     <main class="post-main" itemprop="articleBody">
       
-      <h2 id="现阶段的Pravega"><a href="#现阶段的Pravega" class="headerlink" title="现阶段的Pravega"></a>现阶段的Pravega</h2><p>流处理在数据分析领域备受关注，其原因相当明显：在短时间内就能够对连续生成的数据产生洞察力，而不是等待它在批处理中累积和处理。从摄取到结果的低延迟是流处理技术向其各种应用程序领域提供的关键优势之一。在某些情况下，低延迟不仅是可取的，而且对于保证正确行为的绝对必要条件。在物联网中等待数小时处理火警或煤气泄漏事件是没有意义的。</p>
-<p>处理流数据的典型应用程序具有一些核心组件。它有一个生产事件、消息、数据样本的源，这些事件的大小通常很小，从几百字节到几千字节。源不必是单个元素，它可以是多个传感器、移动终端、用户或服务器。该数据最终被送入流处理器，该处理器对其进行处理并产生中间或最终输出。最终输出可以具有各种形式，通常被持久存储在一些数据存储中以供消费（例如，针对数据集的查询）。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/praveg-blog-ihaveastream-1.png" alt="用于处理事件的典型管道的概要视图"></p>
-<p>这种通用架构的存储分为两部分：摄取和输出。用于摄取的存储组件将数据的生成与处理解耦，解耦源和处理很重要，因为不同的应用程序需要处理相同的数据，但是以不同的速度处理数据。对于这些应用程序中的一些，要求它们对最近的数据做出快速反应，这要求存储组件从摄取到服务的存储组件上有低延迟的要求。对存储的写入通常很小，例如，来自传感器和应用程序的小样本事件单独读取写入的项目。</p>
-<p>当从存储组件读取连续生成的数据时，随着应用程序顺序读取项目，存在强大的空间组件。然而，除了这个空间维度之外，还存在时间维度，现有系统并未完全强调这一点。应用程序可能希望出于各种原因在不同时间处理相同的数据，例如，在修复BUG之后，加入新数据和历史数据时，或者仅在稍后处理大量累积数据时。提供此功能的存储组件在摄取后不久消耗连续生成的数据，以及随后高吞吐量地消费连续生成的数据，以进行历史处理。</p>
-<p>Pravega是一个存储系统，具有一个流的概念。Pravega使应用程序能够连续摄取数据并按顺序（遵循摄取顺序）或批量处理（并行读取数据，而不必遵循流顺序）处理此类数据流。Pravega为流处理提供了许多非常理想的功能：低延迟、流弹性、无限流以及事务。</p>
-<p>Pravega的核心是一个简单而强大的概念：段。段是仅附加字节序列; 它们可以通过多种方式组成，以形成流并启用强大的功能，例如事务和流缩放。Pravega最终是一个带有控制平面的段的数据存储，该控制平面代表应用程序跟踪和操作这些段以形成流。</p>
-<p>在这篇文章中，我们将解释Pravega的一些核心概念以及我们如何认为它将改变我们处理流数据的方式。第一个早期alpha版本为：Pravega 0.1。这个早期版本包含一些令人兴奋的功能：</p>
+      <h2 id="抽象层次"><a href="#抽象层次" class="headerlink" title="抽象层次"></a>抽象层次</h2><p>Flink提供不同级别的抽象来开发流/批处理应用程序。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/levels_of_abstraction.svg" alt="抽象层次"></p>
 <ul>
-<li><p>持久写入：  Pravega的附加在被确认之前是持久的，就是这样; 没有可配置的选项来放松持久性。我们选择了这条路径，因为我们想要提供的其他一些属性需要强持久性，例如订单和一次。有了这个选择，Pravega开发人员面临的挑战就是在满足预期性能的同时满足这种保证。谁知道 - 我们将来也许需要放宽这个限制，但目前我们会坚持这一点。</p>
+<li><p>最低级抽象只提供有状态流。它通过Process Function嵌入到DataStream API中。它允许用户自由处理来自一个或多个流的事件，并使用一致的容错状态。此外，用户可以注册事件时间和处理时间回调，允许程序实现复杂的计算。</p>
 </li>
-<li><p>流缩放：流缩放是一项令人印象深刻的功能，它可以根据写入流量自动增长和收缩。当然，我们也允许用户手动缩放，但看Pravega为您做自动伸缩会更舒服。</p>
-</li>
-<li><p>事务： 流写入器可以通过开始事务并附加在该事务的上下文中，以原子方式附加到Pravega流。只有在事务提交的情况下，才会在事务上下文中附加的数据变为可见。</p>
-</li>
-<li><p>状态同步器：状态同步器将日志复制与状态复制解耦。它允许在Pravega段之上实现任何复制状态机。例如，可以在Pravega段存储之上实施领导者选举或组成员资格。</p>
+<li><p>实际上，大多数应用不需要上述低级抽象，而是针对Core API编程， 如DataStream API（有界/无界流）和DataSet API （有界数据集）。这些流动的API提供了用于数据处理的通用构建块，例如各种形式的用户指定的转换，连接，聚合，窗口，状态等。在这些API中处理的数据类型在相应的编程语言中表示为类。</p>
 </li>
 </ul>
-<p>在下一版本中还会出现更多令人兴奋的功能，例如启用下游动态扩展和数据保留的信令。开源参与人员的贡献也是非常受欢迎的，因为它是我们在Pravega周围建立社区的战略和努力的一部分。我们主网站上提供了如何使用Pravega的指导。</p>
-<h2 id="在Pravega之前的流数据处理"><a href="#在Pravega之前的流数据处理" class="headerlink" title="在Pravega之前的流数据处理"></a>在Pravega之前的流数据处理</h2><p>在大数据繁荣的早期阶段，当MapReduce成为热点时，主要目标是使用通常包含数千台服务器的集群快速处理大量数据集。在一个或多个大数据集上运行的这种计算通常被称为批处理作业。批处理作业使各种应用程序能够从原始数据中获得洞察力，这对于在线Web领域的许多成长型公司来说非常重要。例如，在Yahoo!这样的公司中，很多早期的Hadoop工作已经发生，有很多生产工作用于网络搜索、定向广告、推荐和其他应用程序。</p>
-<p>对于大型数据集的批处理作业通常在最佳情况下具有几分钟的完成时间，根据作业的大小和复杂性而达到多个小时。如此长的延迟对于许多应用程序来说并不理想，很快我们开始观察到处理数据的愿望，而不是等待积累大块然后才处理数据。例如，在Web上进行目标广告时，不希望等待数小时或数天来获得对数据的任何洞察。对于需要向用户执行推荐的任何系统都是如此。使用最新数据至关重要，但与此同时，即使推荐中最小程度的不准确也可能最终导致用户离开。在这里，我们观察到低延迟流处理的兴起，并开始揭开其挑战。我们将其称为流处理，因为传入的数据基本上是事件、消息或样本的连续流。</p>
-<p>许多对数据分析感兴趣的公司已经部署了大型Hadoop集群，他们并不一定愿意放弃MapReduce模型。为了解决延迟限制，一些应用程序开始使用微批处理方法：不是等待收集大量数据，而是在较短时间内累积的较小块上运行作业。使用微批次的想法并不一定是坏事，事实上，它确实使应用程序能够在更短的时间内获得洞察力。</p>
-<p>微批处理在当时是一个很好的调用，但它是有限的。校准微批次的大小不一定是微不足道的，从摄取到输出的等待时间通常为几分钟。低于此水平是很困难的，因为单独开始工作需要几秒钟。作为对无法以较低延迟处理数据的反应，最初尝试开发处理数据流的系统。用于流处理的Web空间中的公司出现的几个早期系统是S4 [1]和Apache Storm [2]。S4实际上早于Storm出现，但Storm变得越来越流行，它仍然被广泛使用。其他系统也遵循：Apache Spark [3]通过微批处理支持流; Apache Flink [4]从根本上统一了批处理和流处理，不需要微批处理; Heron [5]是一个流处理引擎，旨在与Storm兼容。最近，Apache Samza [6]和Kafka Streams被开发用于利用Apache Kafka [7]来实现高效的流处理。<br>所有这些系统的共同点之一是它们需要一些捕获数据的方法。直接从源中提取数据是一个坏主意，至少有几个原因：</p>
-<ol>
-<li>处理传入数据的多个应用程序可能共享数据，每个应用程序可能有自己的处理速度和频率。</li>
-<li>耦合源和应用程序通常是错误的，因为源通常具有另一个主要角色，即不为后端应用程序提供服务。例如，Web服务<br>器在应用程序中的中心目的是与最终用户交互，而不是可靠地缓冲数据，例如在后端运行的推荐应用程序。</li>
-</ol>
-<p>由于这些原因，数据的摄取通常通过分布式文件系统（例如，HDFS）在批处理时发生，或者通过临时缓冲用于流处理的输入事件、消息或样本的一些消息传递基底发生。对数据感兴趣的应用程序可以在任何需要的时间使用它，并且它希望以任何频率消耗它，仅受为传入数据设置的保留策略的约束。</p>
-<p>Pravega认为，成功的流处理应用程序能够有效地提取和提供数据至关重要。不过，Pravega偏离了传统的消息传递系统，可以通过几种方式提取数据。Pravega旨在成为流的存储解决方案。应用程序将数据摄取到Pravega中，并且这样的流可以在其长度上无限制并且存储任意长时间。在流Pravega具有弹性：流的摄取能力可以随着时间的推移自动增长和收缩。它的API目标流应用程序，因此，它借用了空间中成功系统的许多概念，如Apache Kafka [7]。例如，Pravega使应用程序能够以仅附加方式编写事件，并按照它们被附加的顺序读取这些事件。</p>
-<p>在下一节中，我们将介绍Pravega的一些核心概念  ，重点介绍我们的第一个alpha版本中的功能：Pravega 0.1.0。</p>
-<h2 id="流和段"><a href="#流和段" class="headerlink" title="流和段"></a>流和段</h2><p>Pravega向应用程序公开的核心抽象是流。客户端可以将数据写入流并从同一流中读取数据。考虑在线应用程序的用户或某些物联网应用程序中的传感器事件生成的事件，以便写入要从Pravega流中读取的数据。我们将这两种类型的客户区分开来，分别称它们为  writer 和 reader。</p>
-<p>Writer将数据附加到Pravega流。writer可以选择在附加到流时提供路由密钥。Pravega使用键将附加映射到 形成流的一个段。该段是形成流的基本单元，当writer将数据附加到流时，它实际上是附加到段。具有包括多个可打开以便附加的段的流对于并行性是需要的。更多的段打开意味着更高的写入容量，因为writer可以并行追加到段。</p>
-<p>流可以具有任意数量的段打开，使得可以根据路由密钥对这些段中的任何段执行附加。Pravega的一个重要特征是流的段数不一定是固定的，并且开放段的数量可以根据负载而变化，我们将此功能称为缩放。当给定的段变热时，我们将键范围分成多个新段。当多个邻居段变冷时，我们反转该过程并合并键范围。</p>
-<p>下图说明了由于缩放而对流的更改：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/praveg-blog-ihaveastream-2.png" alt="流的片段如何随着时间的推移随着流缩放而演变"></p>
-<p>轴是时间（x轴）和路由键范围（y轴）。流以单个段开始（S1）。在时间t1，流向上扩展并且段S1分裂成段S2  和S3。在时间t2，它再次向上扩展，并且段S2分裂成S4和S5。请注意，S3没有任何反应。在时间t3，段S4和S5 合并到段S6中。</p>
-<p>为了实现流缩放，Pravega具有密封段的概念。密封至关重要，以确保一旦有新的段附加，段就不会再发生任何追加。防止对已拆分或合并的段进行进一步写入对于保证使用相同键的追加顺序非常重要。例如，假设我们最初有一个流，其中单个段S1的范围为[0,1）。在某个时间T，我们将该段分成两个新的段S2、S3，其范围为：[0,0.5），[0.5,1]。如果稍后将 某些密钥k附加到S2的数据的应用程序能够将数据  附加到S1使用相同的密钥k，然后我们违反了顺序，因为逻辑上来自S1的所有数据都已附加在S2中的数据之前。</p>
-<p>密封对交易也至关重要。Pravega允许writer以事务方式附加到流。要以事务方式编写，writer会开始一个事务并定期附加到流。一旦完成写入，它就会提交事务。在内部，在单独的事务段中附加事务。这些段只是常规段，但在提交之前它们不会作为任何流的一部分公开。当事务提交时，事务段被密封，并且它们被合并回主流段。此时，交易数据对于读者而言变得可见。如果事务中止，则仅丢弃事务段，并且它们根本不可见。重要的是要强调，当事务未定时，其数据与主段的数据分开。</p>
-<p>利用这种实现事务的方法，流段中不存在正在进行的事务的干扰。为了论证，我们直接写入流段而不是创建事务段。在这种情况下，我们将至少通过以下几种方式为读者创造一个问题：</p>
-<ol>
-<li>当事务保持打开时，读取器不能提供来自打开事务的段数据，并且事务可以任意长时间地提交或中止。</li>
-<li>在事务中止的情况下，流段仍包含来自中止事务的数据。段仅被附加，不能真正从段的中间消除数据。</li>
-</ol>
-<p>对事务的这种观察增强了我们基于能够实现这些特性的段的灵活方案的地位</p>
-<h2 id="下一步是什么？"><a href="#下一步是什么？" class="headerlink" title="下一步是什么？"></a>下一步是什么？</h2><p>Pravega功能非常丰富。这篇文章刚刚介绍了Pravega所做的和提供的内容。在以后的文章中，我们将深入讨论特定主题：reader和writerAPI，Pravega体系结构，分段存储、控制器、使用修改后的流复制状态和部署Pravega。</p>
-<p>我们目前正在研究即将发布的0.2版本。0.2的大多数功能已经合并，我们主要致力于稳定。如果您有兴趣提供贡献和帮助，我们一定会欢迎您加入我们的社区。</p>
-<h3 id="About-the-Author"><a href="#About-the-Author" class="headerlink" title="About the Author:"></a>About the Author:</h3><p>Flavio Junqueira leads the Pravega team at Dell EMC. He holds a PhD in computer science from the University of California, San Diego and is interested in various aspects of distributed systems, including distributed algorithms, concurrency, and scalability. Previously, Flavio held a software engineer position with Confluent and research positions with Yahoo! Research and Microsoft Research. Flavio has contributed to a few important open-source projects. Most of his current contributions are to the Pravega open-source project, and previously he contributed and started Apache projects such as Apache ZooKeeper and Apache BookKeeper. Flavio coauthored the O’Reilly ZooKeeper: Distributed process coordination book.</p>
-<p>原文: <a href="http://blog.pravega.io/2017/12/14/i-have-a-stream/" target="_blank" rel="noopener">http://blog.pravega.io/2017/12/14/i-have-a-stream/</a></p>
+<p>低级Process Function与DataStream API集成，因此只能对某些操作进行低级抽象。DataSet API提供的有限数据集的其他原语，如循环/迭代。</p>
+<ul>
+<li>Table API是以表为中心的声明性DSL，其可以是动态地改变的表（表示流时）。Table API遵循（扩展）关系模型：表附加了一个模式（类似于在关系数据库中的表），API提供了类似的操作，如选择，项目，连接，分组依据，聚合等。Table API程序以声明方式定义应该执行的逻辑操作，而不是准确指定 操作代码的外观。虽然Table API可以通过各种类型的用户定义函数进行扩展，但它的表现力不如Core API，但使用更简洁（编写的代码更少）。此外，Table API程序还会通过优化程序，在执行之前应用优化规则。</li>
+</ul>
+<p>可以在表和DataStream / DataSet之间无缝转换，允许程序混合Table API以及DataStream 和DataSet API。</p>
+<ul>
+<li>Flink提供的最高级抽象是SQL。这种抽象在语义和表达方面类似于Table API，但是将程序表示为SQL查询表达式。在SQL抽象与 Table API紧密地相互作用，和SQL查询可以在Table API中定义的表上执行。</li>
+</ul>
+<h2 id="程序和数据流"><a href="#程序和数据流" class="headerlink" title="程序和数据流"></a>程序和数据流</h2><p>Flink程序的基本构建块是流和转换。（请注意，Flink的DataSet API中使用的DataSet也是内部流 - 稍后会详细介绍。）从概念上讲，流是（可能永无止境的）数据记录流，而转换是将一个或多个流作为输入，并产生一个或多个流输出的结果。</p>
+<p>执行时，Flink程序映射到流数据流，由流和转换运算符组成。每个数据流都以一个或多个源开头，并以一个或多个接收器结束。数据流类似于任意有向无环图 （DAG）。尽管通过迭代结构允许特殊形式的循环 ，但为了简单起见，我们将在大多数情况下对此进行掩饰。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/program_dataflow.svg" alt="DataStream程序及其数据流"></p>
+<p>通常，程序中的转换与数据流中的运算符之间存在一对一的对应关系。但是，有时一个转换可能包含多个转换运算符。</p>
+<p>源流和接收器记录在流连接器和批处理连接器文档中。DataStream运算符和DataSet转换中记录了转换。</p>
+<h2 id="并行数据流"><a href="#并行数据流" class="headerlink" title="并行数据流"></a>并行数据流</h2><p>Flink中的程序本质上是并行和分布式的。在执行期间，流具有一个或多个流分区，并且每个运算符具有一个或多个运算符子任务。运算符子任务彼此独立，并且可以在不同的线程中执行，并且可能在不同的机器或容器上执行。</p>
+<p>运算符子任务的数量是该特定运算符的并行度。流的并行性始终是其生成运算符的并行性。同一程序的不同运算符可能具有不同的并行级别。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/parallel_dataflow.svg" alt="并行数据流"></p>
+<p>流可以以一对一（或转发）模式或以重新分发模式在两个算子之间传输数据：</p>
+<ul>
+<li><p>一对一流（例如，在上图中的Source和map（）算子之间）保留元素的分区和排序。这意味着map（）算子的subtask [1] 将以与Source算子的subtask [1]生成的顺序相同的顺序看到相同的元素。</p>
+</li>
+<li><p>重新分配流（在上面的map（）和keyBy / window之间，以及 keyBy / window和Sink之间）重新分配流。每个算子子任务将数据发送到不同的目标子任务，具体取决于所选的转换。实例是 keyBy（） （其通过散列密钥重新分区），广播（） ，或重新平衡（） （其重新分区随机地）。在重新分配交换中，元素之间的排序仅保留在每对发送和接收子任务中（例如，map（）的子任务[1] 和子任务[2]keyBy / window）。因此，在此示例中，保留了每个密钥内的排序，但并行性确实引入了关于不同密钥的聚合结果到达接收器的顺序的非确定性。</p>
+</li>
+</ul>
+<p>有关配置和控制并行性的详细信息，请参阅并行执行的文档。</p>
+<h2 id="视窗"><a href="#视窗" class="headerlink" title="视窗"></a>视窗</h2><p>聚合事件（例如，计数，总和）在流上的工作方式与批处理方式不同。例如，不可能计算流中的所有元素，因为流通常是无限的（无界）。相反，流上的聚合（计数，总和等）由窗口限定，例如“在最后5分钟内计数”或“最后100个元素的总和”。</p>
+<p>Windows可以是时间驱动的（例如：每30秒）或数据驱动（例如：每100个元素）。一个典型地区分不同类型的窗口，例如翻滚窗口（没有重叠）， 滑动窗口（具有重叠）和会话窗口（由不活动的间隙打断）。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/windows.svg" alt="时间和计数Windows"></p>
+<p>更多窗口示例可以在此博客文章中找到。更多详细信息在窗口文档中。</p>
+<h2 id="时间"><a href="#时间" class="headerlink" title="时间"></a>时间</h2><p>当在流程序中引用时间（例如定义窗口）时，可以参考不同的时间概念：</p>
+<ul>
+<li><p>事件时间是创建事件的时间。它通常由事件中的时间戳描述，例如由生产传感器或生产服务附加。Flink通过时间戳分配器访问事件时间戳。</p>
+</li>
+<li><p>摄取时间是事件在源操作员处输入Flink数据流的时间。</p>
+</li>
+<li><p>处理时间是执行基于时间的操作的每个算子的本地时间。</p>
+</li>
+</ul>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/event_ingestion_processing_time.svg" alt="事件时间，摄取时间和处理时间"></p>
+<p>有关如何处理时间的更多详细信息，请参阅<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/event_time.html" target="_blank" rel="noopener">事件时间文档</a>。</p>
+<h2 id="有状态的操作"><a href="#有状态的操作" class="headerlink" title="有状态的操作"></a>有状态的操作</h2><p>虽然数据流中的许多操作只是一次查看一个单独的事件（例如事件解析器），但某些操作会记住多个事件（例如窗口操作符）的信息。这些操作称为有状态。</p>
+<p>状态操作的状态保持在可以被认为是嵌入式键/值存储的状态中。状态被分区并严格地与有状态算子读取的流一起分发。因此，只有在keyBy（）函数之后才能在键控流上访问键/值状态，并且限制为与当前事件的键相关联的值。对齐流和状态的密钥可确保所有状态更新都是本地操作，从而保证一致性而无需事务开销。此对齐还允许Flink重新分配状态并透明地调整流分区。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/state_partitioning.svg" alt="状态和分区"></p>
+<p>有关更多信息，请参阅有关状态的文档。</p>
+<h2 id="容错检查点"><a href="#容错检查点" class="headerlink" title="容错检查点"></a>容错检查点</h2><p>Flink使用流重放和检查点的组合实现容错。检查点与每个输入流中的特定点以及每个算子的对应状态相关。通过恢复算子的状态并从检查点重放事件，可以从检查点恢复流数据流，同时保持一致性（恰好一次处理语义）。</p>
+<p>检查点间隔是在执行期间用恢复时间（需要重放的事件的数量）来折衷容错开销的手段。</p>
+<p><a href="https://ci.apache.org/projects/flink/flink-docs-master/internals/stream_checkpointing.html" target="_blank" rel="noopener">容错内部</a>的描述提供了有关Flink如何管理检查点和相关主题的更多信息。有关启用和配置检查点的详细信息，请参阅检查点API文档。</p>
+<h2 id="批处理流"><a href="#批处理流" class="headerlink" title="批处理流"></a>批处理流</h2><p>Flink执行<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/index.html" target="_blank" rel="noopener">批处理程序</a>作为流程序的特殊情况，其中流是有界的（有限数量的元素）。数据集做为数据流在内部处理。因此，上述概念以适用于流程序相同的方式应用于批处理程序，只是少数例外：</p>
+<ul>
+<li><p><a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/fault_tolerance.html" target="_blank" rel="noopener">批处理程序的容错</a>不使用检查点。而是通过完全重放流来恢复。这是可能的，因为输入是有界的。这会使成本更多高，但却使常规处理更便宜，因为它避免了检查点。</p>
+</li>
+<li><p>DataSet API中的有状态操作使用简化的内存/核外数据结构，而不是键/值索引。</p>
+</li>
+<li><p>DataSet API引入了特殊的同步（基于超前的）迭代，这在有界流上是可行的。有关详细信息，请查看<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/iterations.html" target="_blank" rel="noopener">迭代文档</a>。</p>
+</li>
+</ul>
+<h2 id="下一步"><a href="#下一步" class="headerlink" title="下一步"></a>下一步</h2><p>Flink的Distributed Runtime。</p>
 
       
     </main>
@@ -344,7 +300,7 @@
       
       <div class="post-tags">
         
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
         
       </div>
       
@@ -353,7 +309,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/11/17/pravega-blog-streams-in-and-out/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/24/flink-apache-flink-home/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
         <meta itemprop="description" content="“分布式系统架构设计师”">
@@ -365,12 +321,12 @@
     </div>
     <header class="post-header">
       <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/11/17/pravega-blog-streams-in-and-out/" itemprop="url">pravega blog - streams in 与 streams out</a>
+        <a class="post-title-link post-title-link-external" href="/2018/09/24/flink-apache-flink-home/" itemprop="url">Flink handbook - Apache Flink的文档</a>
       </h1>
       <div class="post-meta">
         
         <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-11-17T11:09:20+08:00">2018-11-17 11:09:20</time></span>
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-24T22:01:25+08:00">2018-09-24 22:01:25</time></span>
         </span>
         
         
@@ -379,7 +335,7 @@
         
         <span class="post-categories">
           
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
         </span>
         
         
@@ -387,69 +343,29 @@
     </header>
     <main class="post-main" itemprop="articleBody">
       
-      <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>读和写是Pravega提供的最基本的功能。应用程序通过写入一个或多个Pravega流来摄取数据，并通过从一个或多个流中读取数据来使用数据。但是，要使用Pravega正确实现应用程序，开发人员必须了解一些核心的写入和读取的附加功能。例如，写入可以是事务性的，reader可以被Group织成Group。</p>
-<p>在本文中，我们将介绍开发人员在使用Pravega开发应用程序时必须注意的一些基本概念和功能，重点是读和写。我们鼓励reader在“开发Pravega应用程序”部分中另外查看Pravega文档站点，了解一些代码和更多细节。</p>
-<h2 id="写入流"><a href="#写入流" class="headerlink" title="写入流"></a>写入流</h2><p>我们当前公开的用于编写的API使应用程序能够将事件附加到流中。事件是一个应用程序概念，应用程序可以定义事件是什么以及它代表什么。就Pravega而言，事件是字节序列，而Pravega并不试图理解事件。我们希望应用程序传递一个串行器，使  Pravega  能够接收任意类型的事件并将它们转换为字节序列。最终，  Pravega  在流段中存储字节序列，并且不知道事件类型。</p>
-<p>存储字节序列而不是事件使得Pravega能够支持除API中的事件之外的抽象，例如，我们计划公开对读取和写入字节流的调用。当应用程序有其他包含不可变数据的大对象要存储时（例如Apache Flink中的检查点），此功能将非常有用。使用这样的API，应用程序能够直接在Pravega中存储这些对象，而不是依赖于单独的存储。<br>回想一下，Pravega流由段Group成，任何给定的流都可以在任何时间点打开许多并行段。为了将事件映射到段，应用程序会传递  路由键  以及事件本身。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-blog-streams-inout-1.png" alt="路由键到段图"></p>
-<p>路由键是一个字符串，经过哈希处理以确定要将事件追加到哪个段。 Pravega  保证将路由密钥分配给段是一致的。请注意，由于流缩放，路由密钥到段的映射并不总是相同，但它是一致的。在两个缩放事件之间，写入具有相同路由密钥的流的所有事件都映射到同一个段。跨比例事件的分段根据缩放排序。为了使其具体化，例如示例，我们从一个区段S1向上扩展到区段S2和S3。S1的关键空间与S2和S3的关键空间重叠，但是S2和S3没有交集，所以可以简单地附加到S2和S3，但不要同时附加说S1和S2，因为具有相同路由键的事件可以转到两个不同的段。为了防止后一种情况发生，在S1被密封之前，S2和S3不会发生附加，这会在缩放事件之前和之后推广到任意数量的段。因此，一旦由于缩放事件而将段密封，则将未来事件附加到密封段的后继者，从而保留路由键顺序。</p>
-<p>将事件写入流很简单，有两个选项：  常规 和  事务。通过常规写入，writer可以简单地触发写入事件的调用：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>// Set up a new scope and stream with a single segment (no scaling)<br>StreamManager streamManager = StreamManager.create(controllerURI);<br>StreamConfiguration streamConfig = StreamConfiguration.builder()<br>    .scope(scope).streamName(streamName)<br>    .scalingPolicy(ScalingPolicy.fixed(1))<br>    .build();<br>streamManager.createScope(scope);<br>streamManager.createStream(scope, streamName, streamConfig);<br> <br>// Create a client factory, a writer and append events<br>try(ClientFactory clientFactory = <br>      ClientFactory.withScope(scope, controllerURI) &#123;<br>    EventStreamWriter&lt;String&gt; writer = clientFactory<br>         .createEventWriter(streamName, <br>                            new JavaSerializer&lt;String&gt;(),<br>                            EventWriterConfig.builder().build()); <br>    writer.writeNext(&quot;Key 1&quot;, &quot;Hola&quot;); <br>    writer.writeNext(&quot;Key 2&quot;, &quot;Mundo!&quot;);<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>通过事务，writer开始一个事务并根据需要调用事件来进行多次调用：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>Transaction&lt;String&gt; txn = writer.beginTxn();<br>txn.writeEvent(&quot;Key 1&quot;, &quot;Hola&quot;);<br>txn.writeEvent(&quot;Key 2&quot;, &quot;Mundo!&quot;);<br>txn.commit();<br></code></pre></td></tr></table></figure>
-<p>一旦完成，它就会提交事务，这使得事务中的写入可供读取。应用程序还可以选择中止事务，在这种情况下，作为事务的一部分编写的事件不可见。</p>
-<p>关于writer的一些非常有趣的观点值得一提：重复和分段顺序。</p>
-<h2 id="避免重复"><a href="#避免重复" class="headerlink" title="避免重复"></a>避免重复</h2><p>流中的重复可能是有问题的：它们通常会导致不正确的结果或不正确的行为。例如，重复可能导致实例的计数错误或状态机中的错误转换。一些应用程序对这种偏差非常敏感。</p>
-<p>为避免重复，writer内部具有一个ID，用于确定重新连接时写入的最后一个事件。当writer有要追加的事件时，它会启动一个事件块的写入。一旦完成附加块，writer就会发送一个  块结束  命令，其中  包含写入  的事件数和  最后一个事件编号。writer附加块以便能够从批处理中受益。</p>
-<p>段存储必须记住任何给定writerID的最后一个事件编号。否则，它无法发现重复。要记住给定writerID的最后一个事件编号，它会将writerID，事件编号对保留为该段的属性，作为处理追加请求的一部分。在writer断开连接并创建新连接的情况下，段存储将获取此属性并返回作为与客户端握手的一部分写入的最后一个事件编号。来自分段存储的响应使writer能够在其附加未完成的情况下从正确的事件中恢复。</p>
-<p>但是，writer不会持久存在甚至暴露其writerID。如果writer崩溃并且实例化了新的writer，则新writer将使用新的writerID。尽管writer崩溃，为避免重复，我们需要将此writerID重复数据删除与事务相结合。通过事务性写入，如果写入程序在提交一批写入之前崩溃，那么它可以让事务超时并中止，在这种情况下，新写入程序可以从上一个写入程序停止的最后一个提交点恢复。</p>
-<p>总而言之，  Pravega  通过检查与writerID相关联的事件编号以及使用事务写入来容忍writer崩溃来避免写入时的重复。在writer在事务中间崩溃的情况下，应用程序可以简单地让事务超时并中止。此类事务的部分写入不会向reader公开。</p>
-<h2 id="段顺序"><a href="#段顺序" class="headerlink" title="段顺序"></a>段顺序</h2><p>流缩放导致流的段数随着时间而改变。流的段数的变化会导致随着时间的推移，路由关键字范围到段的映射发生变化。但是，如果映射发生变化，我们如何保证reader按照附加顺序接收具有相同路由键的事件？</p>
-<p>为了保证具有相同路由密钥的事件的顺序，客户端与控制器一起根据它们的创建顺序读取段。例如，假设流以一个我们称为S1的段开始  。在时间  T1，段  S1  分成  S2  和  S3。因此，如缩放流的一部分，我们分离的键范围  S1  之间  S2  和  S3。为了简化讨论，让我们说我们将它分开，所以  S2  最终得到[0.0,0.5]，而  S3 以[0.5,1.0]结束。为了保证可以按附加顺序读取具有相同路由键的所有事件，我们需要确保在密封S1之前，writer不能附加到S2或S3。事实上，这正是writer的操作方式：当它发现一个段密封时，它会向控制器询问后继者。在这个例子中，当它到达S1的末尾   （表示段密封的返回代码）时，writer询问控制器并接收S2  和  S3  是后继者的响应  。下图说明了这种情况：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-blog-streams-inout-2.png" alt="读取和缩放"></p>
-<p>在reader方，我们还必须遵循段的顺序，接下来当我们介绍reader和reader group时，我们将更详细地讨论它。</p>
-<h2 id="从流中读取"><a href="#从流中读取" class="headerlink" title="从流中读取"></a>从流中读取</h2><p>流可以有多个段，writer可以并行追加。这种并行性不仅对于实现更高的摄取能力而且在读取和处理事件时实现并行性也很重要。</p>
-<p>将事件附加到流时，我们可以让许多writer同时访问流的所有段。writer彼此独立，处理事件而无需进一步协调。我们也可以在读取方面有很多reader，但reader却不同。通常，事件只需要处理一次，因此一Groupreader需要协调段的工作负载分布，以便在整个Group中进行分割。</p>
-<p>为了使reader能够有效地共享一个或多个流的工作负载，我们使用reader Group的概念  ：</p>
-<p><strong>Reader Group</strong>：一reader Group是一Group RG 的  Pravega  reader和流S的一Group相关联，使得对于每个 ř ∈ RG，S（R）＆SubsetEqual; ⋃s∈ S C（S） 。在任何时间和任何两个不同的reader R，R ‘ ∈ RG ， S（R）∩ S（R’）是空的。</p>
-<p>在该定义中，s（r）是分配给reader r的段的集合，并且c（s）是流的当前活动段的集合（用于读取的非密封段）。注意，这个定义并不意味着在所有的段 ⋃ 小号 ∈ 小号 C（S）在任何时间分配给一些reader。reader可能已经发布了一个片段，而其他人尚未获得该片段，或者尚未获得某些新片段。Reader Group的合约是，最终分配给⋃ 小号∈ 小号 C（S）中的任何段。因此，readerGroup不保证在任何时候 ⋃ 小号∈ 小号C（S）= ⋃ [R ∈ RG S（R） ，虽然我们保证了活性，所有 X ∈ ⋃ s∈ S C（S） ，最终x被分配到一些reader。 </p>
-<p>每个reader都必须属于readerGroup。以下代码段说明了如何设置 reader：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>// Set up a new scope and stream with a single segment (no scaling)<br>StreamManager streamManager = StreamManager.create(controllerURI);<br>StreamConfiguration streamConfig = StreamConfiguration.builder()<br>    .scope(scope).streamName(streamName)<br>    .scalingPolicy(ScalingPolicy.fixed(1))<br>    .build();<br>streamManager.createScope(scope);<br>streamManager.createStream(scope, streamName, streamConfig);<br> <br>try (ReaderGroupManager manager =<br>              ReaderGroupManager.withScope(scope, controllerURI)) &#123;<br>    manager.createReaderGroup(readerGroup, <br>                              readerGroupConfig, <br>                              Collections.singleton(streamName));<br>&#125;<br> <br>try(ClientFactory clientFactory = <br>      ClientFactory.withScope(scope, controllerURI) &#123;<br>    EventStreamReader&lt;String&gt; reader = <br>             clientFactory.createReader(&quot;reader&quot;,<br>                                        readerGroup,<br>                                        new JavaSerializer&lt;String&gt;(),<br>                                        ReaderConfig.builder().build());<br>   while(!stop) &#123;<br>        EventRead&lt;String&gt; event = <br>                  reader.readNextEvent(READER_TIMEOUT_MS);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>将段分配给Group中的reader取决于使用我们在Pravega中称为stateSynchronizer的机制的reader的分布式协调  。stateSynchronizer使reader能够获得分布状态的一致视图，他们使用这些视图来协商Group状态的变化，  例如，分配了哪些分段以及分配给哪些分Group。我们用来确定分配的特定启发式算法很简单，但我们会对另一篇文章进行详细讨论。</p>
-<p>reader和Group体有四个方面值得强调。</p>
-<h2 id="段顺序-1"><a href="#段顺序-1" class="headerlink" title="段顺序"></a>段顺序</h2><p>为了保证reader在附加顺序中读取具有相同键的事件，reader遵循与writer类似的过程。当readerGroup 中的reader遇到密封段时，它会提取后继者，以便该Group可以从这些段中读取。如果后继者对应于分割密封片段的结果，那么reader可以立即开始阅读后继者。下图说明了这种情况：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-blog-streams-inout-3.png" alt="读取和缩放"></p>
-<p>最初，流具有单个段  S1 ， 并且它最终扩展，导致S1分裂成  S2  和  S3。一旦reader 到达S1的末尾  ，它就会从控制器请求后继者，并开始从新的段中读取。</p>
-<p>但是，如果密封段实际上与另一段合并而另一段尚未完全读取，该怎么办？让我们通过一个例子使这个方面更加具体。<br>假设我们有一个readerGroup  G，  有两个reader，  R1  和  R2。方案如下：</p>
+      <h2 id="Apache-Flink文档"><a href="#Apache-Flink文档" class="headerlink" title="Apache Flink文档"></a>Apache Flink文档</h2><p>本文档适用于Apache Flink master版。</p>
+<p>Apache Flink是一个用于分布式流和批处理数据处理的开源平台。Flink的核心是流数据流引擎，为数据流上的分布式计算提供数据分发，通信和容错。Flink在流引擎之上构建批处理，涵盖原生的迭代支持，受管理的内存和程序优化。</p>
+<h2 id="第一步"><a href="#第一步" class="headerlink" title="第一步"></a>第一步</h2><p><strong>概念：</strong>从Flink的<a href="https://ci.apache.org/projects/flink/flink-docs-master/concepts/programming-model.html" target="_blank" rel="noopener">数据流编程模型</a>和<a href="https://ci.apache.org/projects/flink/flink-docs-master/concepts/runtime.html" target="_blank" rel="noopener">分布式运行时环境</a>的基本概念开始。这将有助于您了解文档的其他部分，包括配置和编程指南。我们建议您先阅读这部分内容。</p>
+<p><strong>教程：</strong></p>
 <ul>
-<li>Group  G  正在读取当前具有两个段  S1  和  S2的流。</li>
-<li>R1  正在读取  S1，而  R2  正在读取  S2。</li>
-<li>段合并为  S3  （S1  和  S2  是密封的，它们不接受进一步的附加）。</li>
-<li>Reader  R1  命中S1结束   并请求其后继者。</li>
-<li>reader  R1  回来说  S3  是S1的继承者  。</li>
-<li>reader  R2  尚未完成  S2。</li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/tutorials/datastream_api.html" target="_blank" rel="noopener">实现并运行DataStream应用</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/tutorials/local_setup.html" target="_blank" rel="noopener">配置本地Flink群集</a></li>
 </ul>
-<p>如果  R1  或  R2  在R2  完成读取  S2之前   继续读取  S3，那么我们可能会违背我们在附加顺序中使用相同键读取事件的承诺。因此，为了满足我们的顺序属性，我们将  S3  置于保持状态，直到  R2标记它已完成  S2。只有这样   才能分配和读取S3。</p>
-<p>为了协调分段的分配和顺序，我们再次依赖状态同步器。当reader获得段的后继者时，它会相应地更新状态，并且该状态将在ReaderGroup之间同步。具体到该示例，Reader  R1  将段S3添加   到未来 段的列表中  ，并且仅在完全读取S2的所有前任之后才分配段。</p>
-<h2 id="检查点"><a href="#检查点" class="headerlink" title="检查点"></a>检查点</h2><p>我们目前不会通过reader GroupAPI向应用程序公开任何段信息。这是故意的。为了保证流的读取遵循正确的顺序，我们选择隐藏应用程序中后继者，前任和未来段的复杂性。即使应用程序没有明确地看到段，它仍然需要某种方式来确定流中在所有活动段中保持一致的点，并使应用程序从此点恢复。例如，如果应用程序想要从流中的较早点重新启动并恢复，则需要一种机制来引用此前一点。</p>
-<p>检查点是我们提供的一种机制，使应用程序能够请求一个对象，该对象包含当前正在读取或可供读取的每个段的偏移量。检查点在内部使用状态同步器实现。一旦触发，reader就会协调生成一个不透明的检查点对象，该对象包含当前正在读取或可供读取的每个段的偏移量。</p>
-<p>每个reader将其指定段的当前位置记录到状态一次：</p>
-<p>1.它了解到有一个检查点在继续;<br>2.它已经发布了一个  检查点事件。</p>
-<p>检查点事件通过reader 通知应用程序检查点正在进行中，并且应用程序应该采取任何适当的步骤（如果有的话）。例如，作为检查其状态的一部分，应用程序可能需要获取其输入的位置（  Pravega 流），为执行Reader的每个进程收集任何本地状态，并向下游刷新输出。因此，应用程序可能希望通过收集任何状态检查点信息并刷新下游的任何输出来对检查点事件作出反应，以避免重复。</p>
-<p>如果需要，我们还利用检查点的机会重新平衡分段的分配。必须在检查点时执行此操作，以便应用程序有机会刷新任何挂起的状态更改，消息和事件，以避免任何重复。</p>
-<h2 id="下游故障与重复"><a href="#下游故障与重复" class="headerlink" title="下游故障与重复"></a>下游故障与重复</h2><p>readerGroup使一组reader可以集中读取流。Reader Group逻辑以试图保持负载平衡的方式在Reader之间分配段。<br>一个重要的问题是当reader崩溃时会发生什么。具体来说，分配给该reader 的段会发生什么？显然，要在这些段存储取得进展，我们需要将它们重新分配给新的reader。在重新分配这些段时，我们需要从某个偏移量恢复。理想情况下，此偏移量是前一个Reader未读取的第一个偏移量。从第一个段偏移（偏移零）开始可能导致重复处理事件。如果应用程序对重复项敏感，则这是不可取的。</p>
-<p>为了使应用程序在从Pravega读取时避免重复  ，我们执行以下操作。对于应用程序读取的每个事件，我们提供一个  位置 对象。position对象是一个可序列化的不透明对象，它包含reader当前分配的段的偏移量。此对象类似于检查点对象，但缩小为单个Reader。reader应该将此对象作为处理事件的一部分来持久化。如果Reader 崩溃，  Pravega  希望应用程序通过调用readerGroup API的方法并传递Reader 的最后一个位置对象来使Reader 脱机。此位置对象确定剩余Reader需要从指定段中的位置。</p>
-<p>到目前为止，我们已选择将崩溃检测推送到应用程序。Reader Group API提供reader Offline调用，但它不提供任何检测崩溃的机制。因此，应用程序需要提供检测并相应地调用reader Offline。</p>
-<p>请注意，使用位置对象背后没有任何魔力。我们要求应用程序合作：完全取决于应用程序持久保存这样的位置对象并在Reader崩溃时检索最新的位置对象。如果维护这些对象的成本很高或不合需要，那么根据所执行的处理的性质，应用程序在其输出中存在重复的风险。</p>
-<h2 id="批读取"><a href="#批读取" class="headerlink" title="批读取"></a>批读取</h2><p>有时候应用程序想要简单地处理存储在流中的所有事件而不依赖于顺序。例如，假设应用程序想要收集流中的所有用户ID，事件中的单词，甚至执行经典的单词计数。在这种情况下，段的顺序并不重要。</p>
-<p>对于这种情况，我们公开了一个批处理API，它使应用程序能够利用并行性并以任何顺序迭代流的各个段并使用它所需的任何程度的并行性。</p>
-<p>要执行批量读取，应用程序会通过段请求迭代器：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>Iterator&lt;SegmentInfo&gt; segments = client.listSegments(stream);<br>SegmentInfo segmentInfo = segments.next();<br></code></pre></td></tr></table></figure>
-<p>一旦它有了这个迭代器，它就可以继续单独遍历各个段：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>SegmentIterator&lt;T&gt; events = client.readSegment(segmentInfo.getSegment(),<br>                   deserializer);<br> <br>while (events.hasNext()) &#123;<br>    processEvent(events.next());<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>如果应用程序选择，它可以并行读取所有段。请注意，在撰写本文时，此API是实验性的，并且可能会发生变化。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>在这里，我们介绍了一些关于Pravega摄取和读的基本概念，和不是那么基本的一些概念  。这些是了解Pravega需要理解的一些主要概念 ， 基本功能易于使用和理解，但关于顺序和重复，在我们公开的属性中有一些细微差别，这对于开发人员来说是很重要的。更多的信息，我们建议读者们查看 Pravega.io网站  文档 和github上的代码库。</p>
-<p><strong>原文</strong> ： <a href="http://blog.pravega.io/2018/02/12/streams-in-and-out-of-pravega/" target="_blank" rel="noopener">http://blog.pravega.io/2018/02/12/streams-in-and-out-of-pravega/</a></p>
+<p><strong>编程指南：</strong>您可以阅读我们关于<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/api_concepts.html" target="_blank" rel="noopener">基本API概念</a>和<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/datastream_api.html" target="_blank" rel="noopener">DataStream API</a>或<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/index.html" target="_blank" rel="noopener">DataSet API</a>的指南，以了解如何编写您的第一个Flink程序。</p>
+<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>在将Flink作业投入生产之前，请阅读<a href="https://ci.apache.org/projects/flink/flink-docs-master/ops/production_ready.html" target="_blank" rel="noopener">生产准备清单</a>。</p>
+<h2 id="发行说明"><a href="#发行说明" class="headerlink" title="发行说明"></a>发行说明</h2><p>发行说明涵盖了Flink版本之间的重要更改。如果您计划将Flink升级到更高版本，请仔细阅读这些说明。</p>
+<ul>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/release-notes/flink-1.6.html" target="_blank" rel="noopener">Flink 1.6发行说明</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/release-notes/flink-1.5.html" target="_blank" rel="noopener">Flink 1.5的发行说明</a></li>
+</ul>
+<h2 id="外部资源"><a href="#外部资源" class="headerlink" title="外部资源"></a>外部资源</h2><ul>
+<li><p>Flink Forward：<a href="http://flink-forward.org/" target="_blank" rel="noopener">Flink Forward网站</a>和<a href="https://www.youtube.com/channel/UCY8_lgiZLZErZPF47a2hXMA" target="_blank" rel="noopener">YouTube</a>上提供了以往会议的讲座。<a href="http://2016.flink-forward.org/kb_sessions/robust-stream-processing-with-apache-flink/" target="_blank" rel="noopener">使用Apache Flink进行可靠的流处理</a>，那这些资料是一个很好的起点。</p>
+</li>
+<li><p>培训：data Artisans的<a href="http://training.data-artisans.com/" target="_blank" rel="noopener">培训材料</a>包括幻灯片，练习和示例。</p>
+</li>
+<li><p>博客：<a href="https://flink.apache.org/blog/" target="_blank" rel="noopener">Apache Flink</a>和<a href="https://data-artisans.com/blog/" target="_blank" rel="noopener">data Artisans</a>博客会比较频繁的发布flink相关的、深入的技术文章。</p>
+</li>
+</ul>
 
       
     </main>
@@ -457,7 +373,7 @@
       
       <div class="post-tags">
         
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
         
       </div>
       
@@ -466,7 +382,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/11/11/pravega-blog-storage-reimagined/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/24/flink-faq/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
         <meta itemprop="description" content="“分布式系统架构设计师”">
@@ -478,12 +394,12 @@
     </div>
     <header class="post-header">
       <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/11/11/pravega-blog-storage-reimagined/" itemprop="url">pravega blog - 流存储-重新设想流的世界</a>
+        <a class="post-title-link post-title-link-external" href="/2018/09/24/flink-faq/" itemprop="url">Flink handbook - flink常见问题</a>
       </h1>
       <div class="post-meta">
         
         <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-11-11T20:08:45+08:00">2018-11-11 20:08:45</time></span>
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-24T07:43:34+08:00">2018-09-24 07:43:34</time></span>
         </span>
         
         
@@ -492,7 +408,7 @@
         
         <span class="post-categories">
           
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
         </span>
         
         
@@ -500,105 +416,21 @@
     </header>
     <main class="post-main" itemprop="articleBody">
       
-      <p>将海量原始数据转换为有用的信息和行动所需的时间缩短为零的愿景的驱动下，流式传输看似简单：只需在数据到达时，快速地、连续且无限地处理和处理数据。</p>
-<p>对于从工业物联网到联网汽车到实时欺诈检测等的用例，我们越来越多地寻求构建新的应用程序和客户体验，以快速响应客户的兴趣和行为，学习和适应不断变化的行为模式等。但实际情况是，我们大多数人还没有工具来处理生产级数据量、摄取率和故障弹性。因此，我们尽可能地利用定制系统在复杂性之上堆积复杂性。</p>
-<p>复杂性是基本系统设计不匹配的症状：我们使用一个组件来完成它没有设计完成的任务，并且我们使用的机制不会从小到大进行扩展。</p>
-<p>流式传输很难实现，因为它具有三种破坏性系统功能：</p>
-<ul>
-<li>能够将数据视为连续且无限的而不是有限的和静态的</li>
-<li>能够通过与到达的数据量协调地动态扩展数据摄取、存储和处理能力来提供始终如一的快速结果的能力</li>
-<li>即使是迟到或无序数据，也能够持续提供准确的结果处理数据</li>
-</ul>
-<p>在这里，它以一种好的方式变得有趣，甚至更具破坏性：事件驱动，连续和有状态数据处理的流式范例以及在许多情况下对时间的一致理解比传统的ETL&gt;Store&gt;Query， 即使对于没有实时要求的应用程序，查询方法也是如此！</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/Blog-Fig-1-1.png" alt=""></p>
-<p>图1：流式处理的简单生命周期</p>
-<p>流式传输迫使系统设计人员重新思考基本的计算和存储原理。作为充满激情的存储人员，我们正在通过设计一个新的存储原语（称为流，专门为流体系结构构建并在名为Pravega的新开源项目中实现）来完成我们的工作。</p>
-<p>通过将Pravega流存储与像Apache Flink这样的有状态流处理器相结合，我们实现了一个系统，其中上图中的所有元素 - 写入器，处理器，读取器和存储 - 独立，弹性和动态可扩展，与数据到达使我们所有人都能够构建我们以前无法构建的流式应用程序，并无缝地将它们从原型扩展到生产。</p>
-<h2 id="流式存储的要求"><a href="#流式存储的要求" class="headerlink" title="流式存储的要求"></a>流式存储的要求</h2><p>让我们看看流式系统的三个破坏性特征中的每一个，看看Pravega流如何以今天的存储无法实现的方式实现它们。</p>
-<h3 id="将数据视为连续和无限"><a href="#将数据视为连续和无限" class="headerlink" title="将数据视为连续和无限"></a>将数据视为连续和无限</h3><p>附加到文件末尾并尾随其内容会模拟连续且无限的数据流，但文件并未针对此模式进行优化。它们也不是无限的。曾经轮换过日志文件的人都知道这一点。套接字或管道是连续数据的更好抽象，但它们不是持久化的。消息传递是连续数据的合理抽象 - 特别是像Kafka的仅附加日志 - 但它们并不是设计为无限、持久化的系统。并且它们使用信包和标题来构造数据结构，使它们不像字节序列那样通用。</p>
-<p>将这些想法拼凑在一起，我们提出了Pravega将从数据的角度支持的特征，即连续和无限：</p>
-<ul>
-<li>Pravega流是一个有命名空间的、持久的、仅附加的、无限的字节序列</li>
-<li>低延迟附加到序列的尾部并从中读取</li>
-<li>通过序列的较老部分进行高通量追赶读取</li>
-</ul>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/Blog-Fig-2-1.png" alt=""></p>
-<p> 图2：在管道中使用流</p>
-<h3 id="基于数据到达量的系统扩展"><a href="#基于数据到达量的系统扩展" class="headerlink" title="基于数据到达量的系统扩展"></a>基于数据到达量的系统扩展</h3><p>那么我们如何根据数据量弹性地、独立地缩放数据摄取、存储和数据处理？</p>
-<p>我们通过将数据拆分为分区，并独立处理来获得并行性。例如，Hadoop通过HDFS和map-reduce实现了批处理。对于流式工作负载，我们今天要使用队列或Kafka分区。这两个选项都有同样的问题：分区会影响读者和写入者。连续处理的读/写缩放要求通常不同，并且链接它们会增加复杂性。此外，虽然可以添加队列或分区以进行扩展，但这需要手动协调地更新写入器、读取器和存储。这是很复杂，而不是动态缩放。</p>
-<p>Pravega流，专为动态和独立扩展而设计，支持：</p>
-<ul>
-<li>许多写入者同时追加一个不相交的数据子集<ul>
-<li>不相交的子集由用相同密钥写入的数据定义</li>
-<li>为写入者分配密钥留给应用程序 </li>
-<li>当密钥空间或编写器更改时，存储不得约束或不需要更改</li>
-</ul>
-</li>
-<li>许多读者同时处理不相交的数据子集<ul>
-<li>读取的数据分区必须独立于写入分区</li>
-<li>读取分区必须由存储策略控制，例如将流分成足够的段以确保没有看到超过N字节/秒</li>
-<li>每个传入数据卷的存储系统必须自动且不断地更新流中的段数</li>
-</ul>
-</li>
-</ul>
-<p>这些都是很苛刻的要求，我们来看看两种典型的分区方案。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/Blog-Fig-3-1.png" alt=""></p>
-<p>图3：摄取率&lt;&lt;处理率</p>
-<p>在图3中，处理时间比摄取时间更长。有一个写入器，但数据被分段用于读取：读取器＃1获取密钥k a … k c的数据，另一个获取密钥k d … k f。在图4中，处理比摄取更快，因此拓扑反转：多个写入器为写入分区密钥空间，但是一个读取器处理它。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/Blog-Fig-4-1.png" alt=""></p>
-<p>图4：摄取率&gt;&gt;处理率</p>
-<p>在现实生活中，我们最终介于两者之间 - 随着我们的数据源和应用程序的发展，可能会随着时间的推移而变化。虽然流将由多个段内部组成，但（a）写入者并不知道段拓扑，因为他们只知道键，以及（b）读者动态学习段拓扑 - 只需将它们指向流即可。</p>
-<p>为了使整个系统（存储+处理）适应不断变化的数据量，Pravega不断监控流的传入数据速率，并确保存在适当数量的段以满足SLO合规性。图5显示了流的片段随时间动态变化。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/Blog-Fig-5-1.png" alt=""></p>
-<p>图5：随时间动态缩放流段</p>
-<p>在t 0，输入数据速率低于缩放SLO。所有数据都存储在段0中。在t 1，超过SLO。段0被密封，并且创建了段1和段2。k 0和k 1的新数据将转到段2。k 2和k 3 的新数据进入第1段。这是针对数量增加而分割的细分市场。分裂也发生在t 2和t 3。在t 4，速率减慢。段3和6被密封，并且段7被创建并将保持k 1 … k 2 的新数据。这是一个段合并以响应数量减少。</p>
-<p>Pravega的分段缩放协议允许读者跟踪分段缩放并采取适当的措施，例如添加或删除读取器，使整个系统能够以协调的方式动态缩放。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/Blog-Fig-6-1.png" alt=""></p>
-<p>图6：具有动态，协调的组件缩放的流式传输系统</p>
-<h3 id="持续生成准确的结果处理数据"><a href="#持续生成准确的结果处理数据" class="headerlink" title="持续生成准确的结果处理数据"></a>持续生成准确的结果处理数据</h3><p>连续计算准确的结果意味着精确地进行一次处理，并且当关于该发生的数据被计算处理时，将事件时间——现实生活中发生的时间——与处理时间区分开。为此，我们向链式应用程序添加了一个要求，同时保留了一次将计算分成多个独立的应用程序。这是流式处理满足微服务。</p>
-<p>与lambda架构相比，生成准确结果的流式系统可以节省大量成本，其中实时和批处理使用单独的基础架构。这不仅更简单、更便宜 - 它只是一个基础设施而不是两个 - 它简化了开发，因为您总共只需要编写一次代码而不是为每个 lambda 基础设施都编写一次。Tyler Akidau的O’Reilly博客中有一篇关于这些概念的精彩文章，名为“超越批量的世界：流式101”。</p>
-<p>恰好一次的存储要求是明确的：流必须是持久的、有序的，一致的和事务性的。这些是关键属性，因为它们是存储系统设计中最困难的方面。如果没有重大的重新设计，您无法在以后更改它们。</p>
-<p>持久性意味着一旦得到确认，即使面对组件故障，写入也不会丢失。持久性至关重要，因为如果数据丢失，则无法（重新）处理。大多数持久的数据并没有解决问题：要么你可以依靠存储持久性，要么你不能。不持久的系统不是记录系统，意味着数据的永久副本必须存储在其他地方 - 通常存储在对象存储或NAS等归档系统中。归档意味着ETL的应用程序代码和ETL过程的管理。这种复杂性被消除了，因为Pravega流式存储是一个持久的永久存储，您可以永久地可靠地保存您的流数据。</p>
-<p>排序意味着读者将按照写入的顺序处理数据。对于具有密钥分区写入的流的系统，排序仅对具有相同密钥的数据有意义。在拥有数百万设备生成传感器指标的物联网系统中，sensor-ID.metric可能是关键。流保证读取密钥的数据将按其编写的顺序进行。对于许多计算（例如使用增量更新计算的聚合度量），排序是必不可少的。</p>
-<p>一致性意味着所有读者都会看到给定密钥的相同有序数据视图 - 即使面对组件故障 - 无论是从流的尾部读取数据还是通过追加读取。与持久性一样，大多数情况并不一致：要么存储是一致的，要么是不一致的。从恰好一次的要求来看，存储一致性与区分计算层中的事件时间与处理时间同等重要。</p>
-<p>事务性写入对于跨链接的应用程序一次完全正确是必要的。像Flink这样的有状态流处理器使用聪明的分布式检查点在单个应用程序中只有一次内部机制。跨多个应用程序精确扩展一次范围需要中间存储（在本例中为流）通过事务写入参与这些检查点方案。</p>
-<h2 id="Pravega-Streams"><a href="#Pravega-Streams" class="headerlink" title="Pravega Streams"></a>Pravega Streams</h2><p>Pravega是一个实现流的开源分布式存储服务。流是可靠流式传输系统的基础：高性能、持久化，有弹性且无限附加的字节流，具有严格的排序和一致性。流是轻量级的。就像文件或对象一样，我们可以根据需要快速轻松地创建多个文件或对象 - 单个群集中的数百万。</p>
-<p>通过对先前的内部日志和专有日志进行重构和外部化，流大大简化了新一代分布式中间件的开发和运行，这些中间件被重新构想为流式基础架构：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/Blog-Fig-7-1.png" alt=""></p>
-<p> 图7：为流式世界重构堆栈</p>
-<p>Pravega项目目前包括Pravega字节流原语以及分层摄取缓冲区和pub / sub机制，在概念上与Kafka类似，但具有性能、弹性、无限性、一致性和持久性的流特性。我们将在下一节讨论将Pravega的摄取缓冲区与Flink集成。</p>
-<p>另外两个项目，都将通用中间件服务重新构想为流式基础设施，处于早期概念阶段：</p>
-<ul>
-<li>基于流的全文搜索：动态的、分布式的、实时的Lucene索引器，具有用于流数据的连续查询工具</li>
-<li>流支持的持久数据结构：微服务原生主义者的框架，他们希望自己的微服务拥有自己的数据</li>
-</ul>
-<h2 id="Pravega架构"><a href="#Pravega架构" class="headerlink" title="Pravega架构"></a>Pravega架构</h2><p>Pravega的架构有三个主要组成部分。所述Pravega流服务是使用分布式软件服务执行流抽象语义，包括流控制和段存储的API，数据存储器缓存（Rocks DB）以及利用两个底层存储系统的数据放置和分层逻辑：低延迟存储Apache Bookkeeper，以及HDFS用于支持高吞吐量、大规模的存储。[此组件旨在可插拔，以支持具有适当强一致性语义的备用后备存储系统。]</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/Blog-Fig-8-1.png" alt=""></p>
-<p> 图8：Pravega流式存储架构</p>
-<p>Pravega的系统设计有许多创新，使其能够满足流的挑战性要求。I / O路径设计完全隔离了读写路径，从而实现了对尾部进行极低延迟的持久写入，从尾部进行低延迟读取以及从流的老的部分进行高吞吐量读取。Pravega架构的细节超出了本文的范围。更多信息可在Pravega Architecture Wiki中找到。</p>
-<h2 id="流式存储-Apache-Flink-YEAH！"><a href="#流式存储-Apache-Flink-YEAH！" class="headerlink" title="流式存储+ Apache Flink = YEAH！"></a>流式存储+ Apache Flink = YEAH！</h2><p>让我们探索Pravega流如何与Flink集成，以实现一个动态和弹性的系统，提供快速和准确的计算结果，同时即使在数据速率变化很大的情况下也可以在恒定的时间内处理海量数据。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/Blog-Fig-9a.png" alt=""></p>
-<p>系统的概念结构如图9所示。它包含一个典型的输入流，其中包含由一组写入者编写的原始数据，一个用于处理它的多工作者Flink应用程序，以及一个处理第一个输出的链式Flink应用程序。</p>
-<p>这里是不同的地方：每个元素 – 写入者、输入流、读取器应用程序，输出流 - 独立，弹性和动态可伸缩，以响应数据量到达率随时间的变化。</p>
-<p>两个集成点实现了这一点：Pravega的分段缩放驱动Flink的worker缩放，以及通过流将应用程序链接到整个系统，从而精确地保存一次。仅使用一个worker部署Flink应用程序，并根据流SLO动态缩放它。太好了！Pravega和Flink开发人员已经将流自动缩放功能整合到Flink中。</p>
-<p>除了此之外，无限流还可以显著的简化许多操作用例。这里考虑推出一个新版本的Flink应用程序（真正的任何应用程序），首先根据历史数据对其进行测试。</p>
-<p>图10展示了今天针对实时Flink应用程序的典型部署。信息被馈送到消息传送系统，由Flink应用程序处理，然后被转发到NOC或类似的框架以进行显示和/或动作。与此同时，ETL工作人员不断地将消息拉出并将其写入持久化的存储以进行历史访问。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/Blog-Fig-10-1.png" alt=""></p>
-<p> 图10：测试没有流的新应用版本的复杂性</p>
-<p>现在我们已经构建了一个新版本的应用程序“App”。准备在生产环境里对无中断部署之前，尝试针对历史数据集的新逻辑来验证正确性并确保没有回归的操作过程是什么？</p>
-<p>首先，我们需要部署”App”来从归档而不是消息传递系统里获取其数据。因此，您的测试与生产不同：归档和消息传递之间的微妙行为差异可能会使测试不可靠。测试完成后，我们重新部署“App”以使用消息传递系统，并重新填充其缓存或从历史数据中派生的其他状态。如果一切正常，我们终于可以取代之前的版本了。结果是一个复杂的工作流程序列。复杂性意味着麻烦。</p>
-<p>Pravega流如何改变？App’的部署与生产完全一样，因为历史数据是通过相同的流访问的- 只需回放它！消耗历史记录时，App’和App正在处理具有相同状态的相同数据。当我们确信App’很好时，请关闭App并重定向NOC。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/Blog-Fig-11-1.png" alt=""></p>
-<p> 图11：使用流测试新的应用版本</p>
-<h2 id="结束思考"><a href="#结束思考" class="headerlink" title="结束思考"></a>结束思考</h2><p>我们是充满激情的存储界人，我们喜欢流式的想法，我们觉得Flink这样的“原生的流式”计算非常的有意思。我们认为这个世界需要一种互补的存储技术。Pravega是我们贡献的开源流存储项目：pravega.io，我们相信它将进一步推动流式技术的发展.</p>
-<p>请记住，当您考虑流式应用时，请将数据视为连续且无限的，而不是静态和有限的。想想企业存储的重要性，如持久性、一致性弹性、以及现在的：无限性。</p>
-<p>另外我们鼓励您加入我们的社区！</p>
-<blockquote>
-<p>原文链接：<a href="http://blog.pravega.io/2017/04/09/storage-reimagined-for-a-streaming-world/" target="_blank" rel="noopener">http://blog.pravega.io/2017/04/09/storage-reimagined-for-a-streaming-world/</a></p>
-</blockquote>
-<blockquote>
-<p>About the Author： Salvatore DeSimone – VP and CTO Advanced Software Division at Dell EMC</p>
-</blockquote>
+      <p>关于Flink项目，一般会经常被问到以下问题。</p>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h2 id="Apache-Flink仅用于（近）实时处理用例吗？"><a href="#Apache-Flink仅用于（近）实时处理用例吗？" class="headerlink" title="Apache Flink仅用于（近）实时处理用例吗？"></a>Apache Flink仅用于（近）实时处理用例吗？</h2><p>Flink是一个非常通用的系统，用于数据处理和数据驱动的应用程序，数据流作为核心构建块。这些数据流可以是实时数据流,也可以是存储的历史数据流。例如，在Flink的视图中，文件是存储的字节流。因此，Flink支持实时数据处理和应用，以及批处理应用。</p>
+<p>流可以是无界的（没有结束，事件不断发生）或受限制（流有开始和结束）。例如，来自消息队列的Twitter馈送或事件流通常是无界流，而来自文件的字节流是有界流。</p>
+<h2 id="如果一切都是流，为什么Flink中有DataStream和DataSet-API？"><a href="#如果一切都是流，为什么Flink中有DataStream和DataSet-API？" class="headerlink" title="如果一切都是流，为什么Flink中有DataStream和DataSet API？"></a>如果一切都是流，为什么Flink中有DataStream和DataSet API？</h2><p>有界流通常比无界流更有效。在（近）实时处理无限事件流需要系统能够立即对事件起作用并产生中间结果（通常具有低延迟）。处理有界流通常不需要产生低延迟结果，因为无论如何数据都是旧的（相对而言）。这允许Flink以简单且更有效的方式处理数据。</p>
+<p>DataStream API通过支持低延时的结果和对事件和时间（包括事件时间）灵活反应的模型捕获无界流和有界流的连续处理，</p>
+<p>DataSet API具有加快有界数据流的处理的技术。将来，社区计划将这些优化与DataStream API中的技术相结合。</p>
+<h2 id="Flink如何与Hadoop堆栈相关？"><a href="#Flink如何与Hadoop堆栈相关？" class="headerlink" title="Flink如何与Hadoop堆栈相关？"></a>Flink如何与Hadoop堆栈相关？</h2><p>Flink独立于Apache Hadoop，并且在没有任何Hadoop依赖性的情况下运行。</p>
+<p>但是，Flink与许多Hadoop组件集成得非常好，例如HDFS，YARN或HBase。与这些组件一起运行时，Flink可以使用HDFS读取数据，或写入结果和检查点/快照。Flink可以通过YARN轻松部署，并与YARN和HDFS Kerberos安全模块集成。</p>
+<h2 id="Flink运行的其他堆栈是什么？"><a href="#Flink运行的其他堆栈是什么？" class="headerlink" title="Flink运行的其他堆栈是什么？"></a>Flink运行的其他堆栈是什么？</h2><p>Flink可以在Kubernetes，Mesos， Docker上运行 ，甚至作为独立服务运行。</p>
+<h2 id="使用Flink有哪些先决条件？"><a href="#使用Flink有哪些先决条件？" class="headerlink" title="使用Flink有哪些先决条件？"></a>使用Flink有哪些先决条件？</h2><p>您需要Java 8来运行Flink作业/应用。<br>Scala API（可选）依赖于Scala 2.11。<br>Apache ZooKeeper需要高度可用且没有单点故障的设置。<br>对于可以从故障中恢复的高可用流处理设置，Flink需要某种形式的分布式存储用于检查点（HDFS / S3 / NFS / SAN / GFS / Kosmos / Ceph / …）。</p>
+<h2 id="Flink支持多大的规模？"><a href="#Flink支持多大的规模？" class="headerlink" title="Flink支持多大的规模？"></a>Flink支持多大的规模？</h2><p>用户在非常小的设置（少于5个节点）和1000个节点以及状态的TB上运行Flink作业。</p>
+<h2 id="Flink是否仅限于内存数据集？"><a href="#Flink是否仅限于内存数据集？" class="headerlink" title="Flink是否仅限于内存数据集？"></a>Flink是否仅限于内存数据集？</h2><p>对于DataStream API，Flink支持大于内存的状态来配置RocksDB状态后端。</p>
+<p>对于DataSet API，所有操作（delta迭代除外）都可以扩展到主内存之外。</p>
+<h2 id="常见错误消息"><a href="#常见错误消息" class="headerlink" title="常见错误消息"></a>常见错误消息</h2><p>“ 获得帮助”页面上列出了常见错误消息。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1].<a href="https://flink.apache.org/faq.html" target="_blank" rel="noopener">https://flink.apache.org/faq.html</a></p>
 
       
     </main>
@@ -606,7 +438,7 @@
       
       <div class="post-tags">
         
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
         
       </div>
       
@@ -615,7 +447,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/11/02/pravega-blog-internals/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/flink-use-cases/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
         <meta itemprop="description" content="“分布式系统架构设计师”">
@@ -627,12 +459,12 @@
     </div>
     <header class="post-header">
       <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/11/02/pravega-blog-internals/" itemprop="url">pravega blog - pravega的内部架构</a>
+        <a class="post-title-link post-title-link-external" href="/2018/09/23/flink-use-cases/" itemprop="url">Flink handbook - flink用例</a>
       </h1>
       <div class="post-meta">
         
         <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-11-02T20:19:51+08:00">2018-11-02 20:19:51</time></span>
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-23T21:32:26+08:00">2018-09-23 21:32:26</time></span>
         </span>
         
         
@@ -641,7 +473,7 @@
         
         <span class="post-categories">
           
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
         </span>
         
         
@@ -649,54 +481,126 @@
     </header>
     <main class="post-main" itemprop="articleBody">
       
-      <p>尾随数据流的一些困难归结为源和流处理器总是动态变化的。例如，如果源以非计划的方式增加其输出率，则读取系统必须能够适应这种变化。处理器下游遇到问题并努力跟上速率的变化也是如此。为了能够适应所有这些变化，用于存储流数据的系统（如Pravega）必须足够灵活，这一点至关重要。</p>
-<p>Pravega的灵活性来自将数据流分解为段：仅附加的字节序列，这些字节序列被顺序和并行地组织成流。段支持重要的特性，例如并行读写，自动缩放和事务; 它们一开始就是按创建和维护成本低廉的理念而设计。当需要更多并行性，需要扩展或需要启动事务时，我们可以为给定流创建新的段。</p>
-<p>Pravega中的控制面负责所有影响流的生命周期的所有操作，如创建、删除和缩放。数据面存储和服务段的数据。下图描绘了具有核心组件的高级Pravega架构。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/flavio_fig1.png" alt=" Pravega 架构图"></p>
-<p>鉴于我们在之前的博客文章中讨论了客户端的概念，我们将在以下部分重点介绍控制器和段存储。</p>
-<h2 id="控制器"><a href="#控制器" class="headerlink" title="控制器"></a>控制器</h2><p>控制器实现了Pravega的控制平面。它负责Pravega集群中的一些非常重要的任务，例如：</p>
+      <h2 id="用例"><a href="#用例" class="headerlink" title="用例"></a>用例</h2><p>Apache Flink因其丰富的功能集而成为开发和运行多种不同类型应用程序的绝佳选择。Flink的功能包括对流和批处理的支持，复杂的状态管理，事件时间处理语义以及状态的恰好一次一致性保证。此外，Flink可以部署在各种资源管理集群（如YARN，Apache Mesos和Kubernetes）上，也可以部署为裸机硬件上的单个群集。Flink配置为高可用性，没有单点故障。Flink已经被证明可以扩展到数千个核心和万亿字节的应用状态，提供高吞吐量和低延迟，并为世界上一些最苛刻的流处理应用程序提供支持。</p>
+<p>下面，我们将探讨由Flink提供支持的最常见类型的应用程序，并指出实际示例。</p>
+<ul>
+<li>事件驱动的应用</li>
+<li>数据分析应用</li>
+<li>数据管道应用</li>
+</ul>
+<h2 id="事件驱动的应用"><a href="#事件驱动的应用" class="headerlink" title="事件驱动的应用"></a>事件驱动的应用</h2><h3 id="什么是事件驱动的应用？"><a href="#什么是事件驱动的应用？" class="headerlink" title="什么是事件驱动的应用？"></a>什么是事件驱动的应用？</h3><p>事件驱动的应用程序是一个有状态的应用程序，它从一个或多个事件流中提取事件，并通过触发计算，状态更新或外部操作对传入事件做出响应。</p>
+<p>事件驱动的应用程序是传统应用程序设计的演变，具有分离的计算和数据存储层。在传统应用的体系结构中，应用从远程事务数据库中读取数据并将数据持久化到远程事务数据库。</p>
+<p>相比之下，事件驱动的应用程序基于有状态流处理应用程序。在这种设计中，数据和计算是共同定位的，这产生了本地（内存或磁盘）数据访问。通过定期将检查点写入远程持久存储来实现容错。下图描绘了传统应用程序体系结构和事件驱动应用程序之间的差异。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-eventdrivenapps.png" alt=""></p>
+<h3 id="事件驱动的应用有哪些优点？"><a href="#事件驱动的应用有哪些优点？" class="headerlink" title="事件驱动的应用有哪些优点？"></a>事件驱动的应用有哪些优点？</h3><p>事件驱动的应用程序不是查询远程数据库，而是在本地访问其数据，从而在吞吐量和延迟方面发挥更好的性能。远程持久存储的定期检查点可以异步和递增完成。因此，检查点对常规事件处理的影响非常小。但是，事件驱动的应用程序设计提供的不仅仅是本地数据访问。在分层体系结构中，多个应用程序共享同一数据库是很常见的。因此，需要协调数据库的任何更改，例如由于应用程序更新或扩展服务而更改数据布局。由于每个事件驱动的应用程序都负责自己的数据，因此对数据表示的更改或扩展应用程序需要较少的协调。</p>
+<h3 id="Flink如何支持事件驱动的应用？"><a href="#Flink如何支持事件驱动的应用？" class="headerlink" title="Flink如何支持事件驱动的应用？"></a>Flink如何支持事件驱动的应用？</h3><p>事件驱动应用程序的限制由流处理器处理时间和状态的程度来定义。Flink的许多杰出功能都围绕着这些概念。Flink提供了一组丰富的状态原语，可以管理非常大的数据量（最多几TB），并且具有恰好一次的一致性保证。此外，Flink支持事件时间，高度可定制的窗口逻辑，以及通过ProcessFunction实现高级业务逻辑提供的细粒度时间控制。此外，Flink还提供了一个用于复杂事件处理（CEP）的库，用于检测数据流中的模式。</p>
+<p>但是，Flink针对事件驱动应用程序的突出特点是保存点功能。保存点是一致的状态图像，可用作兼容应用程序的起点。给定保存点，可以更新应用程序或调整其规模，或者可以启动应用程序的多个版本以进行A / B测试。</p>
+<h3 id="什么是典型的事件驱动应用？"><a href="#什么是典型的事件驱动应用？" class="headerlink" title="什么是典型的事件驱动应用？"></a>什么是典型的事件驱动应用？</h3><ul>
+<li>欺诈识别</li>
+<li>异常检测</li>
+<li>基于规则的警报</li>
+<li>业务流程监控</li>
+<li>Web应用程序（社交网络）</li>
+</ul>
+<h2 id="数据分析应用"><a href="#数据分析应用" class="headerlink" title="数据分析应用"></a>数据分析应用</h2><h3 id="什么是数据分析应用？"><a href="#什么是数据分析应用？" class="headerlink" title="什么是数据分析应用？"></a>什么是数据分析应用？</h3><p>分析工作从原始数据中提取信息和洞察力。传统上，分析是在有记录事件的有界数据集上作为批查询或应用程序来执行的。为了将最新数据合并到分析结果中，必须将其添加到分析的数据集中，并重新运行查询或应用程序。结果将写入存储系统或作为报告发出。</p>
+<p>借助先进的流处理引擎，还可以实时地执行分析。流式查询或应用程序不是读取有限数据集，而是摄取实时事件流，并在消耗事件时不断生成和更新结果。结果要么写入外部数据库，要么保持为内部状态。仪表板应用程序可以从外部数据库读取最新结果或直接查询应用程序的内部状态。</p>
+<p>Apache Flink支持流式和批量分析应用程序，如下图所示。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-analytics.png" alt=""></p>
+<h3 id="流式分析应用有哪些优势？"><a href="#流式分析应用有哪些优势？" class="headerlink" title="流式分析应用有哪些优势？"></a>流式分析应用有哪些优势？</h3><p>与批量分析相比，连续流分析的优势不仅限于因消除定期导入和查询执行而从事件到洞察的低得多的延迟。与批量查询相比，流式查询不必处理输入数据中的人为边界，这些边界是由定期导入和输入的有界性质引起的。</p>
+<p>另一方面是更简单的应用程序架构。批量分析管道由若干独立组件组成，以周期性地调度数据提取和查询执行。可靠地操作这样的管道并非易事，因为一个组件的故障会影响管道的后续步骤。相比之下，在像Flink这样的复杂流处理器上运行的流分析应用程序包含从数据摄取到连续结果计算的所有步骤。因此，它可以依赖于引擎的故障恢复机制。</p>
+<h3 id="Flink如何支持数据分析应用？"><a href="#Flink如何支持数据分析应用？" class="headerlink" title="Flink如何支持数据分析应用？"></a>Flink如何支持数据分析应用？</h3><p>Flink为连续流式传输和批量分析提供了非常好的支持。具体来说，它具有符合ANSI标准的SQL接口，具有用于批处理和流式查询的统一语义。无论是在记录事件的静态数据集上还是在实时事件流上运行，SQL查询都会计算相同的结果。对用户定义函数的丰富支持可确保在SQL查询中执行自定义代码。如果需要更多的自定义逻辑，Flink的DataStream API或DataSet API提供更多的低级控制。此外，Flink的Gelly库为批量数据集上的大规模和高性能图形分析提供算法和构建块。</p>
+<h3 id="什么是典型的数据分析应用？"><a href="#什么是典型的数据分析应用？" class="headerlink" title="什么是典型的数据分析应用？"></a>什么是典型的数据分析应用？</h3><ul>
+<li>电信网络的质量监控</li>
+<li>分析移动应用程序中的产品更新和实验评估</li>
+<li>对消费者技术中的实时数据进行特别分析</li>
+<li>大规模图分析</li>
+</ul>
+<h2 id="数据管道应用"><a href="#数据管道应用" class="headerlink" title="数据管道应用"></a>数据管道应用</h2><h3 id="什么是数据管道？"><a href="#什么是数据管道？" class="headerlink" title="什么是数据管道？"></a>什么是数据管道？</h3><p>提取 - 转换 - 加载（ETL）是在存储系统之间转换和移动数据的常用方法。通常会定期触发ETL作业，以便将数据从事务数据库系统复制到分析数据库或数据仓库。</p>
+<p>数据管道与ETL作业具有相似的用途。它们可以转换和丰富数据，并可以将数据从一个存储系统移动到另一个存储系统 但是，它们以连续流模式运行，而不是周期性地触发。因此，他们能够从连续生成数据的源中读取记录，并以低延迟将其移动到目的地。例如，数据管道可能会监视文件系统目录中的新文件并将其数据写入事件日志。另一个应用程序可能会将事件流实现到数据库，或者逐步构建和优化搜索索引。</p>
+<p>下图描述了定期ETL作业和连续数据管道之间的差异。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-datapipelines.png" alt=""></p>
+<h3 id="数据管道有哪些优势？"><a href="#数据管道有哪些优势？" class="headerlink" title="数据管道有哪些优势？"></a>数据管道有哪些优势？</h3><p>连续数据流水线优于周期性ETL作业的显著优势是减少了将数据移动到目的地的延迟。此外，数据管道更加通用，可用于更多用例，因为它们能够连续消耗和发送数据。</p>
+<h3 id="Flink如何支持数据管道？"><a href="#Flink如何支持数据管道？" class="headerlink" title="Flink如何支持数据管道？"></a>Flink如何支持数据管道？</h3><p>Flink的SQL接口（或表API）可以解决许多常见的数据转换或丰富任务，并支持用户定义的函数。通过使用更通用的DataStream API，可以实现具有更高级要求的数据管道。Flink为各种存储系统（如Kafka，Kinesis，Elasticsearch和JDBC数据库系统）提供了丰富的连接器。它还具有连续的文件系统源，用于监视以时间分区方式写入文件的目录和接收器。</p>
+<h3 id="什么是典型的数据管道应用？"><a href="#什么是典型的数据管道应用？" class="headerlink" title="什么是典型的数据管道应用？"></a>什么是典型的数据管道应用？</h3><ul>
+<li>电子商务中的实时搜索索引构建</li>
+<li>电子商务中持续的ETL</li>
+</ul>
+<h2 id="参考资料："><a href="#参考资料：" class="headerlink" title="参考资料："></a>参考资料：</h2><p>[1].<a href="https://flink.apache.org/usecases.html" target="_blank" rel="noopener">https://flink.apache.org/usecases.html</a></p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/flink-what-is-apache-flink/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“分布式系统架构设计师”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/23/flink-what-is-apache-flink/" itemprop="url">Flink handbook - 什么是Apache Flink？</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-23T21:18:21+08:00">2018-09-23 21:18:21</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>Apache Flink是一个框架和分布式处理引擎，用于对无界和有界数据流进行有状态计算。Flink设计为在所有常见的集群环境中运行，以内存速度和任何规模执行计算。</p>
+<p>在这里，我们解释了Flink架构的重要方面。</p>
+<h2 id="无界和有界数据的处理"><a href="#无界和有界数据的处理" class="headerlink" title="无界和有界数据的处理"></a>无界和有界数据的处理</h2><p>任何类型的数据都是作为事件流产生的。信用卡交易，传感器测量，机器日志或网站或移动应用程序上的用户交互，所有这些数据都作为流生成。</p>
+<p>数据可以作为无界或有界流处理。</p>
 <ol>
-<li><p>流生命周期：管理流的创建，删除和缩放。</p>
+<li><p><strong>无界流</strong> 有一个开始，但没有定义的结束。它们不会终止并提供其生成的数据。无界流必须持续处理，即必须在摄取事件后立即处理事件。不可能等待所有的输入数据都到达，因为输入是无界的，并且在任何时间点都不会结束。处理无界数据通常要求以特定顺序（例如事件发生的顺序）摄取事件，以便能够推断结果的完整性。</p>
 </li>
-<li><p>事务管理：它负责启动或创建事务并跟踪其状态，包括时间跟踪。</p>
+<li><p><strong>有界流</strong>具有定义的开始和结束。可以在执行任何计算之前，通过摄取所有数据来处理有界流。有界数据集是可以被排序的，因此处理有界流不需要有序摄取。有界流的处理也称为批处理。</p>
 </li>
 </ol>
-<h2 id="控制器服务"><a href="#控制器服务" class="headerlink" title="控制器服务"></a>控制器服务</h2><p>控制器主要负责编排所有流生命周期操作，如创建、更新、缩放和删除流。因此，控制器维护流元数据并响应客户端对流的查询。</p>
-<p>创建和删除流是由用户请求触发的操作，但是控制器的某些操作由内部机制触发，例如缩放和保留。控制器实现工作流，使用户能够配置控制器以自动缩放流，并根据时间或大小截断流。此机制的配置基于策略，并且根据应用程序所期望的行为将策略配置为流配置的一部分。有关如何配置此类策略的示例，请参阅以下代码段：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>// Set up scaling and retention policies. <br>//<br>// In this example, the scaling policy sets the target rate to be<br>// of 10 events/second, with a scaling factor of 2, and a minimum<br>// of 2 segments.<br>//<br>// http://pravega.io/docs/latest/javadoc/javadoc/clients/io/pravega/client/stream/ScalingPolicy.html<br>//<br>// The retention policy sets it to an hour. With this policy, Pravega<br>// retains stream data for at least an hour and truncates eventually<br>// after the time has elapsed.<br>//<br>// http://pravega.io/docs/latest/javadoc/javadoc/clients/io/pravega/client/stream/RetentionPolicy.html<br>ScalingPolicy scalingPolicy = ScalingPolicy.byEventRate(10, 2, 2);<br>RetentionPolicy retentionPolicy = RetentionPolicy.byTime(Duration.ofMinutes(60);<br><br>// Configure the stream adding the policies<br>StreamConfiguration config = StreamConfiguration.builder().scope(&quot;myScope&quot;)<br>                                                          .streamName(&quot;myStream&quot;)<br>                                                          .scalingPolicy(scalingPolicy)<br>                                                          .retentionPolicy(retentionPolicy)<br>                                                          .build();<br><br>// Create scope and stream with the previously built configuration<br>StreamManager streamManager = StreamManager.create(controllerURI);<br>streamManager.createScope(&quot;myScope&quot;);<br>streamManager.createStream(&quot;myScope&quot;, &quot;myStream&quot;, config);<br></code></pre></td></tr></table></figure>
-<h2 id="客户端交互"><a href="#客户端交互" class="headerlink" title="客户端交互"></a>客户端交互</h2><p>控制器在客户端交互中起着至关重要的作用。客户端与控制器交互以创建和删除scope和流。此交互通过Java或REST API进行。</p>
-<p>创建和删除流是通过API调用直接触发的操作，但是对于客户端的来说，其他操作也很重要的，并且这些操作需要透明化。具体而言，客户端在其生命周期中需要与控制器交互，以了解段集以及它们所处的位置。回想一下，流执行自动缩放，因此，任何配置为自动缩放的流的段集都可以随时间改变。随着流的演进，客户端需要知道从控制器获得的这些段的拆分和合并。然而，了解当前的段集是不够的。客户端还需要知道对于给定的段，需要联系哪个段存储。控制器负责客户端和段存储之间的这种交集。</p>
-<p>作为缩放流的一部分，控制器负责密封其部分片段。密封段是我们用来向客户端指示它需要从控制器获取新元数据的主要机制。在找到段的末尾（段密封）后，客户端从控制器请求后继段，包括联系用于新段的相应段存储所需的信息。此流程对于确保流的伸缩与应用程序无缝地互动至关重要，并且避免对应用程序的任何干扰。</p>
-<h2 id="控制器实例"><a href="#控制器实例" class="headerlink" title="控制器实例"></a>控制器实例</h2><p>控制器服务包括许多控制器实例，这些实例当前依赖Apache ZooKeeper进行元数据协调。可以根据群集要求创建实例数。建议至少有两个实例能够容忍崩溃，并引入其他实例，既具有较高的崩溃容忍度，又能提高容量。只要有可能，控制器就会缓存ZooKeeper元数据以避免网络延迟。</p>
-<p>随着控制器实例的数量随时间变化，系统必须能够适应对控制器集合的变化。在控制器实例崩溃或有意从系统中删除的情况下，我们实现了故障转移机制，以便其余实例接管已删除实例的工作。为了启用此类故障转移过程，控制器实例将向ZooKeeper注册并监视订阅的更改。在检测到实例已被移除时，每个控制器实例触发一组清扫任务争夺已删除实例的工作所有权。通过这种方式，我们可以自动响应控制平面中实例数量的变化。请注意，元数据是通过ZooKeeper存储和协调的，因此，控制器实例被视为无状态进程。目前正在努力将一些流元数据移出ZooKeeper fort可伸缩性。我们将在以后的文章中介绍它。</p>
-<h2 id="事务管理"><a href="#事务管理" class="headerlink" title="事务管理"></a>事务管理</h2><p>控制器服务管理事务的生命周期。用户应用程序中的编写器请求控制器执行与事务有关的所有控制平面操作。在启动事务时，写入器需要使用控制器服务进行设置。控制器添加必要的元数据以跟踪事务的状态，并在需要更多时间才能完成的情况下将其设置为超时。</p>
-<p>客户端针对单个流执行事务，因为Pravega当前不支持跨多个流的事务。当客户端开始事务处理时，控制器创建事务段，会为每个流段开放一个事务段。例如，假设客户端针对具有三个开放段s 1、s 2、s 3的流S启动事务。控制器创建事务TS i为每个打开的段SI，i∈{1，2，3} 。当客户端使用给定密钥k写入事件时要附加到段s i，该事件将附加到ts i。在提交事务的情况下，事务段被合并到流段上，并且事务事件变得可用于读取。</p>
-<p>一旦写入器准备好，它就根据应用程序逻辑提交或中止事务，并且控制器负责命令段存储执行事务段的合并。它还负责更新事务相应的元数据。<br>当通过提交或中止事务来结束事务时，控制器需要确保事务的结果在确认操作后不会改变。接受提交事务并随后中止同一事务，或者反过来，是不可接受的方案。当它收到提交事务的请求时，控制器通过读取事务元数据（存储在ZooKeeper中）来检查事务的状态。如果事务仍处于打开状态，则控制器会更新元数据以反映其新状态。请注意，可以有多个控制器实例，并且元数据的更新需要以znode版本为条件，以避免因竞争条件导致的不一致。</p>
-<p>事务元数据操作成功后，它会将事件发布到内部提交流，以便异步处理。这种流是用于内部目的的常规Pravega流。内部流的事件由提交事件处理器处理，提交事件处理器是处理流事件的控制器实例中的元素。提交事务事件包括合并事务段。在提交事件的处理被中断的情况下，例如，因为控制器实例崩溃，不同控制器流中的提交处理器可以拾取并执行它。合并操作是幂等的，并且在同一段上多次尝试时不会引起任何不一致。</p>
-<p>同样，在事务中止的情况下，该过程类似于删除事务段。</p>
-<p>对于同一流上的并发事务，控制器按顺序提交它们以保证两个或多个事务的事件在单个段中的排序不同。如果控制器同时合并两个事务t 1和t 2 ，那么一些段可能在t 2事件之前对t 1事件进行排序，而其他段可能具有相反的顺序。提交（和合并）的串行顺序保证满足此属性。</p>
-<p>一个有趣的方面是在存在缩放的情况下处理事务。如果事务段和开放流段之间存在一对一映射，那么当流缩放并更改段数时会发生什么？在Pravega的原始设计中，我们选择阻止流的缩放，直到所有未完成的事务都已提交或中止。。我们有一个超时，如果事务在进行伸缩操作时调用时间过长，则会中止事务。这个超时可能导致的主要问题是应用程序花了太长时间来提交事务，即使它确实想要提交事务。这种情况在本质上存在正确性的问题，因为写入的数据是从应用程序获取的，而应用程序则指望将其公开。最近，我们添加了一项特性，使事务能够在缩放事件中“滚动”。在事务以一组给定的段开始，并且当事务提交时段的集合不同的情况下，我们就像对流的缩放一样处理它：我们密封当前的段集Σ，使事务段成为后继者，并创建一组新的后继段Σ’，使得| Σ| = | Σ’| 密钥空间的分割与Σ相同。</p>
-<h2 id="段存储"><a href="#段存储" class="headerlink" title="段存储"></a>段存储</h2><p>段存储实现了Pravega的数据平面，并且正如名称所说的那样：它存储段。它在使分段数据持久并有效地提供服务方面发挥着关键作用。段存储与流的概念无关。控制器执行分段到流的组成。例如，当我们将一个段拆分为新段时，段存储会创建新段，但控制器有责任了解流中段的顺序。</p>
-<p>段存储服务的一个角色是将事务段合并为流的段。控制器负责命令段存储在事务提交时合并事务段，并且段存储基于每个段执行必要的操作。</p>
-<p>段存储有两个主存储依赖关系，我们给出了第1层和第2层的通用名称。第1层的主要目标是保证写入持久且低延迟。使写入持久意味着一旦应用程序获知写入请求成功，系统就会保证写入不会丢失，即使有错误。第1层的实现是段存储写入的仅附加数据结构。可以将其视为段存储更新的日志。</p>
-<p>我们将附加的数据和一些其他Bookeeper数据同步记录到第1层，这些数据是我们为了正确操作服务而需要持久保存的。目前，Pravega使用Apache BookKeeper [1]来实现第1层.BookKeeper为少量数据提供了出色的写入延迟，这保证了写操作的持久性，同时为事件流提供低延迟。我们还使用了在打开BookKeeper分类帐时屏蔽旧陈述者的能力。这是BookKeeper提供的一个特性，即使存在错误的崩溃问题，也能使其一致性。</p>
-<p>我们将数据异步迁移到第2层，一旦我们这样做，我们就会截断了来自第1层的相应数据。我们有一个第2层，原因有两个：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fbounded-unbounded.png" alt=""></p>
+<p><strong>Apache Flink擅长处理无界和有界数据集</strong>。精确控制时间和状态使Flink的运行时能够在无界流上运行任何类型的应用程序。有界流由算法和数据结构在内部处理，这些算法和数据结构专门针对固定大小的数据集而设计，从而发挥出性能优势。</p>
+<h2 id="随处部署应用"><a href="#随处部署应用" class="headerlink" title="随处部署应用"></a>随处部署应用</h2><p>Apache Flink是一个分布式系统，需要计算资源才能执行的应用程序。Flink可以与所有常见的集群资源管理器（如Hadoop YARN，Apache Mesos和Kubernetes）集成，但也可以设置为独立的集群运行。</p>
+<p>Flink旨在很好地适用于之前列出的每个资源管理器，这是通过特定于资源管理器的部署模式实现的，这些模式允许Flink以其惯用的方式与每个资源管理器进行交互。</p>
+<p>部署Flink应用程序时，Flink会根据应用程序配置的并行性自动识别所需资源，并从资源管理器里申请它们。如果发生故障，Flink会通过申请新资源来替换发生故障的容器。所有提交或控制应用程序的通信都是通过REST调用来进行，这简化了Flink在许多环境中的集成。</p>
+<h2 id="以任何规模运行应用"><a href="#以任何规模运行应用" class="headerlink" title="以任何规模运行应用"></a>以任何规模运行应用</h2><p>Flink旨在以任何规模运行有状态的流应用，应用程序可以并行化为数千个在集群中分布和同时执行的任务。因此，应用程序可以利用几乎无限量的CPU、主内存、磁盘和网络IO。而且，Flink可以轻松维护数据量非常大的应用状态。其异步和增量检查点算法确保对处理的延迟影响最小，同时保证恰好一次状态的一致性。</p>
+<p>用户报告了在其生产环境中运行的Flink集群的规模，这样的规模有点令人印象深刻，例如</p>
 <ul>
-<li>我们设想一个可以存储大量数据的无限量数据的系统。因此，我们需要一个水平可扩展的大容量存储来容纳所有的这些数据，遵循更紧密的云存储选项。</li>
-<li>我们需要为读取数据提供高吞吐量选项，特别是在我们需要赶上流时读取旧数据时。</li>
+<li>应用程序每天处理数万亿个事件，</li>
+<li>应用程序维护多个TB的状态，以及</li>
+<li>应用程序在数千个内核的运行。</li>
 </ul>
-<p>我们目前支持第2层的几个选项：HDFS [2]，NFS [3]和扩展S3 [4]。</p>
-<p>在这一点上，重要的是要讨论我们预期的两种不同类型的读取，以便我们理解这种架构背后的动机。我们希望应用程序执行尾部读取和追赶或历史读取 [5]。尾部读取对应于最近写入的字节读取，正如术语所指示的那样尾随流的写入者。这样的读取器期望非常低的延迟，并且为了满足这个要求，我们保留最近写入内存的数据缓存以服务于这些读取。我们目前使用RocksDB [6]来实现这样的缓存。</p>
-<p>下图说明了Pravega中的尾部和追赶读取。段存储服务的所有数据都来自缓存。对于尾部读取，期望它是足够新的，以便缓存命中，并且可以立即提供服务。对于历史数据，它可能是缓存未命中，其中它会引起对第2层的读取以填充缓存。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/flavio_fig2.png" alt="尾部和追赶读取"></p>
-<p>第一层中的数据唯一地用于恢复的，并且如上所述，在缓存未命中的情况下，我们提供从缓存的读取和从第2层获取数据的服务。我们还开始实现一种不同类型的只读段存储（PDP-25）的实现。只读段存储不会缓存来自第2层的数据。这样的特性对于批处理读取量很大的设置很有用（例如，对于批处理作业），因为这种批量读取可能最终在常规段存储的情况下干扰新数据的摄取。只读段存储的工作尚未完成，在撰写本文时，客户端无法使用该功能。</p>
-<p>段存储服务器中的工作负载在跨段容器之间进行拆分。在轻量级虚拟化环境中，这不会与容器混淆（例如， Docker容器）。段容器是Pravega的概念。它们是段的逻辑分组，并负责对这些段内的所有操作进行操作。容器是工作分配和恢复的单位; 控制器是负责在重新平衡时将容器分配给不同的段存储的元素，这是由于段存储崩溃导致新的段存储启动或重新分配。每个容器在任何时候都应该有一个所有者，我们使用围栏机制来防止僵尸进程的出现（仍然认为他们拥有它的旧所有者）。</p>
-<p>段存储的每个实例都执行容器管理器，该管理器负责管理分配给该实例的段容器的生命周期。在重新分配容器的情况下，容器管理器需要通过关闭或引导段容器来做出反应，具体取决于段存储实例是新所有者还是容器的先前所有者。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>这篇文章介绍了Pravega内部的概要性的架构视图。它展现了控制器和段存储。它们是实现Pravega核心的两个主要组件：控制器实现控制平面，而段存储实现数据平面。正如之前的文章所讨论的那样，段抽象非常重要，可以灵活地开发kick-ass功能，以支持流作为存储原语。</p>
-<p>未来的文章将详细介绍控制器和分段存储机制，这篇文章介绍一些概念，为即将发布的pravega的更深入的文章为读者提供背景上下文信息。</p>
-<h3 id="About-the-Author"><a href="#About-the-Author" class="headerlink" title="About the Author"></a>About the Author</h3><p>Flavio Junqueira leads the Pravega team at Dell EMC. He holds a PhD in computer science from the University of California, San Diego and is interested in various aspects of distributed systems, including distributed algorithms, concurrency, and scalability. Previously, Flavio held a software engineer position with Confluent and research positions with Yahoo! Research and Microsoft Research. Flavio has contributed to a few important open-source projects. Most of his current contributions are to the Pravega open-source project, and previously he contributed and started Apache projects such as Apache ZooKeeper and Apache BookKeeper. Flavio coauthored the O’Reilly ZooKeeper: Distributed process coordination book.</p>
-<h3 id="References"><a href="#References" class="headerlink" title="References"></a>References</h3><p>[1] Apache BookKeeper. <a href="http://bookkeeper.apache.org" target="_blank" rel="noopener">http://bookkeeper.apache.org</a><br>[2] Hadoop File System. <a href="https://hadoop.apache.org/" target="_blank" rel="noopener">https://hadoop.apache.org/</a><br>[3] R. Sandberg, D. Goldberg, S. Kleiman, D. Walsh, and B. Lyon. Design and Implementation of the Sun Network Filesystem. USENIX Conference and Exhibition, 1985.<br>[4] Extended S3. <a href="https://www.emc.com/techpubs/ecs/ecs_s3_supported_features-1.htm" target="_blank" rel="noopener">https://www.emc.com/techpubs/ecs/ecs_s3_supported_features-1.htm</a><br>[5] Leigh Stewart. Building DistributedLog: High-performance replicated log service, September 2016.<br>[6] RocksDB: A persistent key-value store for fast storage environments. <a href="https://rocksdb.org/" target="_blank" rel="noopener">https://rocksdb.org/</a><br>[7] Stephan Ewen and Flavio Junqueira, An elastic batch and stream processing stack with Pravega and Apache Flink, April 2018.</p>
-<p>原文链接：<a href="http://blog.pravega.io/2018/10/" target="_blank" rel="noopener">http://blog.pravega.io/2018/10/</a></p>
+<h2 id="内存的性能优势"><a href="#内存的性能优势" class="headerlink" title="内存的性能优势"></a>内存的性能优势</h2><p>有状态Flink应用针对本地状态的访问进行了优化。任务状态始终保留在内存中，或者，如果状态大小超过可用内存，则保存在可高效访问的磁盘上的数据结构中。因此，任务通过访问本地（通常是内存中）状态来执行所有计算，从而产生非常低的处理延迟。Flink通过定期并且异步地把本地状态打检查点并持久化到存储设备来保证在出现故障时的恰好一次状态的一致性。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Flocal-state.png" alt=""></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1].<a href="https://flink.apache.org/flink-architecture.html" target="_blank" rel="noopener">https://flink.apache.org/flink-architecture.html</a></p>
 
       
     </main>
@@ -704,7 +608,7 @@
       
       <div class="post-tags">
         
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
         
       </div>
       
@@ -713,7 +617,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/09/pravega-pdp-design-proposals/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/distributed-microservice-weifuwunaxieshier/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
         <meta itemprop="description" content="“分布式系统架构设计师”">
@@ -725,12 +629,12 @@
     </div>
     <header class="post-header">
       <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/10/09/pravega-pdp-design-proposals/" itemprop="url">pravega handbook - 设计提案</a>
+        <a class="post-title-link post-title-link-external" href="/2018/09/23/distributed-microservice-weifuwunaxieshier/" itemprop="url">微服务-微服务解惑</a>
       </h1>
       <div class="post-meta">
         
         <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-09T20:02:34+08:00">2018-10-09 20:02:34</time></span>
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-23T19:38:30+08:00">2018-09-23 19:38:30</time></span>
         </span>
         
         
@@ -739,7 +643,7 @@
         
         <span class="post-categories">
           
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
         </span>
         
         
@@ -747,22 +651,53 @@
     </header>
     <main class="post-main" itemprop="articleBody">
       
-      <p>本文档描述了开发Pravega新特性所遵循的流程。我们的想法是在开始实现这个特性之前先提出设计方案，并与社区讨论这个设计，避免由于方案的分歧而导致的长时间的检视。流程如下：</p>
-<h2 id="设计文档"><a href="#设计文档" class="headerlink" title="设计文档"></a>设计文档</h2><p>将设计文档编写为当前页面的子页面。页面标题应为：</p>
-<blockquote>
-<p>PDP-XX: 简要描述特性</p>
-</blockquote>
-<p>XX是我们通过递增先前提案的编号而生成的数字。第一个数字是01，希望在创建新PDP时不会有任何冲突。我们将使用PDP-XX作为标签来指代特定的设计。</p>
-<p>该文件应包含：</p>
+      <h2 id="微服务解惑"><a href="#微服务解惑" class="headerlink" title="微服务解惑"></a>微服务解惑</h2><h3 id="微服务与容器"><a href="#微服务与容器" class="headerlink" title="微服务与容器"></a>微服务与容器</h3><p>微服务又指的是在传统应用架构的基础上，按照业务能力将系统拆分成多个服务，每个服务都是一个独立的应用，对外提供一些列的公共服务API，服务之间以轻量的方式互相调用。<br>微服务里的每个服务都是一个组件，通过编排组合从而达到独立、解耦、组件化、易维护、可复用、可替换、高可用的设计原则。微服务后，自动化部署以及运维是比较头疼的事，容器技术解决了这个问题。</p>
 <ul>
-<li>功能和提案的摘要（摘要）</li>
-<li>API更改的说明（API更改）</li>
-<li>内部变更说明（内部变更）</li>
-<li>必要时有关向后兼容性和迁移计划的部分（兼容性和迁移）</li>
-<li>关于解决问题的废弃方法的章节（废弃方法）</li>
-<li>引用，例如，Github问题或pull请求（参考）</li>
+<li>好的架构需要考虑后面的扩展以及修改</li>
+<li>好的架构是解耦的，需改一个地方不会影响另外一个地方</li>
+<li>好的架构是轻便灵活的，一个应用最好只解决一个问题，而不是叠加功能</li>
 </ul>
-<p>如果某个部分不适用，请说“不适用”，但不要省略该部分。</p>
+<h3 id="微服务的标签"><a href="#微服务的标签" class="headerlink" title="微服务的标签"></a>微服务的标签</h3><ul>
+<li>单一职责</li>
+<li>微</li>
+<li>面向服务</li>
+<li>自治</li>
+<li>易扩展</li>
+<li>流程化</li>
+</ul>
+<h3 id="微服务的不足"><a href="#微服务的不足" class="headerlink" title="微服务的不足"></a>微服务的不足</h3><ul>
+<li>时效性·服务间的调用延时可能导致系统相应慢的问题</li>
+<li>一致性·微服务在保证一致性上需要做更多的工作</li>
+</ul>
+<h3 id="微服务的价值"><a href="#微服务的价值" class="headerlink" title="微服务的价值"></a>微服务的价值</h3><ul>
+<li>资源价值，资源不足是自动扩容，资源过量时自动缩容；</li>
+<li>业务价值，工作量、人员数量、交付质量、交付周期；</li>
+<li>技术价值，技术是为业务来服务的（个人标注：技术也是业务的一部分而不只是为业务而服务）</li>
+<li>用户价值，用户体验好，服务上线快</li>
+<li>未来价值，技术不成为业务的瓶颈</li>
+</ul>
+<h3 id="微服务的小目标"><a href="#微服务的小目标" class="headerlink" title="微服务的小目标"></a>微服务的小目标</h3><ul>
+<li>持续交付</li>
+<li>业务敏捷</li>
+<li>独立演进</li>
+<li>高可用</li>
+<li>高性能</li>
+</ul>
+<h3 id="微服务的拆与不拆"><a href="#微服务的拆与不拆" class="headerlink" title="微服务的拆与不拆"></a>微服务的拆与不拆</h3><p>依据：数据模型、业务模型、关键指标，粒度平衡，边界合理</p>
+<h3 id="DevOPS"><a href="#DevOPS" class="headerlink" title="DevOPS"></a>DevOPS</h3><p>开发与运维是一个整体，devops是一种思维方式，微服务与devops是天生一对</p>
+<h3 id="SpringCloud特点"><a href="#SpringCloud特点" class="headerlink" title="SpringCloud特点"></a>SpringCloud特点</h3><ul>
+<li>功能齐全</li>
+<li>标准化</li>
+<li>简单方便</li>
+<li>按需取用</li>
+<li>轻量</li>
+<li>易扩展、易维护</li>
+<li>可复用性</li>
+</ul>
+<h3 id="分布式系统组件及操作"><a href="#分布式系统组件及操作" class="headerlink" title="分布式系统组件及操作"></a>分布式系统组件及操作</h3><p>配置管理（Spring cloud config）、服务发现/调用(Feign)、断路器、智能路由（ZUUL）、微代理、控制总线、一次性Token、全局锁、决策竞选、分布式会话、集群状态。</p>
+<p>注册中心(Eureka)、负载均衡(Ribbon)、断路器（Hystrix）、服务追踪（Sleuth，zipkin）、权限（string security）、接口可视化（Swagger）。</p>
+<p>以上内容为《微服务那些事儿》读书笔记。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1]. 微服务那些事儿，纪晓峰著</p>
 
       
     </main>
@@ -770,7 +705,7 @@
       
       <div class="post-tags">
         
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
         
       </div>
       
@@ -779,7 +714,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/02/pravega-working-with-connector-readergroupnotifications/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/22/bigdata-streaming-native-platform/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
         <meta itemprop="description" content="“分布式系统架构设计师”">
@@ -791,12 +726,12 @@
     </div>
     <header class="post-header">
       <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/10/02/pravega-working-with-connector-readergroupnotifications/" itemprop="url">pravega handbook - 开发pravega应用 - connector与readerGroup通知</a>
+        <a class="post-title-link post-title-link-external" href="/2018/09/22/bigdata-streaming-native-platform/" itemprop="url">打造“流原生”式大数据处理平台</a>
       </h1>
       <div class="post-meta">
         
         <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-02T09:03:45+08:00">2018-10-02 09:03:45</time></span>
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-22T21:25:18+08:00">2018-09-22 21:25:18</time></span>
         </span>
         
         
@@ -805,7 +740,7 @@
         
         <span class="post-categories">
           
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
         </span>
         
         
@@ -813,29 +748,42 @@
     </header>
     <main class="post-main" itemprop="articleBody">
       
-      <h1 id="ReaderGroup通知"><a href="#ReaderGroup通知" class="headerlink" title="ReaderGroup通知"></a>ReaderGroup通知</h1><p>ReaderGroup api支持不同类型的通知。目前，我们已经实现了两种类型，但我们计划添加更多类型。我们目前支持的类型如下：</p>
-<h2 id="分段通知"><a href="#分段通知" class="headerlink" title="分段通知"></a>分段通知</h2><p>当ReaderGroup管理的段总数发生变化时，触发段通知。在缩放期间，可以将段拆分为多个或合并到某个其他段中，从而导致段的总数发生变化。当ReaderGroup的配置发生改变时（例如，添加或删除流时），段的总数也会发生变化。</p>
-<p>订阅分段通知的方法如下所示</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>@Cleanup<br>ReaderGroupManager groupManager = new ReaderGroupManagerImpl(SCOPE, controller, clientFactory,<br>        connectionFactory);<br>groupManager.createReaderGroup(GROUP_NAME, ReaderGroupConfig.builder().<br>                                                            .stream(Stream.of(SCOPE, STREAM))<br>                                                            .build());<br><br>groupManager.getReaderGroup(GROUP_NAME).getSegmentNotifier(executor).registerListener(segmentNotification -&gt; &#123;<br>       int numOfReaders = segmentNotification.getNumOfReaders();<br>       int segments = segmentNotification.getNumOfSegments();<br>       if (numOfReaders &lt; segments) &#123;<br>          //Scale up number of readers based on application capacity<br>       &#125; else &#123;<br>         //More readers available time to shut down some<br>       &#125;<br>&#125;);<br></code></pre></td></tr></table></figure>
-<p>应用程序可以使用registerListenerapi 注册一个监听器以通知SegmentNotification。这个 API 以<code>io.pravega.client.stream.notifications.Listener</code>作为参数。在这里，应用程序可以添加自定义逻辑，以根据段的数量更改在线reader的数量。例如，如果段数增加，则应用程序可能会考虑增加在线reader的数量。如果段的数量根据段通知而减少，则应用程序可能希望相应地更改该组在线reader的数量。</p>
-<h2 id="EndOfData通知"><a href="#EndOfData通知" class="headerlink" title="EndOfData通知"></a>EndOfData通知</h2><p>当读者已读取readerGroup管理的流的所有数据时，将触发数据通知程序的结束。这对于使用批处理作业处理流数据很有用，其中应用程序想要读取密封流的数据。<br>订阅数据通知结束的方法如下所示：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>@Cleanup<br>ReaderGroupManager groupManager = new ReaderGroupManagerImpl(SCOPE, controller, clientFactory,<br>        connectionFactory);<br>groupManager.createReaderGroup(GROUP_NAME, ReaderGroupConfig.builder()<br>                                                            .stream(Stream.of(SCOPE, SEALED_STREAM))<br>                                                            .build());<br><br>groupManager.getReaderGroup(GROUP_NAME).getEndOfDataNotifier(executor).registerListener(notification -&gt; &#123;<br>      //custom action e.g: close all readers<br>&#125;);<br></code></pre></td></tr></table></figure>
-<p>应用程序可以使用registerListener api注册一个监听器以通知EndOfDataNotification。这个api以<code>io.pravega.client.stream.notifications.Listener</code>作为参数。在这里，应用程序可以添加自定义逻辑，读取密封流的所有数据就可以调用该自定义逻辑。</p>
-<h1 id="Pravega连接器"><a href="#Pravega连接器" class="headerlink" title="Pravega连接器"></a>Pravega连接器</h1><p>连接器允许将Pravega与不同的数据源和接收器集成。</p>
-<h2 id="Flink连接器"><a href="#Flink连接器" class="headerlink" title="Flink连接器"></a>Flink连接器</h2><p>支持的初始连接器是Flink，它支持使用Pravega构建端到端流处理流水线。这还允许通过Flink流连接器读取和写入数据到外部数据源和接收器。</p>
-<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ul>
-<li>Logstash</li>
-<li>Hadoop连接器</li>
+      <h1 id="开篇-马斯克们的Hyperloop"><a href="#开篇-马斯克们的Hyperloop" class="headerlink" title="开篇,马斯克们的Hyperloop"></a>开篇,马斯克们的Hyperloop</h1><p>我们先来看张图，下图上部分是现在的高铁，它是跑在露天的轨道上的，下图是Elon Musk’s 在正吹的<a href="https://hyperloop-one.com" target="_blank" rel="noopener">hyperloop</a>，类似于跑在真空管道里的未来高铁。相比跑在露天轨道里的高铁，跑真空管道里的高铁好处多了：快，节能，安全，比飞机便宜。。。<br>技术是可以自己进化的，相信类似hyperloop的”高铁+真空管道”的模式就是未来的一种交通出行方式。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming%2Fstreaming-native-platform-0.jpg" alt="hyperloop"></p>
+<p>那么HYPERLOOP跟本文又有什么关系呢？ 是不是有点扯远了？其实本文讲的就是类似给高铁加上真空管道的活，二者本质上是相同的。</p>
+<h2 id="管道-Unix-Linux的设计哲学"><a href="#管道-Unix-Linux的设计哲学" class="headerlink" title="管道,Unix/Linux的设计哲学"></a>管道,Unix/Linux的设计哲学</h2><p>在Linux或者Unix系统里,有时候我们为了查询某个信息，会输入类似如下的命令行：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">#cat *.log | grep –v ‘pipeline’ | sort –nr | head –n 10 | tail -5 | awk ‘&#123;print $2&#125;’ | wc –l  &gt; /dev/stdout<br></code></pre></td></tr></table></figure>
+<p>这个命令行通过“|”来分隔多个命令，前面命令的输出是紧接着的后面命令的输入，命令之间通过“|”彼此相连，并且一个命令只做一件事情。这里的“|”就是管道，把一个程序的输出和另一个程序的输入连起来的一根管子。</p>
+<p>在Unix/Linux里存在这样的管道命令设计哲学：</p>
+<ul>
+<li>程序是个过滤器</li>
+<li>一个程序只做一件事并且做到最好</li>
+<li>一个程序的输入是另外一个程序的输出</li>
 </ul>
-<p>其他参考原文： <a href="http://pravega.io/docs/latest/connectors" target="_blank" rel="noopener">http://pravega.io/docs/latest/connectors</a></p>
-<h1 id="Java-API参考"><a href="#Java-API参考" class="headerlink" title="Java API参考"></a>Java API参考</h1><h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><p>Writer是一个创建事件并将它们发布到Streams中的客户端。Reader是一个消费来自Streams的事件的客户端。我们提供了一个Java库，它为Writer和Reader应用程序实现了一个方便的API。客户端库封装了用于在Pravega客户端和Pravega服务之间传递请求和响应的有线协议。<br>Writer和Reader API</p>
-<h1 id="Pravega控制器的API"><a href="#Pravega控制器的API" class="headerlink" title="Pravega控制器的API"></a>Pravega控制器的API</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>pravega控制器服务的管理REST API列表。</p>
-<h2 id="版本信息"><a href="#版本信息" class="headerlink" title="版本信息"></a>版本信息</h2><p>版本：0.0.1</p>
-<p>许可证信息</p>
-<p>许可证：Apache 2.0 </p>
-<p>许可证URL：http：//<a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">www.apache.org/licenses/LICENSE-2.0</a> </p>
-<p>服务条款：null</p>
-<p>其他参考原文： <a href="http://pravega.io/docs/latest/rest/restapis/" target="_blank" rel="noopener">http://pravega.io/docs/latest/rest/restapis/</a></p>
+<p>下图体现了这样的管道设计哲学，应用之间通过管道相连相互作用：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming%2Fstreaming-native-platform-1.PNG" alt="Uniux/linux pipeline"></p>
+<p>管道所要解决的问题是：<code>高内聚，低耦合</code>。它以一种“链”的方式将这些程序组合起来，让这些程序组成一条工作流，而每个程序又只作一件事情，给定输入，经过各个程序的先后处理，最终得到输出结果，如下图所示：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming%2Fstreaming-native-platform-2.PNG" alt="Uniux/linux pipeline"></p>
+<p>Unix/Linux在<code>&quot;每个程序只做一件事并且做好，每个程序的输出是对另一个程序的输入，可组合性&quot;</code>方面是做的非常成功的。但是，UNIX/Linux也存在一些局限性，比如：<code>&quot;仅单机，只支持一对一通信，无容错，仅字节流,数据处理能力有限等&quot;</code>。意思是说 linux/unix的这些管道命令只能在一台机器上跑，没有分布式，并且只能支持一个命令和另外一个命令之间的一对一的输入输出，无法一对多或多对一；无容错，假如管道坏了数据就出错不能恢复；只支持字节流，不支持数据格式的多样性；处理的数据量有限。</p>
+<p>因此，我们希望可以找到一个数据处理解决方案，这个方案在保留这些Unix/linux管道的设计哲学优点的同时还能克服其缺点。 幸运的是，我们通过Flink+Pravega打造的第三代“流原生”(stream native)式的大数据处理平台实现了这种设计思想。</p>
+<h2 id="流原生-第三代大数据处理平台"><a href="#流原生-第三代大数据处理平台" class="headerlink" title="流原生,第三代大数据处理平台"></a>流原生,第三代大数据处理平台</h2><p>下图体现了“流原生”(stream native)式的设计哲学，Flink是“流原生”的计算，Pravega是“流原生”的存储管道，Flink + pravega 是“流原生”的大数据处理平台。数据从pravega管道输入经过map算子计算，输出中间计算结果到pravega的管道里，数据又从pravega的管道里读入到filter算子里，再经过计算，中间结果放到了pravega管道里，再最后的计算结果经过聚合算子的计算放到了目的地的pravega的管道里。这个过程体现了算子编排和管道式编程的设计哲学。在这里pravega起了大数据处理平台里的管道的作用。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming%2Fstreaming-native-platform-3.PNG" alt="Stream processing pipeline"></p>
+<p>在Unix/Linux中，系统提供管道和命令，用于从一个进程到另一个进程获取字节流。</p>
+<p>在“流原生”处理平台上，Flink提供流处理服务，pravega提供流存储服务，数据源自pravega，被Flink算子们处理后输出到pravega，这是一种将事件从一个流处理作业转移到另一个流处理作业的机制。 Flink和Pravega 所遵循的流处理平台设计哲学是：</p>
+<ul>
+<li>每个算子都只做一件事，并且做到最好</li>
+<li>每个算子的输出是另一个算子的输入</li>
+<li>可组合</li>
+<li>流式传输：数据是动态的，算子是静态的</li>
+<li>算子可编排</li>
+<li>Pravega是最好的Flink搭档</li>
+<li>分布式，扩展到多台机器</li>
+<li>可进化的编码/解码</li>
+</ul>
+<p>当前的流式处理平台一般是 Flink 加传统的存储类型，这种是”半流原生“式的大数据处理平台，计算是原生的流计算而存储却不是原生的流存储。<br>而Pravega就是专门给Flink们设计的原生流存储，它的数据传输方式类似于“管道”，不同于传统的块存储，文件存储以及对象存储，它是一个”管道式流存储“。</p>
+<p>通过Flink + Pravega的组合可以实现 “流原生”(stream native)式的第三代大数据处理平台，未来已来。。。。。</p>
+<h2 id="思考题"><a href="#思考题" class="headerlink" title="思考题"></a>思考题</h2><p>最后给大家留个思考题，“流原生”(stream native)的概念有了，Flink + Pravega 也有了，而且二者的代码都是开源的（flink.apache.org, pravega.io），那么怎么把这些开源的东西产品化？ 或者这个问题太伤脑筋，我们换个简单的问题：“今天中午吃什么？”</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a>作者简介</h2><p>常平，毕业于中国科学技术大学，获硕士研究生学历学位，10年+ 存储、布式系统、云计算以及大数据经验，曾就职于Marvell、AMD等，现就职于EMC，资深首席工程师，主要负责流式大数据处理平台的架构设计、编码及产品交付等。</p>
 
       
     </main>
@@ -843,70 +791,7 @@
       
       <div class="post-tags">
         
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/10/01/pravega-working-with-streamcuts/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“分布式系统架构设计师”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/10/01/pravega-working-with-streamcuts/" itemprop="url">pravega handbook - 开发pravega应用 - streamcuts</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-10-01T09:16:31+08:00">2018-10-01 09:16:31</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pravega/" itemprop="url" rel="index"><span itemprop="name">pravega</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>本节介绍StreamCuts以及如何将它们与流客户端和批处理客户端一起使用。先决条件：您应该熟悉Pravega Concepts。</p>
-<h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>Pravega流由一个或多个并行段形成，用于存储/读取事件。Pravega流是弹性的，这意味着并行段的数量可能随时间变化以适应波动的工作负载。也就是说，StreamCut表示流中的一致位置。它包含一组用于单个流的段和偏移对，它表示给定时间点的完整键空间。偏移量始终指向事件边界，因此没有指向不完整事件的偏移量。</p>
-<p>表示流尾部的StreamCut（带有最新事件）是一个不断变化的流，因为事件可被连续地加入到流中，并且指向具有更新事件流的尾部的streamCuts将具有不同的值。类似地，StreamCut表示流的头部（具有最旧的事件）是不断变化的，因为流保留策略可以截断流并且StreamCut指向截断的流的头部将具有不同的值。 StreamCut.UNBOUNDED用于表示流中的这种位置，用户可以使用它来指定这个不断变化的流位置（流的头部和尾部）。</p>
-<p>应当注意，StreamCut使用流客户端和批量客户端获得的流可以互换使用。</p>
-<h2 id="StreamCut-with-reader"><a href="#StreamCut-with-reader" class="headerlink" title="StreamCut with reader"></a>StreamCut with reader</h2><p>ReaderGroup是一组命名的读者集合，它们并行地从给定的Stream中读取的事件。每个Reader始终与ReaderGroup相关联。StreamCut（s）可以使用以下api从ReaderGroup获得io.pravega.client.stream.ReaderGroup.getStreamCuts。此api返回一个 Map&lt;Stream, StreamCut&gt;表示ReaderGroup管理的所有流的reader的最后已知位置。</p>
-<p>StreamCut可用于配置ReaderGroup以允许对Stream进行有界处理。StreamCutStream 的开始和/或结束可以作为ReaderGroup配置的一部分传递。以下示例显示了将StreamCuts用作</p>
-<p>ReaderGroup配置的一部分的不同方法。</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/*<br> * The below ReaderGroup configuration ensures that the readers belonging to<br> * the ReaderGroup read events from<br> *   - Stream &quot;s1&quot; from startStreamCut1 (representing the oldest event) upto<br>          endStreamCut1 (representing the newest event)<br> *   - Stream &quot;s2&quot; from startStreamCut2 upto the tail of the stream, this is similar to using StreamCut.UNBOUNDED<br> *        for endStreamCut.<br> *   - Stream &quot;s3&quot; from the current head of the stream upto endStreamCut2<br> *   - Stream &quot;s4&quot; from the current head of the stream upto the tail of the stream.<br> */<br>ReaderGroupConfig.builder()<br>                .stream(&quot;scope/s1&quot;, startStreamCut1, endStreamCut1)<br>                .stream(&quot;scope/s2&quot;, startStreamCut2)<br>                .stream(&quot;scope/s3&quot;, StreamCut.UNBOUNDED, endStreamCut2)<br>                .stream(&quot;scope/s4&quot;)<br>                .build();<br></code></pre></td></tr></table></figure>
-<p>以下API可用于使用新的ReaderGroup配置重置现有ReaderGroup，而不是创建ReaderGroup。</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/*<br> * ReaderGroup api used to reset a ReaderGroup to a newer ReaderGroup configuration.<br> */<br>io.pravega.client.stream.ReaderGroup.resetReaderGroup(ReaderGroupConfig config)<br></code></pre></td></tr></table></figure>
-<h2 id="StreamCut-with-BatchClient"><a href="#StreamCut-with-BatchClient" class="headerlink" title="StreamCut with BatchClient"></a>StreamCut with BatchClient</h2><p>StreamCut 表示流的当前头部和当前尾部可以使用以下BatchClient API获得。</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs undefined"><br>/*<br> * The API io.pravega.client.batch.BatchClient.getStreamInfo(Stream stream) fetches the StreamCut representing the<br> * current head and tail of the stream. StreamInfo.getHeadStreamCut() and StreamInfo.getTailStreamCut() can be<br> * used to fetch the StreamCuts.<br> */<br>CompletableFuture&lt;StreamInfo&gt; getStreamInfo(Stream stream);<br></code></pre></td></tr></table></figure>
-<p>BatchClient可用于在给定开始和结束StreamCuts的情况下执行流的有界处理。BatchClient api io.pravega.client.batch.BatchClient.getSegments(stream, startStreamCut, endStreamCut)用于获取位于给定startStreamCut和endStreamCut之间的段。利用检索到的段信息，用户可以并行地消耗所有事件而不必遵守事件的时间排序。<br>必须注意的是，传递StreamCut.UNBOUNDED给startStreamCut和endStreamCut将分别导致使用流的当前头部和流的当前尾部。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/pravega/" rel="tag"><i class="fas fa-tags"></i>pravega</a>
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
         
       </div>
       
@@ -915,7 +800,7 @@
   
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/5/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/7/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/5/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/7/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
   </nav>
   
   
@@ -938,7 +823,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">85</a></div>
+      <div><a href="/archives">54</a></div>
     </div>
     
     
