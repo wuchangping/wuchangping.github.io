@@ -68,7 +68,7 @@
     <script defer type="text/javascript" src="/js/index.js"></script>
     
     <script defer type="text/javascript" src="/js/custom.js"></script>
-    <title>分布式训练实战 – 第2篇 - 分布式训练的评价指标 | 常平的技术博客 - 技术是有生命的，因为它可以进化</title>
+    <title>分布式训练 – 第2篇 - 训练与系统评价指标 | 常平的技术博客 - 技术是有生命的，因为它可以进化</title>
   </head>
   <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
     
@@ -114,7 +114,7 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2021/07/25/ai-training-inference-2/">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2021/07/25/ai-distributed-training-metrics/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
        <meta itemprop="name" content="常平">
        <meta itemprop="description" content="“分布式系统架构设计师”">
@@ -125,7 +125,7 @@
       </span>
     </div>
     <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">分布式训练实战 – 第2篇 - 分布式训练的评价指标</h1>
+      <h1 class="post-title" itemprop="name headline">分布式训练 – 第2篇 - 训练与系统评价指标</h1>
       <div class="post-meta">
         
         <span class="post-date">
@@ -146,7 +146,7 @@
     </header>
     <main class="post-main" itemprop="articleBody">
       <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>不同于教科书里讲的深度学习的评价指标，这里主要讲述生产训练中常用的评价指标。通常在分布式训练中对训练的过程与结果会进行评价，比如选择一个评价指标：准确率，即表明模型求解给定问题的准确度。而本文提到的评价指标主要分为两大类，即训练结果评价与训练系统评价。</p>
-<h2 id="训练结果评价"><a href="#训练结果评价" class="headerlink" title="训练结果评价"></a><font color="#FF8C00">训练结果评价</font></h2><p>教科书里经常提到的深度学习的评价指标有准确率、精确率、召回率、F1值等，如下：</p>
+<h2 id="训练指标"><a href="#训练指标" class="headerlink" title="训练指标"></a><font color="#FF8C00">训练指标</font></h2><p>教科书里经常提到的深度学习的评价指标有准确率、精确率、召回率、F1值等，如下：</p>
 <ul>
 <li><p>准确率（Accuracy），所有的预测正确（正类负类）的占总的比重；</p>
 </li>
@@ -157,12 +157,12 @@
 <li><p>F1值（H-mean值），F1值为算数平均数除以几何平均数，且越大越好；</p>
 </li>
 </ul>
-<p>实际上这些指标在真正的生产过程中用的不多，在实际的分布式训练过程中，比较关心的评价指标有：</p>
+<p>实际上这些指标在真正的生产过程中用的不多，在实际的分布式训练过程中，比较关心的训练评价指标有：</p>
 <ul>
-<li>加速比，即多卡训练下的单卡吞吐量平均指标除以单卡训练下的吞吐量平均指标，比如，大规模训练下的 ResNet-50 v3的单卡FPS指标是400，而单卡训练的FPS指标是500，那么加速比即 400/500 = 0.8，加速比体现的是训练集群的效率与可扩展性，越高的加速比表明训练集群的资源利用率越高，但是越高的加速比要求对训练集群的技术要求也越高。比如 一个 1000张卡的训练集群，要求 加速比 0.9以上，那么对于主机间的网络、主机内的网络、全栈软件、训练卡内部的硬件架构、集合通信算法、训练算法的优化等的要求都极高，这就涉及到整个分布式训练系统的问题，而不是单个点能彻底解决的；</li>
+<li>加速比（speedup），即多卡训练下的单卡吞吐量平均指标除以单卡训练下的吞吐量平均指标，比如，大规模训练下的 ResNet-50 v1.5的单卡FPS指标是600，而单卡训练的FPS指标是800，那么加速比即 600/800 = 0.75，加速比体现的是训练集群的效率与可扩展性，越高的加速比表明训练集群的资源利用率越高，但是越高的加速比要求对训练集群的技术要求也越高。比如 一个 1000张卡的训练集群，要求 加速比 0.9以上，那么对于主机间的网络、主机内的网络、全栈软件、训练卡内部的硬件架构、集合通信拓扑算法、训练算法的优化等的要求都极高，这就涉及到整个分布式训练系统的问题，而不是单个点能彻底解决的；</li>
 <li>吞吐量，sequence/sec 或 FPS, 即每秒能处理的图片数或数据量；</li>
-<li>收敛时间与训练次数（epoch），生产过程中对训练所有的时间是有要求的，假设给定一个模型的训练次数(epoch)为100，如果要把这个100次都训练完需要 好几天，甚至好几个星期，那么可以认为生产不适用，基本上可以定义 训练一个模型到收敛需要 24小时以上，都可以看做是生产不适用，需要扩大训练集群的规模，使之训练时间控制在24小时之内；</li>
-<li>平均准确率(eval Accuracy)，平均准确率是训练是否收敛的重要评判标准之一，比如定义一个 Resnet50 v3 的训练模型的准确率为 75.8%，如果训练结束的平均准确率能达到这个值就认为训练是收敛的；</li>
+<li>收敛时间（Time）与训练次数（epoch），生产过程中对训练所有的时间是有要求的，假设给定一个模型的训练次数(epoch)为100，如果要把这个100次都训练完需要 好几天，甚至好几个星期，那么可以认为生产不适用，基本上可以定义 训练一个模型到收敛需要 24小时以上，都可以看做是生产不适用，需要扩大训练集群的规模，使之训练时间控制在24小时之内；</li>
+<li>平均准确率(eval Accuracy)，平均准确率是训练是否收敛的重要评判标准之一，比如定义一个 Resnet50 v1.5 的训练模型的准确率为 76%，如果训练结束的平均准确率能达到这个值就认为训练是收敛的；</li>
 <li>可收敛，训练的最终结果可以达到 平均准确率的要求，即认为可收敛，否者即任务训练失败；</li>
 <li>学习率(Learning rate)与损失率(Loss)，学习率大模型训练学习速度快，但是易导致损失率爆炸, 学习率小模型训练学习速度慢，而且容易过拟合，收敛速度慢；</li>
 <li>曲线拟合(Curve Fitting)，这是一个非常重要的评价手段，在XPU训练的场景下，通常先用一个已有的之前训练好模型为基础或先用GPU训练出一个基础模型，然后把XPU训练的结果指标跟GPU训练模型的指标进行比较，曲线拟合即认为XPU的训练结果达标，这也是调试XPU训练结果的一个重要手段。这里埋一个问题，按照曲线拟合的说法，假设有一个2000张XPU卡的集群，怎样评价这个集群训练的结果是正确的？以GPU训练的结果做比较，那么找一个这么大规模的GPU集群进行训练然后得到想要的模型做基础匹配也是不大现实的，那么需要采用什么技术方案才能解决这个问题？</li>
@@ -172,7 +172,7 @@
 <p>这个baseline 的模型已经确定是精度达标，生产可用的。然后 XPU训练的模型的 <code>training_model:/log_path_1</code> 与这个GPU训练处的baseline进行比，在tensorboard里可以表现如下图：</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/2/training-results.png" alt="训练结果"></p>
 <p>在上图里，新的模型的eval_accuracy值与baseline的值最终是一样的，这说明训练结果是收敛且精度达标，eval_accuracy中间的线有点差异是由于按不同的训练次数进行tensorboard指标保存所造成。新模型的Loss线与Learning_rate 线也与基础线吻合，这说明XPU训练的模型质量可生产适用。eval_accuracy、Loss、Learning_rate是三个最重要的度量指标，只要这样三个指标达标，那么大概率即可判断这个在XPU下新训练的模型具备生产可用能力。</p>
-<h2 id="训练系统评价"><a href="#训练系统评价" class="headerlink" title="训练系统评价"></a><font color="#FF8C00">训练系统评价</font></h2><p>分布式训练系统其本身也是一个分布式系统，因此除了训练领域相关的度量指标，也有与分布式系统质量有关的一套度量指标，其中比较重要的几项内容如下：</p>
+<h2 id="系统指标"><a href="#系统指标" class="headerlink" title="系统指标"></a><font color="#FF8C00">系统指标</font></h2><p>分布式训练系统其本身也是一个分布式系统，因此除了训练领域相关的度量指标，也有与分布式系统质量有关的一套度量指标，其中比较重要的几项内容如下：</p>
 <ul>
 <li><p>可用性(Availability)，可用性指的是分布式训练系统长时间可对外提供服务的能力，通常采用小数点后的9的个数作为度量指标，按照这种约定“五个九”等于0.99999（或99.999％）的可用性，默认企业级达标的可用性为6个9。但是当前从时间维度来度量可用性已经没有太大的意义，因为设计得好的系统可以在系统出现故障得情况下也能保证对外提供得服务不中断，因此，当前更合适得可用性度量指标 是请求失败率;</p>
 </li>
@@ -205,10 +205,12 @@
   <nav class="page-nav">
     <div class="page-nav-next page-nav-item">
       
-      <a href="/2021/04/18/ai-training-inference-1/" rel="next" title="分布式训练实战 – 第1篇 - 什么是分布式训练"><i class="fas fa-angle-left"></i><span class="nav-title">分布式训练实战 – 第1篇 - 什么是分布式训练</span></a>
+      <a href="/2021/04/18/ai-distributed-training-whatistraining/" rel="next" title="分布式训练 – 第1篇 - 什么是分布式训练"><i class="fas fa-angle-left"></i><span class="nav-title">分布式训练 – 第1篇 - 什么是分布式训练</span></a>
       
     </div>
     <div class="page-nav-prev page-nav-item">
+      
+      <a href="/2022/02/04/ai-distributed-training-coll-1/" rel="prev" title="分布式训练 – 第3篇 - 集合通信及其通信原语"><span class="nav-title">分布式训练 – 第3篇 - 集合通信及其通信原语</span><i class="fas fa-angle-right"></i></a>
       
     </div>
   </nav>
@@ -233,7 +235,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">54</a></div>
+      <div><a href="/archives">55</a></div>
     </div>
     
     
@@ -268,7 +270,7 @@
     <hr>
     <div class="post-toc sidebar-item" id="toc-div">
       <div><i class="fas fa-list-ol"></i>文章目录</div>
-      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#训练结果评价"><span class="toc-text">训练结果评价</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#训练系统评价"><span class="toc-text">训练系统评价</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#小结"><span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#作者简介"><span class="toc-text">作者简介</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#参考资料"><span class="toc-text">参考资料</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#版权申明"><span class="toc-text">版权申明</span></a></li></ol></div>
+      <div class="post-toc-content"><ol class="list-group toc"><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#训练指标"><span class="toc-text">训练指标</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#系统指标"><span class="toc-text">系统指标</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#小结"><span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#作者简介"><span class="toc-text">作者简介</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#参考资料"><span class="toc-text">参考资料</span></a></li><li class="toc-item toc-level-2"><a class="list-group-item toc-link" href="#版权申明"><span class="toc-text">版权申明</span></a></li></ol></div>
     </div>
     
     
