@@ -191,7 +191,7 @@
 <li>两张网卡可组成主机间两个ring或者经过虚拟化组成8个ring，根据PCIE SWITCH亲和性原则，一张网卡与XPU0挂在同一个pcie switch，另一张网卡与XPU4挂在同一个pcie switch，依据最佳实践原则（比如性能、成本、客户要求等），适合选用2D-MESH、2D-Torus拓扑算法；</li>
 <li>4张网卡、8张网卡以此类推，也是根据PCIE SWITCH亲和性原则进行连接，主机间RDMA物理网卡不够就虚拟化网口来凑，并且要服务器内的RDMA出口端口数左右平衡，依据最佳实践原则（比如性能、成本、客户要求等），也是适合选用2D-MESH、2D-Torus拓扑算法，这样才能发挥多张网卡以及XPU的算力优势。</li>
 </ul>
-<p>4）更复杂的Torus网络组合关系还可以如下图，从横向只有 主机内的8卡纵向只有主机间的RDMA互联，扩展到 横向与纵向 主机内互联与主机间互联混合，从二维Torus网络扩展到多维Torus网络，但本文仅限于在二维Torus网络下进行拓扑算法选择与设计，因此不展开讲述。</p>
+<p>4）更复杂的Torus网络组合关系还可以如下图，从横向只有 主机内的8卡纵向只有主机间的RDMA互联，扩展到 横向与纵向 主机内互联与主机间互联混合，但本文仅限于在二维Torus网络下进行拓扑算法选择与设计，因此不展开讲述。</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/4/image-torus-topo.png" alt="Torus网络结构"></p>
 <h2 id="3-常用的通信拓扑算法"><a href="#3-常用的通信拓扑算法" class="headerlink" title="3. 常用的通信拓扑算法"></a><font color="#FF8C00">3. 常用的通信拓扑算法</font></h2><h3 id="3-1-Ring-AllReduce"><a href="#3-1-Ring-AllReduce" class="headerlink" title="3.1 Ring AllReduce"></a>3.1 Ring AllReduce</h3><p>在分布式训练中，Ring 是最基础的互联结构，在本文中Ring AllReduce的应用场景是在服务器内将8张加速卡组环通信进行分布式训练。每个XPU都是这个主机内互联环上的一个计算节点，每个节点都有一个前向和一个后向，它只会向它的前向接收数据，并向它的右向发送数据，如下图所示，8张XPU 通过主机内的私有互联网络组成一个环，当然因为这些通信网络是双工的，这8张XPU训练加速卡也可以看成是通过多个逻辑环互联起来的，同时缺点是，如果这个ring太大，Ring Allreduce的效率也会变得很低。</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/4/image-ring-topo.png" alt="ring拓扑"></p>
