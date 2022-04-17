@@ -115,6 +115,87 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/11/20/distributed-ideamodel-product/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/11/20/distributed-ideamodel-product/" itemprop="url">分布式系统架构设计 – 第11式 - 产品思维模型</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-11-20T20:40:55+08:00">2019-11-20 20:40:55</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><font color="#FF8C00">注：本思维模型系列文章已被infoq采纳并推荐至首页：<a href="https://www.infoq.cn/article/JjycubQz3YTBgozaZ4G9" target="_blank" rel="noopener">https://www.infoq.cn/article/JjycubQz3YTBgozaZ4G9</a></font>
+
+<p>日拱一卒，功不唐捐，一个知识领域里的 “道 法 术 器” 这四个境界需要从 微观、中观以及宏观 三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计36式》，讲诉分布式系统里最重要的三十六个的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
+<p><strong>“兵者，国之大事，死生之地，存亡之道，不可不察也”</strong>，这句话对企业来讲，兵即产品，国即企业，察即研究探讨，产品关系到企业的存亡，所以不可以不慎重地加以研究探讨。</p>
+<p>我们知道一个产品的成功不只是技术的成功，它还包括商业、创新、管理、资本、运营以及销售等的成功。当打造一个产品的时候，通常来说工程人员往往会比较关注技术层面的东西： 方案、功能、难点、亮点以及如何实现等，深度有余但高度与广度往往不足 。一般有点经验的工程人员都可以从点或线的层面考虑一个产品的实现，但往往缺乏从面及体的层面看待一个产品的能力。</p>
+<p>因此，如果说技术思维是架构师的一根DNA螺旋线，那么产品思维、创新思维以及商业思维等就是架构师的另外一根DNA螺旋线，只有两根DNA螺旋线俱全才能有机会进化出新物种。</p>
+<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>人的知识与能力可以从“时空”这两个角度进行评价，其可分为四个维度：深度、广度、高度以及跨度。空间角度指的是深度、广度、高度，时间角度指的是跨度。深度靠专研，广度靠学习，高度靠抽象，而跨度靠长久地积累经验。这四个维度组合成了一个人的知识与能力的时空度。</p>
+<p>万事万物逃脱不出<strong>“不易、简易、变易”</strong>这三个层次，金庸先生的《天龙八部》里少林寺有72技，其每一技又千变万化，想要样样精通，今生无望，然而练就“小无相功”却可以以这功法催动不同的“技”，甚至可以比原版更具威力，以“不易 简易”之功施展“变易”之术。那么对于技术开发人员来说技术也是“变易”的，更新快，领域多，复杂度高，样样精通也是今生无望，那么需要的就是找出适合自己的“功”，技术思维模型、产品思维模型、创新思维模型、商业思维模型就是这样的“功”。</p>
+<p>因此本系列文章提出了技术、产品、创新与商业这四个思维模型，这一系列文章不是为了解决具体的某个分布式系统设计里的难题，它提出了一种思维框架，从技术、产品、创新以及商业的角度，给工程人员以一种系统性的分析分布式系统设计难题的模型，这也是一种系统思维的体现。</p>
+<h2 id="产品思维模型"><a href="#产品思维模型" class="headerlink" title="产品思维模型"></a><font color="#FF8C00">产品思维模型</font></h2><p>最后一个思维模型是产品思维模型，它是以上三个思维模型的组合与新生，如下图：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ideamodel/idea-model-product.PNG" alt="产品思维模型"></p>
+<p>产品思维模型灵感来自于阿基米德的一句话:”给我一个支点,我可以撬起地球。“，因此定义它为阿基米德产品思维模型。</p>
+<p>如上图所示，在产品思维模型里产品被看作是一个圆，在圆之外还有一个杠杆、一个支点以及一个作用力。在产品圆里除了技术火箭六元组、产品创新奇点、五看三定六要素之外还补充了 产品价值网，企业文化、企业制度以及组织结构这三个要素。</p>
+<h4 id="价值网"><a href="#价值网" class="headerlink" title=" 价值网"></a><font color="#00CED1"> 价值网</font></h4><p>产品价值网指的是产品所在的市场，是产品需要去匹配的市场，也是产品的市场天花板，市场空间的大小意味着产品的增长局限性，它可以是10倍增长的、缓缓增长的或者存量市场等。一个自我快速膨胀的市场空间里往往可以事半功倍，比如2000年后的互联网市场。</p>
+<p>价值网是产品所在的市场，通常采用三个指标来描述产品是否适合价值网：<font color="#00CED1">技术-产品匹配，产品-市场匹配以及价值-市场匹配</font>。</p>
+<h5 id="技术-产品匹配（Technology-Product-Fit）"><a href="#技术-产品匹配（Technology-Product-Fit）" class="headerlink" title="技术-产品匹配（Technology-Product Fit）"></a><font color="#00CED1">技术-产品匹配（Technology-Product Fit）</font></h5><p>TPF这个概念是我新提出的，做工程不同做研究，工程当中技术取舍的关键在于适合即可，技术超前于产品是优势但是也是成本，技术落后于产品，缺乏创新，也容易被市场淘汰。技术于产品锲合度的度量在于满足客户需求即可，包括核心需求与增值需求。</p>
+<h5 id="产品-市场匹配（Product-Market-Fit）"><a href="#产品-市场匹配（Product-Market-Fit）" class="headerlink" title="产品-市场匹配（Product-Market Fit）"></a><font color="#00CED1">产品-市场匹配（Product-Market Fit）</font></h5><p>产品-市场匹配的意思指的是产品确定是可以满足市场真正的需求的，并且产品可以从客户那边获取生存下来。</p>
+<p>产品-市场匹配度的度量标准有： 客户的下载数量、客户付费数量、客户求购的数量、客户愿意付钱。</p>
+<h5 id="价值-市场匹配（Value-Market-Fit）"><a href="#价值-市场匹配（Value-Market-Fit）" class="headerlink" title="价值-市场匹配（Value-Market Fit）"></a><font color="#00CED1">价值-市场匹配（Value-Market Fit）</font></h5><p>价值-市场匹配指的是产品所提供的价值是真正满足市场需求的，从软件的角度来说可以匹配的价值有：产品质量、性能、可扩展性、可靠性、可视化、安全、审计、辅助工具以及各种插件等。                                                                                                                                                                                                                                                                                                                </p>
+<h4 id="企业文化、企业制度以及组织结构"><a href="#企业文化、企业制度以及组织结构" class="headerlink" title=" 企业文化、企业制度以及组织结构"></a><font color="#00CED1"> 企业文化、企业制度以及组织结构</font></h4><p>产品也是受企业文化、企业制度以及企业组织结构影响的，对于”这三要素如何影响产品？“这一主题没有研究过，这里不敢展开讲。但是可以确定的是“诚信 以人为本”的企业比“KPI导向 利益驱动”的企业更能出现优秀的作品。</p>
+<h4 id="支点"><a href="#支点" class="headerlink" title=" 支点"></a><font color="#00CED1"> 支点</font></h4><p>支点即关键着力点，它是撬动产品的着力点，它也可以是”以客户为中心，为客户创造价值“的理念，也可以是关键资源、战略投入等，最适合自己的、自己最拿手的要素就是支点。</p>
+<h4 id="杠杆"><a href="#杠杆" class="headerlink" title=" 杠杆"></a><font color="#00CED1"> 杠杆</font></h4><p>杠杆可以是创新，也可以是资本，是撬动产品从而获得10倍增长效应的关键要素，关键时刻需要对产品启动杠杆效应以获取大规模爆发机会。</p>
+<h4 id="关键能力"><a href="#关键能力" class="headerlink" title=" 关键能力"></a><font color="#00CED1"> 关键能力</font></h4><p>一个企业的能力包括：技术，产品，渠道、市场、资源，资本，管理，运营，人力，销售，财务等，这里的关键能力，指的是最拿手的一个或几个能力， 选出最适合自己的， 比如技术领先的能力、打造产品的能力等，当然也可以认为是管理能力或财务能力，然后作为驱动产品的杠杆作用力。</p>
+<p>分布式流存储所在的市场是物联网以及IT运维这样的高速增长市场，产品的支点是”以客户为中心，为客户创造价值“这样的理念，同时在关键能力上，团队组成、企业的存储基因等都是关键能力。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本系列文章讲述了四个思维模型： “技术思维模型、创新思维模型、商业思维模型以及产品思维模型”，再结合分布式流存储做了简单的举例分析。本文讲述”产品思维模型“，日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这几个思维模型对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“[1]，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，主要从事分布式产品的交付、架构设计以及开发工作。</p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1]《第二曲线创新》 李善友</p>
+<p>[2]《如何在一分钟内用5个问题讲清你的商业模式》 中欧商业评论，关苏哲 </p>
+<p>[3] Pravega.io</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/11/20/distributed-ideamodel-business/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -806,61 +887,9 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/04/12/person-emc-hackson-2019/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/04/12/person-emc-hackson-2019/" itemprop="url">黑客马拉松 2019</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-04-12T20:45:43+08:00">2019-04-12 20:45:43</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/person/" itemprop="url" rel="index"><span itemprop="name">person</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>参加公司的hackathson 2019 获奖了。。。。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/person/hackson-2019.png" alt="hackson"></p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/person/" rel="tag"><i class="fas fa-tags"></i>person</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/3/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/5/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/3/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/5/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
   </nav>
   
   
@@ -883,7 +912,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">56</a></div>
+      <div><a href="/archives">57</a></div>
     </div>
     
     

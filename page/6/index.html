@@ -115,6 +115,61 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/02/11/person-emc-one-year/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/02/11/person-emc-one-year/" itemprop="url">新公司一年里程碑</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-02-11T20:20:31+08:00">2019-02-11 20:20:31</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/person/" itemprop="url" rel="index"><span itemprop="name">person</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>2018年2月12日到2019年2月11日，刚好满一年，不知不觉间居然写了35770行代码，</p>
+<p>2018-02-12 ~ 2019-02-11， 刚好入职EMC满一年，里程碑两件：</p>
+<p>1，个人代码量突破3万5千行，排列第一；</p>
+<p>2，专利公司内部通过且美国专利局审核中2个。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/person/emc-201902-codeline.png" alt="codeline"></p>
+<div align="left"> </div>
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/person/" rel="tag"><i class="fas fa-tags"></i>person</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/01/25/pravega-arch-refactor-bigdata-storage-stack/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -885,84 +940,9 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/flink-what-is-apache-flink/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/23/flink-what-is-apache-flink/" itemprop="url">Flink handbook - 什么是Apache Flink？</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-23T21:18:21+08:00">2018-09-23 21:18:21</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>Apache Flink是一个框架和分布式处理引擎，用于对无界和有界数据流进行有状态计算。Flink设计为在所有常见的集群环境中运行，以内存速度和任何规模执行计算。</p>
-<p>在这里，我们解释了Flink架构的重要方面。</p>
-<h2 id="无界和有界数据的处理"><a href="#无界和有界数据的处理" class="headerlink" title="无界和有界数据的处理"></a>无界和有界数据的处理</h2><p>任何类型的数据都是作为事件流产生的。信用卡交易，传感器测量，机器日志或网站或移动应用程序上的用户交互，所有这些数据都作为流生成。</p>
-<p>数据可以作为无界或有界流处理。</p>
-<ol>
-<li><p><strong>无界流</strong> 有一个开始，但没有定义的结束。它们不会终止并提供其生成的数据。无界流必须持续处理，即必须在摄取事件后立即处理事件。不可能等待所有的输入数据都到达，因为输入是无界的，并且在任何时间点都不会结束。处理无界数据通常要求以特定顺序（例如事件发生的顺序）摄取事件，以便能够推断结果的完整性。</p>
-</li>
-<li><p><strong>有界流</strong>具有定义的开始和结束。可以在执行任何计算之前，通过摄取所有数据来处理有界流。有界数据集是可以被排序的，因此处理有界流不需要有序摄取。有界流的处理也称为批处理。</p>
-</li>
-</ol>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fbounded-unbounded.png" alt=""></p>
-<p><strong>Apache Flink擅长处理无界和有界数据集</strong>。精确控制时间和状态使Flink的运行时能够在无界流上运行任何类型的应用程序。有界流由算法和数据结构在内部处理，这些算法和数据结构专门针对固定大小的数据集而设计，从而发挥出性能优势。</p>
-<h2 id="随处部署应用"><a href="#随处部署应用" class="headerlink" title="随处部署应用"></a>随处部署应用</h2><p>Apache Flink是一个分布式系统，需要计算资源才能执行的应用程序。Flink可以与所有常见的集群资源管理器（如Hadoop YARN，Apache Mesos和Kubernetes）集成，但也可以设置为独立的集群运行。</p>
-<p>Flink旨在很好地适用于之前列出的每个资源管理器，这是通过特定于资源管理器的部署模式实现的，这些模式允许Flink以其惯用的方式与每个资源管理器进行交互。</p>
-<p>部署Flink应用程序时，Flink会根据应用程序配置的并行性自动识别所需资源，并从资源管理器里申请它们。如果发生故障，Flink会通过申请新资源来替换发生故障的容器。所有提交或控制应用程序的通信都是通过REST调用来进行，这简化了Flink在许多环境中的集成。</p>
-<h2 id="以任何规模运行应用"><a href="#以任何规模运行应用" class="headerlink" title="以任何规模运行应用"></a>以任何规模运行应用</h2><p>Flink旨在以任何规模运行有状态的流应用，应用程序可以并行化为数千个在集群中分布和同时执行的任务。因此，应用程序可以利用几乎无限量的CPU、主内存、磁盘和网络IO。而且，Flink可以轻松维护数据量非常大的应用状态。其异步和增量检查点算法确保对处理的延迟影响最小，同时保证恰好一次状态的一致性。</p>
-<p>用户报告了在其生产环境中运行的Flink集群的规模，这样的规模有点令人印象深刻，例如</p>
-<ul>
-<li>应用程序每天处理数万亿个事件，</li>
-<li>应用程序维护多个TB的状态，以及</li>
-<li>应用程序在数千个内核的运行。</li>
-</ul>
-<h2 id="内存的性能优势"><a href="#内存的性能优势" class="headerlink" title="内存的性能优势"></a>内存的性能优势</h2><p>有状态Flink应用针对本地状态的访问进行了优化。任务状态始终保留在内存中，或者，如果状态大小超过可用内存，则保存在可高效访问的磁盘上的数据结构中。因此，任务通过访问本地（通常是内存中）状态来执行所有计算，从而产生非常低的处理延迟。Flink通过定期并且异步地把本地状态打检查点并持久化到存储设备来保证在出现故障时的恰好一次状态的一致性。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Flocal-state.png" alt=""></p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1].<a href="https://flink.apache.org/flink-architecture.html" target="_blank" rel="noopener">https://flink.apache.org/flink-architecture.html</a></p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/5/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/7/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/5/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/7/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
   </nav>
   
   
@@ -985,7 +965,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">56</a></div>
+      <div><a href="/archives">57</a></div>
     </div>
     
     

@@ -115,6 +115,148 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2022/04/17/ai-distributed-training-framework-1/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2022/04/17/ai-distributed-training-framework-1/" itemprop="url">分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2022-04-17T17:10:38+08:00">2022-04-17 17:10:38</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/AI/" itemprop="url" rel="index"><span itemprop="name">AI</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>​                </p>
+<h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a><font color="#FF8C00">1. 概述</font></h2><p>分布式训练服务框架与集合通信库的组合构成了分布式训练的整体服务软件栈，在第3篇、第4篇文章里已经剖析完集合通信的相关内容，而本文会以Horovod为例介绍数据并行下分布式训练服务框架的基本原理以及进行架构解析。当前，在分布式训练里分布式训练服务框架需要解决以下几个核心问题 ：</p>
+<ul>
+<li>计算与通信同步耦合问题：如果反向传播一产生一份梯度，就马上对其调用全局AllReduce，计算与通信同步耦合，容易造成死锁同时性能也会很不如意；</li>
+<li>计算时间与通信时间串行问题：神经网络是分层的，梯度计算的过程是数据加载，然后前向传播算出损失值，再反向传播算出梯度，而反向计算时梯度是从输出层往输入层方向一层一层产生的，在有些模型里，如果需要等所有的梯度都计算完毕才能触发全局AllReduce，那么对性能的影响也会很大；</li>
+<li>梯度生成的落后者问题：集群内每个计算节点的同一份梯度的产生不一定都是同一时刻的，如果梯度没有全部生成就发起对这个梯度的全局规约，否则容易造成训练出来的模型精度不达标或者不收敛的问题；</li>
+<li>梯度融合问题：如果每一份梯度都触发一次全局AllReduce，在梯度Tensor较多的神经网络训练里，整体的训练系统性能会变得极低；</li>
+<li>易用性问题：从TensorFlow，PyTorch迁移过来需要改的代码需要极少，从单卡训练迁移到多卡训练需要改动的代码也需要极少；</li>
+<li>可移植问题：支持多种多样的深度学习训练框架，比如 TensorFlow、PyTorch、MxNet等，也能支持多种多样的通信库，比如openMPI、NCCL、Gloo、CCL、RCCL等；</li>
+<li>可靠性问题：在集群训练的过程中网络时不可靠的、计算卡是会出故障的、服务器是会出故障的、系统软件也是会出Bug的，这些因素造成了分布式训练过程中还存在可靠性问题，如何解决这个问题也是一个难题。</li>
+</ul>
+<p>软件是由人实现的，解析一个软件系统最难的地方在于从庞杂的代码里倒推出背后实现它的人的设计意图，为了更好的理解Horovod，本文会基于以上这几个分布式训练的核心问题，以Horovod为例介绍分布式训练服务框架的基本原理以及进行架构解析。</p>
+<h2 id="2-基础知识"><a href="#2-基础知识" class="headerlink" title="2. 基础知识"></a><font color="#FF8C00">2. 基础知识</font></h2><h3 id="2-1-单卡训练"><a href="#2-1-单卡训练" class="headerlink" title="2.1 单卡训练"></a>2.1 单卡训练</h3><p>神经网络的训练，本质上就是Y=F(x)的迭代，通过反复输入X、输出Y，使得神经网络的参数变化与输入输出间的复杂关系拟合。在神经网络训练的过程中，通过输入数据利用梯度下降的方法进行迭代从而优化神经网络参数，并最终输出神经网络模型。而神经网络可以看作一种运算模型，其由大量的神经元（节点）相互联接构成，其由输入层、隐藏层以及输出层组合而成（如下图左侧所示）。神经元(neuron)是神经网络的基本计算单元，也被称作节点(node)，它可以接受来自其他神经元或外部数据的输入，然后计算出一个输出（如下图右上角所示）。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/5/image-framework-single-card.png" alt="单卡训练"></p>
+<p>如上图右下角所示，在单卡训练迭代中，基于并行梯度下降法，会有以下操作：</p>
+<p>第一步，读取部分数据，并且将数据加载进训练卡的存储空间；</p>
+<p>第二步，对模型进行前向传播计算，从输入层往输出层一层一层的进行计算，得到损失差LOSS；</p>
+<p>第三步，对模型进行反向传播计算，从输出层往输入层一层一层的进行计算，得到梯度值，注意这一步会把每一层都计算出一个梯度张量（Gradient Tensor）出来；</p>
+<p>第四步，将新的到的梯度与部分数据 作为新的输入，重新开始以上步骤的迭代。</p>
+<p>在这一步里有一个很重要的与性能优化相关的信息是反向传播是每一层输出一个梯度张量，以及反向传播是从输出层往输入层一层一层的进行计算的，这一点信息可以用通信隐藏性能优化与梯度融合优化。</p>
+<h3 id="2-2-多卡训练"><a href="#2-2-多卡训练" class="headerlink" title="2.2 多卡训练"></a>2.2 多卡训练</h3><p>以数据并行随机梯度下降法( SGD )为例，多卡神经网络的训练过程如下图，与单卡训练相比，多卡训练多了梯度全局规约的过程：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/5/image-framework-multi-card.png" alt="多卡训练"></p>
+<p>第一步，通过Broadcast操作将第一个节点参数同步到集群内的所有的训练卡上，保证每个计算节点的初始参数是一致的，同时训练脚本在多个计算节点上运行，每个计算节点包含了整体的模型参数；</p>
+<p>第二步，将数据样本切片分发到整个集群内的个计算节点（训练卡）上并且通过数据流水技术将数据样本加载进训练卡的高速内存空间内，作为输入X;</p>
+<p>第三步，每个训练卡在其数据样本上运行前向传播，计算出损失差LOSSi；</p>
+<p>第四步，对计算出的LOSSi进行反向传播，得到梯度GRADi，这一步也需要注意得是每一层都会计算出一个梯度，同时梯度是以输出的Tensor来表示的；</p>
+<p>第五步，所有的训练卡计算出来的部分梯度，在主机内及主机之间通过集合通信进行全局归约(AllReduce)得到全局梯度；</p>
+<p>第六步，最后再将这个全局梯度作为参数进行更新，再进行以上2-5步骤的迭代从而获得新的梯度。</p>
+<p>以上2-6步骤就是多卡并行梯度下降的基本思想，即多个计算节点通过分片的数据样本进行梯度计算，得到分区梯度后，再通过全局梯度规约以及将这个聚合好的梯度作为新的参数进行更新，从而实现并行梯度下降。</p>
+<h2 id="3-几个核心问题"><a href="#3-几个核心问题" class="headerlink" title="3. 几个核心问题"></a><font color="#FF8C00">3. 几个核心问题</font></h2><p>在本章节里会解读本文概述里提到的分布式服务框架需要解决的几个与性能、易用性等相关的几个核心问题，并且以Horovod为例讲述Horovod是如何解决这个几个难题的。</p>
+<h3 id="3-1-计算与通信解耦"><a href="#3-1-计算与通信解耦" class="headerlink" title="3.1 计算与通信解耦"></a>3.1 计算与通信解耦</h3><p>在神经网络的训练过程中，每一神经网络层都会计算出一个梯度，同时梯度是以输出Tensor来表示的，如果反向传播一计算出一个梯度就马上调用通信去做梯度规约，将计算与通信同步耦合，那么整体的性能的表现就会很差。比如一个ResNet-50 v3的梯度张量个数是153个，如果一计算出一个梯度就马上进行通信，假设计算梯度花了1ms，通信这个梯度花了 500ms，那么这个过程就是 501ms，总体上就需要501x153 = 76653ms，即近76.6s才能完成一次梯度迭代。而将计算与通信解耦，计算的归计算，通信的归通信，通过性能优化策略减少通信的次数，既能提升整体训练性能也能避免某些死锁问题，比如计算梯度grad i的时候花了很长时间，而通信线程一直在等待这个梯度，表现出来就是死锁现象。</p>
+<p>Horovod采用计算与通信分离的设计思想，解耦了计算过程与通信过程，从而提升了整体训练的性能与可靠性。如下图的Horovod逻辑架构图所示，从图中可以看出Horovod解耦了计算与通信，其将框架层计算出来的梯度request信息push 到一个消息队列message_queue里，同时将梯度信息push到一个Tensor_table里，再通过控制层在后台起一个loop线程，周期性的从消息队列里读取梯度消息，在控制层集群的节点之间协商达成一致后，再进行消息分发触发训练行为。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/5/image-Horovod-architecture.png" alt="Horovod逻辑架构"></p>
+<p>如上图可看出，Horovod从下到上分为7层：物理层、链路层、数据传输层、控制层、消息层、框架层以及用户层。框架层，控制层以及数据传输层体现了Horovod的核心设计理念，即：框架层，用户可以自定义Op，以插件的形式hack进框架；在控制层，worker节点与master节点之间协商达成触发训练行为的约定；在数据传输层，服务器内以及服务器之间采用集合通信库传输数据。</p>
+<p>本质上Horovod的整体设计理念之一遵循的是生产者消费者模式，如下图所示：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/5/image-horovod-msgqueue.png" alt="生产者-消费者"></p>
+<p>在Horovod里每个计算节点都会有有两个核心线程：Execution thread 和 Background thread ：</p>
+<ul>
+<li>生产者Execution Thread 是用来做梯度计算的，在TensorFlow、PyTorch之类的之类的训练框架计算出梯度Tensor后，将Tensor 信息push进tenor_table队列，同时将Tensor的request信息push进message_queue队列;</li>
+<li>消费者Background thread 是做集合通讯以及全局Allreduce的，后台线程会每隔一段时间轮询消息队列，拿到一批Tensor信息之后，会进行相应的操作。</li>
+</ul>
+<h3 id="3-2-通信隐藏"><a href="#3-2-通信隐藏" class="headerlink" title="3.2 通信隐藏"></a>3.2 通信隐藏</h3><p>神经网络是分层的，在训练的过程中，先是数据加载，然后前向传播算出LOSS，再反向传播算出梯度，而反向计算时梯度是从输出层往输入层方向一层一层产生的，如果需要等所有的梯度都计算完毕才能触发全局AllReduce，对性能不是很友好。如下图所示，计算时间与通信时间是串行的，如果能将全局梯度规约的通信时间与计算时间想办法并行起来，将通信时间隐藏在计算时间之内，那么就能节约梯度的训练时间从而提升分布式训练系统整体的训练性能。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/5/image-wfbp-1.png" alt="通信隐藏"></p>
+<p>如下图所示，将计算出来的梯度进行分桶触发异步Allreduce，一边反向传播计算梯度，一边做部分梯度的全局规约通信，从而达到将通信时间隐藏在计算时间内的效果。而Horovod为达成这一效果，Background thread 会每隔一段时间轮询梯度消息队列里的梯度信息，获取了可以过全局规约的梯度后，就进行全局规约操作，而这个时间其他的梯度还在计算过程中，通过调整轮询的时间间隔从而达到调整梯度分桶的效果。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/5/image-wfbp-2.png" alt="通信隐藏"></p>
+<h3 id="3-3-梯度协商"><a href="#3-3-梯度协商" class="headerlink" title="3.3 梯度协商"></a>3.3 梯度协商</h3><p>神经网络的每一层对应一个梯度Tensor，在分布式训练集群里每张训练卡对同一份梯度计算产生的时间是有差异的，当集群内每个计算节点的同一神经网络层的同一梯度都产生时，才能发起对这个梯度的全局AllReduce规约，否则容易造成丢梯度，训练出来模型精度不达标或者模型不收敛。比如在一个128卡的训练集群里，同一份梯度是对应同一个神经网络模型里的同一层神经网络的，只有每张训练卡上都计算出了同一层神经网络的梯度 才能对这一层神经网络的梯度进行全局规约，如下图所示：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/5/image-grad-state-1.png" alt="梯度分层"></p>
+<p>Horovod设计了一种梯度状态协商机制，它将 计算节点Rank0 作为coordinator（master），其余的rank1-N节点进程为worker，由coordinator来协商确定同一份梯度是否在每个计算节点上都已经计算出来，只有在每个计算节点上都计算出来的同一梯度才可以进行全局规约操作。在Horovod里每个计算节点上都有一个message_queue以及tensor_table，而在coordinator节点上除此之外，还有一个message_table用于保存可以进行全局Allreduce的梯度请求次数信息。Horovod 控制面的ComputeResponseList 函数里实现了这一梯度的协商过程，在从message_queue获取了本节点生成的梯度信息后，coordinator会与其他节点协商这个梯度是否都计算出来，这一过程是阻塞进行的，这个协商过程如下图：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/5/image-grad-state-2.png" alt="梯度状态协商"></p>
+<p>一个梯度是否能满足全局规约AllReduce的协商过程如下：</p>
+<p>首先，集群内的每个计算节点进程都会往coordinator Rank0发送一个 tensor的请求request，表示说本节点这一层神经网络的梯度已经生成，比如tensor1，每个rank都会往rank0 发送一个本梯度tensor1已经计算出来的请求信息；</p>
+<p>第二步，coordinator接收到节点的梯度协商请求后（包括本节点），会把收到的tensor请求次数进行累加，并将这个信息记录在message_table里，当这个梯度的请求信息达到集群内节点的个数时，比如在N个节点的集群，一个神经网络层的梯度tensor的通信请求出现了N次，那就表示在本集群里所有的计算节点都已经发出了对该梯度tensor的通信request，这就表明这个梯度tensor是符合全局规约要求的，就能进行集合通信全局规约，不符合要求的梯度tensor将继续留在message_table中，直到条件符合为止；</p>
+<p>第三步，再接着coordinator会将满足全局allreduce规约条件的梯度Tensor通过response返回给其他节点，告诉其他节点这个梯度可以启动全局规约AllReduce。</p>
+<p>经过这几步的协商达成梯度全局状态一致的目的，从而避免梯度丢失造成的模型精度不达标、不收敛或者进程死锁问题。</p>
+<h3 id="3-4-梯度融合"><a href="#3-4-梯度融合" class="headerlink" title="3.4 梯度融合"></a>3.4 梯度融合</h3><p>神经网络的每一层都能对应一个梯度，假设每生成一个梯度就进行一次全局规约时，100个梯度就需要进行100次全局通信100次全局规约，而通信对训练的性能有巨大的影响，这种情况表现出来的效果就是分布式训练集群的整体性能极差。通过梯度融合计算将多个梯度合成一个，从而减少全局规约的次数能大幅提高分布式训练的训练性能，如下图所示，将N个小梯度Tensor合成两个，能将全局通信的次数减少到2次，从而大幅提升训练性能，在Horovod里这个功能对TensorFusion特性。但这个特性也会与<strong>3.2通信隐藏</strong>特性相冲突，需要根据具体情况进行合理的调试优化。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/5/image-tensorfusion.png" alt="tensorfusion"></p>
+<h3 id="3-5-易用性"><a href="#3-5-易用性" class="headerlink" title="3.5 易用性"></a>3.5 易用性</h3><p>从TensorFlow，PyTorch等框架迁移到Horovod需要改的的代码极少，horovod接入方式比较简单，与原生训练框架对比，主要的区别在于：</p>
+<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs undefined">1，初始化 Horovod，包括机器资源的分配：<br>horovod.init()<br><br>2，向每个进程分配XPU资源， 典型的设置是 1 个 XPU 一个进程，即设置 local rank：<br><br>config.gpu_options.visible_device_list = str(hvd.local_rank())<br><br>3，对原优化器进行包装，分布式优化器将梯度计算委托给原始优化器，使用allreduce或allgather对梯度求平均，然后应用这些平均梯度：<br><br>opt=hvd.DistributedOptimizer(opt)<br><br>4， 将初始化参数从rank 0广播给其他进程(rank表示进程序号)，实现参数的初始化，确保所有节点的初始化参数保持一致：<br>hvd.BroadcastGlobalVariablesHook(0)：<br></code></pre></td></tr></table></figure>
+<h3 id="3-6-可移植"><a href="#3-6-可移植" class="headerlink" title="3.6 可移植"></a>3.6 可移植</h3><p>可移植问题，Horovod通过 OP和OpKernels的插件化机制支持多种多样的深度学习训练框架，比如 TensorFlow、PyTorch、MxNet等。基于的opKernels的可定制化机制，Horovod自定义了Op然后hack了数据链路层的通信协议，从而达到在多个深度学习框架之间可移植。</p>
+<h3 id="3-7-可靠性问题"><a href="#3-7-可靠性问题" class="headerlink" title="3.7 可靠性问题"></a>3.7 可靠性问题</h3><p>在集群训练的过程中网络时不可靠的、计算卡是会出故障的、服务器是会出故障的的，这些因素造成了分布式训练过程中需要考虑训练集群的可靠性，Horovod结合集合通信库Gloo对外提供了弹性训练的特性，但可靠性不只是弹性训练就能完全解决的，它还有更多的系统级的问题需要解决，因此可靠性问题留着一个后续研究问题，不在本文阐述。</p>
+<h2 id="4-优点缺点、改进点"><a href="#4-优点缺点、改进点" class="headerlink" title="4. 优点缺点、改进点"></a><font color="#FF8C00">4. 优点缺点、改进点</font></h2><p>选择一个框架也是辩证的，在获得它优点的同时也得接受它的缺点，Horovod的优点、缺点以及改进点描述如下：</p>
+<h3 id="4-1-Horovod优点"><a href="#4-1-Horovod优点" class="headerlink" title="4.1 Horovod优点"></a>4.1 Horovod优点</h3><ul>
+<li>简单易用、可移植，并且支持弹性训练提升了可靠性；</li>
+<li>不依赖于某个框架，其通过MPI机制独立建立了一套分布式训练服务系统；</li>
+<li>将计算与通信分离，完成了allreduce、allgather等集合通信工作，实现了规模可扩展；</li>
+<li>巧妙的通过间隔轮询的机制支持通信时间隐藏，并且完成了梯度协商从而保证训练出来的模型是可收敛、精度达标的；</li>
+<li>支持梯度融合，支持将小的tensor合并成一个大的tensor再进行通信传递，从而减小通信操作的额外开销；</li>
+<li>自带压缩算法，可以减少集合通信的数据量；</li>
+</ul>
+<h3 id="4-2-Horovod的缺点"><a href="#4-2-Horovod的缺点" class="headerlink" title="4.2 Horovod的缺点"></a>4.2 Horovod的缺点</h3><ul>
+<li>与GPU绑定，对新的训练加速设备的支持不够友好，缺乏设备插件化的机制，要添加一个新的训练加速设备比较困难；</li>
+<li>所有的代码都与CUDA绑定，所有的性能优化机制都是针对GPU的，对新的DSA架构的芯片基本忽视；</li>
+<li>弹性训练特性比较复杂，很难在生产上使用起来；</li>
+<li>的Message_queue，Tensor_table缺乏容错机制，如果丢失数据容易造成丢tensor，从而影响整体模型的收敛与精度；</li>
+</ul>
+<h3 id="4-3-Horovod的改进点"><a href="#4-3-Horovod的改进点" class="headerlink" title="4.3 Horovod的改进点"></a>4.3 Horovod的改进点</h3><ul>
+<li>简单易用的插件化支持新的训练芯片；</li>
+<li>即支持SIMT架构芯片的性能优化，也支持DSA架构的芯片性能优化；</li>
+<li>支持消息队列、张量表的容错，支持Rank 0 容错机制；</li>
+</ul>
+<h2 id="5-思考题"><a href="#5-思考题" class="headerlink" title="5. 思考题"></a><font color="#FF8C00">5. 思考题</font></h2><ul>
+<li>问题1，将通信时间隐藏在计算时间内能有助于提升训练系统的整体性能，但这一特性是针对SIMT芯片的架构的进行性能优化的，如果DSA芯片不能支持这一特性，那应该如何优化Horovod从而大幅提升整体的训练性能？（可以确定这一定是能做到的）</li>
+<li>问题2，梯度协商的过程中，每个梯度都需要协商一次，在梯度较多，网络规模较大的集群里，这一特性也会影响性能，如何进行优化才能有效提升Horovod性能？</li>
+<li>问题3，不同的模型对梯度融合有不同的要求，那么梯度融合需要融合到什么程度才能有效提升性能？</li>
+</ul>
+<p>可以说明的是，这三个问题解决后还能继续提升Horovod在DSA架构芯片上的整体的分布式训练系统级性能。</p>
+<h2 id="6-小结"><a href="#6-小结" class="headerlink" title="6. 小结"></a><font color="#FF8C00">6. 小结</font></h2><p>本文介绍了分布式训练的基础知识以及剖析了分布式训练服务框架所面临的几个核心问题，以Horovod为例从计算与通信解耦、通信隐藏、梯度协商、梯度融合、易用性以及可移植这几个角度倒推了分布式训练服务框架背后的设计意图，从而帮助大家能更好的理解分布式训练服务框架。</p>
+<p>日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
+<h2 id="7-作者简介"><a href="#7-作者简介" class="headerlink" title="7. 作者简介"></a><font color="#FF8C00">7. 作者简介</font></h2><p>常平，中科大硕，某AI独角兽深度学习高级软件主管工程师、架构师，前EMC资深首席工程师，主要工作背景在深度学习、大数据、云计算、分布式中间件以及Linux内核领域。</p>
+<h2 id="8-参考资料"><a href="#8-参考资料" class="headerlink" title="8. 参考资料"></a><font color="#FF8C00">8. 参考资料</font></h2><p>[1] <a href="https://www.changping.me">https://www.changping.me</a><br>[2] <a href="https://horovod.ai" target="_blank" rel="noopener">https://horovod.ai</a><br>[3] <a href="https://www.cnblogs.com/rossiXYZ/p/14910959.html" target="_blank" rel="noopener">https://www.cnblogs.com/rossiXYZ/p/14910959.html</a><br>[4] <a href="https://zhuanlan.zhihu.com/p/374575049" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/374575049</a></p>
+<h2 id="9-版权申明"><a href="#9-版权申明" class="headerlink" title="9. 版权申明"></a><font color="#FF8C00">9. 版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/AI/" rel="tag"><i class="fas fa-tags"></i>AI</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2022/04/10/ai-distributed-training-coll-topo/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -180,7 +322,7 @@
 <li>8张物理RDMA网卡，不需要虚拟化，直接采用双工通道，适合选用2D-MESH、2D-Torus拓扑算法；</li>
 </ul>
 <p>在实际的分布式训练生产集群中，集合通信算法也可以结合RDMA网卡端口（包括虚拟化的）的具体个数进行设计，而拓扑算法的选择也是需要根据成本与效率的进行合理取舍的。</p>
-<h3 id="2-4-网络结构抽象"><a href="#2-4-网络结构抽象" class="headerlink" title="2.4 网络结构抽象"></a>2.4 网络结构抽象</h3><p>网络根据连接情况可分为ring结构、mesh结构、 torus 结构以及tree结构，基于以上的服务器内网络互联结构、服务器间网络互联结构以及网卡的具体情况，可以抽象出一个网络结构，即二维环面网络：Torus 网络，如下图：</p>
+<h3 id="2-4-网络结构抽象"><a href="#2-4-网络结构抽象" class="headerlink" title="2.4 网络结构抽象"></a>2.4 网络结构抽象</h3><p>网络根据连接情况可分为ring结构、mesh结构、 torus 结构以及tree结构，基于以上的服务器内网络互联结构、服务器间网络互联结构以及网卡的具体情况，可以抽象出一个网络结构，即二维环面网络：Torus 网络，而Torus网络横向与纵向都可以看成ring结构，因此相应的拓扑算法基本上就是Ring-Based 集合通信拓扑算法。如下图：</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/4/image-2dtorus-logictopo.png" alt="Torus网络结构"></p>
 <p>TORUS网络是常见的大规模并行计算机的互连网络，在上图这个Torus网络里：</p>
 <p>1）横向：主机内8卡通过私有连接协议，比如CXL/CCIX/NVLINK等组成一个或多个ring，如上图的黄色连接线，横向8卡组成二维Torus的横向维度；</p>
@@ -193,7 +335,8 @@
 </ul>
 <p>4）更复杂的Torus网络组合关系还可以如下图，从横向只有 主机内的8卡纵向只有主机间的RDMA互联，扩展到 横向与纵向 主机内互联与主机间互联混合，但本文仅限于在横向8卡的二维Torus网络下进行拓扑算法选择与设计，因此不展开讲述。</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/4/image-torus-topo.png" alt="Torus网络结构"></p>
-<h2 id="3-常用的通信拓扑算法"><a href="#3-常用的通信拓扑算法" class="headerlink" title="3. 常用的通信拓扑算法"></a><font color="#FF8C00">3. 常用的通信拓扑算法</font></h2><h3 id="3-1-Ring-AllReduce"><a href="#3-1-Ring-AllReduce" class="headerlink" title="3.1 Ring AllReduce"></a>3.1 Ring AllReduce</h3><p>在分布式训练中，Ring 是最基础的互联结构，在本文中Ring AllReduce的应用场景是在服务器内将8张加速卡组环通信进行分布式训练。每个XPU都是这个主机内互联环上的一个计算节点，每个节点都有一个前向和一个后向，它只会向它的前向接收数据，并向它的右向发送数据，如下图所示，8张XPU 通过主机内的私有互联网络组成一个环，当然因为这些通信网络是双工的，这8张XPU训练加速卡也可以看成是通过多个逻辑环互联起来的，同时缺点是，如果这个ring太大，Ring Allreduce的效率也会变得很低。</p>
+<h2 id="3-常用的通信拓扑算法"><a href="#3-常用的通信拓扑算法" class="headerlink" title="3. 常用的通信拓扑算法"></a><font color="#FF8C00">3. 常用的通信拓扑算法</font></h2><p>Torus 网络结构可以解读本文中的物理网络互联结构的一切，而Torus网络的横向与纵向都可以看成ring结构，因此，相应的集合通信拓扑算法都可以看成是Ring-Based 集合通信拓扑算法。</p>
+<h3 id="3-1-Ring-AllReduce"><a href="#3-1-Ring-AllReduce" class="headerlink" title="3.1 Ring AllReduce"></a>3.1 Ring AllReduce</h3><p>在分布式训练中，Ring 是最基础的互联结构，在本文中Ring AllReduce的应用场景是在服务器内将8张加速卡组环通信进行分布式训练。每个XPU都是这个主机内互联环上的一个计算节点，每个节点都有一个前向和一个后向，它只会向它的前向接收数据，并向它的右向发送数据，如下图所示，8张XPU 通过主机内的私有互联网络组成一个环，当然因为这些通信网络是双工的，这8张XPU训练加速卡也可以看成是通过多个逻辑环互联起来的，同时缺点是，如果这个ring太大，Ring Allreduce的效率也会变得很低。</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/4/image-ring-topo.png" alt="ring拓扑"></p>
 <p>Ring Allreduce 有两种组合实现策略：1）先Reduce后broadcast；2）先ScatterReduce后AllGather，这两个策略执行后都会让每个XPU节点得到一样的平均梯度，如下图所示：</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/4/image-allreduce.png" alt="allreduce"></p>
@@ -952,140 +1095,9 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2020/10/25/distributed-product_the_customer_and_technology/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2020/10/25/distributed-product_the_customer_and_technology/" itemprop="url">分布式系统架构设计 – 第25式- 让技术回归常识,先有客户再有技术</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-10-25T20:55:00+08:00">2020-10-25 20:55:00</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/product/" itemprop="url" rel="index"><span itemprop="name">product</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="先有客户再有技术"><a href="#先有客户再有技术" class="headerlink" title="先有客户再有技术"></a><font color="#FF8C00">先有客户再有技术</font></h2><p>技术不同于科学，科学是人类对自然的认知，它可以很前沿很理论也不用讲究工程价值，而技术更多指的是功能与工程得实现，更需要关注的是“利他”的常识。技术人员其比较关注的是技术架构、实现方式、技术价值以及开发成本，而比较容易忽略客户需求、使用场景以及产品价值与用户体验。忽略这些产品相关的内容而维技术论就容易犯错进而浪费有限的开发资源，在工程实现上维技术论常见的有四错：</p>
-<ul>
-<li>第一错：“我为用户想”，这是研发人员最容易犯的错，其已经有用户意识，但是却没有进一步与用户沟通，直接替用户做决定，也不清楚用户的使用场景，因此容易造成”所想“实际上并不是用户真正所想；</li>
-<li>第二错：追求有挑战的技术而非技术的实用价值，也非从合适的解决用户问题的角度出发，将技术上的自嗨当成客户需求，比如用户需要从A地到B地，简单一点给用户一辆自行车就可以解决的问题，而技术自嗨就容易非要先自行造个飞机，然后拼命的给用户推销这个好这个快，但是用户却不买单；</li>
-<li>第三错：维性价比论，总以为又便宜的又好的就是真的好，性价比是大杀器，但是很多情况下其实客户也讲ROI(投入产出比)，比如双11秒杀活动，用户可以不计成本的采用最新进最前沿的技术，只要能扛得住双11的流量就可以不计成本，因为再大的成本，跟双11带来的收益对比都是毛毛雨；</li>
-<li>第四错：闭门造车，不实事求是，不与客户做探讨，不做调查就把想象的或还处于概念上的东西当成客户需求。</li>
-</ul>
-<p>因此，架构人员不能维技术论，维技术论就不是一个合格的架构师，架构师还需要关注客户价值，在实现一个架构之前先确定这个是对客户有价值的，同时平衡好客户价值与技术前沿之间的取舍关系。</p>
-<h2 id="什么是客户，又什么是客户价值"><a href="#什么是客户，又什么是客户价值" class="headerlink" title="什么是客户，又什么是客户价值"></a><font color="#FF8C00">什么是客户，又什么是客户价值</font></h2><h3 id="什么是客户"><a href="#什么是客户" class="headerlink" title="什么是客户"></a>什么是客户</h3><p>用英文单词表示，客户与用户其实是比较容易区别的，客户是 customers, 用户 是users，而中文二者都有个“户”字就比较容易混淆。To C产品客户可以是用户，但是To B产品， 客户却不是就等于就是用户。狭义的客户 = 买单的，广义上的客户 = 客户的客户 + 客户 + 客户的用户 + 利益链上的所有，用户也不就是一个角色或者某人，对to B产品来说，用户的本质是“需求“的集合。</p>
-<h3 id="什么是客户价值"><a href="#什么是客户价值" class="headerlink" title="什么是客户价值"></a>什么是客户价值</h3><p>“任何先进的技术、产品和解决方案，只有转化为客户的商业成功才能产生价值“ [1]  ，客户价值就是对客户有用的东西，价值来源于价值的交换。技术的目的就是做对客户有用的东西，并且技术的进化方向是由市场所决定的。</p>
-<p>以客户为中心，就是给客户创造价值，替解决用户难点、痛点、挑战点、为客户提供高质量低成本的产品，同时响应要及时。病根是需，药是求，拿出 “求” 解决 “需”，药到病除就是为客户创造价值[1]。</p>
-<h2 id="如何做到以客户价值为中心？"><a href="#如何做到以客户价值为中心？" class="headerlink" title="如何做到以客户价值为中心？"></a><font color="#FF8C00">如何做到以客户价值为中心？</font></h2><p>认知上做到技术要先从客户价值开始，那么执行上应该如何拆分？使得认知具有可量化的执行性？这里从以下三个方面对“如何做到以客户价值为中心”这个问题进行拆解：</p>
-<ul>
-<li>价值探索 - 价值与交付双轮驱动思维模型，PMF-MVP思维模型</li>
-<li>价值确定 - 三三制需求分析思维模型</li>
-<li>价值输出 - 卡诺需求分级与分类思维模型</li>
-</ul>
-<h3 id="价值探索1-双轮驱动思维模型"><a href="#价值探索1-双轮驱动思维模型" class="headerlink" title="价值探索1 - 双轮驱动思维模型"></a>价值探索1 - 双轮驱动思维模型</h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/25/double-ring.png" alt="双轮驱动思维模型"></p>
-<p>价值探索的方法论之一是双轮驱动思维模型，其原则为：</p>
-<ul>
-<li>以客户价值为前轮，前轮把握方向，解决的是需求探索、价值确定、特性探讨以及价值精炼的过程，需求输出需要去伪存真、去粗纯精、过滤提炼；</li>
-<li>产品交付为后轮，后轮提供驱动力，解决的是开发、测试、运维以及获取客户反馈；</li>
-<li>先有客户价值再有产品交付，客户价值又可分为主动式客户价值与被动式客户价值，获取客户需求的方式也需要合理取舍；</li>
-<li>在双轮驱动模型里，二者谁都离不开谁，不是厚此薄彼的关系，而是二者互相协作从而推动产品往商业成功这个目标前进的关系；</li>
-</ul>
-<h3 id="价值探索2-PMF-MVP-开发模型"><a href="#价值探索2-PMF-MVP-开发模型" class="headerlink" title="价值探索2 - PMF-MVP 开发模型"></a>价值探索2 - PMF-MVP 开发模型</h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/25/pmf-mvp.png" alt="PMF-MVP"></p>
-<p>如上图所示，PMF（Product-Market Fit）是讲究产品与市场匹配，是产品需要与市场需求相匹配，而MVP （Minimal Viable Product）是 最小可用产品，MVP讲的是每个版本的迭代都是一个可用的产品而非功能的堆砌，PMF-MVP开发法，讲究快速给的输出可用的版本给到客户，再由客户进行使用获取客户的信息反馈，再进行版本迭代。</p>
-<p>价值探索的方法论之二是PMF-MVP开发法，其原则为：</p>
-<ul>
-<li>PMF-MVP 开发法可以帮助团队在早期快速确认客户的真实需求；从特性列表中确定产品（特性）的基本功能， 然后迅速开发MVP，再投放市场提前踩坑，收集用户反馈，然后再进行产品迭代，只有用户用起来，产品才有机会演化；</li>
-<li>做MVP的时候，不是验证产品好不好用，而是验证产品/特性是不是用户真的想要的，减少开发成本，“闭门造车”式的开发经常会遇到“再来一次”;</li>
-<li>跟目标用户产生互动和连接，每一步都收集用户的反馈，前期跟客户多交流，多沟通，“一元共创”与用户一起成长。</li>
-</ul>
-<p>在价值探索之后就需要进行价值确定。</p>
-<h3 id="价值确定-–-三三制需求分析思维模型"><a href="#价值确定-–-三三制需求分析思维模型" class="headerlink" title="价值确定 – 三三制需求分析思维模型"></a>价值确定 – 三三制需求分析思维模型</h3><p><strong>公式： 需求</strong> <strong>=</strong> <strong>需（痛点、难点、挑战点、恐惧点）</strong> <strong>+</strong> <strong>求 （产品、服务或解决方案）</strong>， 需即痛点、难点、挑战点，求即解决方案、产品或服务，求到需即完成，这就是有客户价值。依据三三制需求分析思维模型我们可以进行价值确定，三三制需求分析思维模型是一个价值确定思维模型，其如下表：</p>
-<table>
-<thead>
-<tr>
-<th><strong>类别</strong></th>
-<th><strong>功能</strong></th>
-<th><strong>质量</strong></th>
-<th><strong>约束</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>“大”**</strong>客户**</td>
-<td>业务目标：  商业成功，比如科技向善</td>
-<td>业务质量：    多、快、好、省</td>
-<td>业务约束：  时间、质量、成本，法律法规，信息安全，技术趋势，竞争对手，行业标准等</td>
-</tr>
-<tr>
-<td><strong>“大”**</strong>用户**</td>
-<td>业务需求</td>
-<td>运行时质量：  性能、可用性、可靠性，可伸缩性、可观测性、可运维性、易用性、兼容性、安全性等</td>
-<td>使用时约束：  遗留系统，业务环境，用户能力，用户群特征等</td>
-</tr>
-<tr>
-<td><strong>“大”**</strong>团队**</td>
-<td>功能需求：  基本功能P0  、增值功能P1、潜在功能P2 、可有可无功能P3  、有害无益功能P100</td>
-<td>编程时质量：  可扩展，可读性，可测试性，可维护性，可移植性</td>
-<td>编程时约束：  开发进度，资源预算、上级要求、开发团队能力、产品规划、运行环境</td>
-</tr>
-</tbody>
-</table>
-<p>三三制需求分析思维模型进行价值确定之后即价值输出。</p>
-<h3 id="价值输出-–-卡诺需求分类与分级思维模型"><a href="#价值输出-–-卡诺需求分类与分级思维模型" class="headerlink" title="价值输出 – 卡诺需求分类与分级思维模型"></a>价值输出 – 卡诺需求分类与分级思维模型</h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/25/kano-model.png" alt="KANO"></p>
-<p>这里采用KANO需求分类与分解思维模型进行价值输出，依据kano模型，需求可以分为：</p>
-<ul>
-<li>基本需求：必须有的最根本的需求，没这个根本就没法谈，会阻塞产品交付；</li>
-<li>增值需求：当提供此需求时用户满意度会提升；当不提供此需求时用户满意度会降低；</li>
-<li>竞争力需求：若不提供此需求，用户满意度不会降低；若提供此需求，用户满意度会有所的提升，属于亮点要素；</li>
-<li>可有可无需求：用户根本不在意的需求，对用户体验毫无影响；</li>
-<li>有害无益需求：提供后用户满意度反而下降；</li>
-</ul>
-<p>卡诺模型将需求进行了分级与分类，进一步的区分了需求的价值。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文首先确定了 “先有客户再有技术”的认知，再讲述了什么是客户，什么是客户价值，并且以思维模型的方式讲述了如何做到以客户价值为中心。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个思维模型对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，某AI独角兽深度学习首席软件工程师，前EMC 大数据资深首席工程师，主要工作背景在深度学习、流式大数据、云计算、分布式中间件以及Linux内核。</p>
-<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
-<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1] xx增长法</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/product/" rel="tag"><i class="fas fa-tags"></i>product</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
   </nav>
   
   
@@ -1108,7 +1120,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">56</a></div>
+      <div><a href="/archives">57</a></div>
     </div>
     
     

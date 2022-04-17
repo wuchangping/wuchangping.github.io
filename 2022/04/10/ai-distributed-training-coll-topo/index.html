@@ -176,7 +176,7 @@
 <li>8张物理RDMA网卡，不需要虚拟化，直接采用双工通道，适合选用2D-MESH、2D-Torus拓扑算法；</li>
 </ul>
 <p>在实际的分布式训练生产集群中，集合通信算法也可以结合RDMA网卡端口（包括虚拟化的）的具体个数进行设计，而拓扑算法的选择也是需要根据成本与效率的进行合理取舍的。</p>
-<h3 id="2-4-网络结构抽象"><a href="#2-4-网络结构抽象" class="headerlink" title="2.4 网络结构抽象"></a>2.4 网络结构抽象</h3><p>网络根据连接情况可分为ring结构、mesh结构、 torus 结构以及tree结构，基于以上的服务器内网络互联结构、服务器间网络互联结构以及网卡的具体情况，可以抽象出一个网络结构，即二维环面网络：Torus 网络，如下图：</p>
+<h3 id="2-4-网络结构抽象"><a href="#2-4-网络结构抽象" class="headerlink" title="2.4 网络结构抽象"></a>2.4 网络结构抽象</h3><p>网络根据连接情况可分为ring结构、mesh结构、 torus 结构以及tree结构，基于以上的服务器内网络互联结构、服务器间网络互联结构以及网卡的具体情况，可以抽象出一个网络结构，即二维环面网络：Torus 网络，而Torus网络横向与纵向都可以看成ring结构，因此相应的拓扑算法基本上就是Ring-Based 集合通信拓扑算法。如下图：</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/4/image-2dtorus-logictopo.png" alt="Torus网络结构"></p>
 <p>TORUS网络是常见的大规模并行计算机的互连网络，在上图这个Torus网络里：</p>
 <p>1）横向：主机内8卡通过私有连接协议，比如CXL/CCIX/NVLINK等组成一个或多个ring，如上图的黄色连接线，横向8卡组成二维Torus的横向维度；</p>
@@ -189,7 +189,8 @@
 </ul>
 <p>4）更复杂的Torus网络组合关系还可以如下图，从横向只有 主机内的8卡纵向只有主机间的RDMA互联，扩展到 横向与纵向 主机内互联与主机间互联混合，但本文仅限于在横向8卡的二维Torus网络下进行拓扑算法选择与设计，因此不展开讲述。</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/4/image-torus-topo.png" alt="Torus网络结构"></p>
-<h2 id="3-常用的通信拓扑算法"><a href="#3-常用的通信拓扑算法" class="headerlink" title="3. 常用的通信拓扑算法"></a><font color="#FF8C00">3. 常用的通信拓扑算法</font></h2><h3 id="3-1-Ring-AllReduce"><a href="#3-1-Ring-AllReduce" class="headerlink" title="3.1 Ring AllReduce"></a>3.1 Ring AllReduce</h3><p>在分布式训练中，Ring 是最基础的互联结构，在本文中Ring AllReduce的应用场景是在服务器内将8张加速卡组环通信进行分布式训练。每个XPU都是这个主机内互联环上的一个计算节点，每个节点都有一个前向和一个后向，它只会向它的前向接收数据，并向它的右向发送数据，如下图所示，8张XPU 通过主机内的私有互联网络组成一个环，当然因为这些通信网络是双工的，这8张XPU训练加速卡也可以看成是通过多个逻辑环互联起来的，同时缺点是，如果这个ring太大，Ring Allreduce的效率也会变得很低。</p>
+<h2 id="3-常用的通信拓扑算法"><a href="#3-常用的通信拓扑算法" class="headerlink" title="3. 常用的通信拓扑算法"></a><font color="#FF8C00">3. 常用的通信拓扑算法</font></h2><p>Torus 网络结构可以解读本文中的物理网络互联结构的一切，而Torus网络的横向与纵向都可以看成ring结构，因此，相应的集合通信拓扑算法都可以看成是Ring-Based 集合通信拓扑算法。</p>
+<h3 id="3-1-Ring-AllReduce"><a href="#3-1-Ring-AllReduce" class="headerlink" title="3.1 Ring AllReduce"></a>3.1 Ring AllReduce</h3><p>在分布式训练中，Ring 是最基础的互联结构，在本文中Ring AllReduce的应用场景是在服务器内将8张加速卡组环通信进行分布式训练。每个XPU都是这个主机内互联环上的一个计算节点，每个节点都有一个前向和一个后向，它只会向它的前向接收数据，并向它的右向发送数据，如下图所示，8张XPU 通过主机内的私有互联网络组成一个环，当然因为这些通信网络是双工的，这8张XPU训练加速卡也可以看成是通过多个逻辑环互联起来的，同时缺点是，如果这个ring太大，Ring Allreduce的效率也会变得很低。</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/4/image-ring-topo.png" alt="ring拓扑"></p>
 <p>Ring Allreduce 有两种组合实现策略：1）先Reduce后broadcast；2）先ScatterReduce后AllGather，这两个策略执行后都会让每个XPU节点得到一样的平均梯度，如下图所示：</p>
 <p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/4/image-allreduce.png" alt="allreduce"></p>
@@ -287,6 +288,8 @@
     </div>
     <div class="page-nav-prev page-nav-item">
       
+      <a href="/2022/04/17/ai-distributed-training-framework-1/" rel="prev" title="分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析"><span class="nav-title">分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析</span><i class="fas fa-angle-right"></i></a>
+      
     </div>
   </nav>
   
@@ -310,7 +313,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">56</a></div>
+      <div><a href="/archives">57</a></div>
     </div>
     
     
