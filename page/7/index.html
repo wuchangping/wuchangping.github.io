@@ -115,6 +115,353 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/26/flink-concepts-programming-model/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/26/flink-concepts-programming-model/" itemprop="url">flink handbook - flink数据流编程模型</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-26T06:34:26+08:00">2018-09-26 06:34:26</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="抽象层次"><a href="#抽象层次" class="headerlink" title="抽象层次"></a>抽象层次</h2><p>Flink提供不同级别的抽象来开发流/批处理应用程序。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/levels_of_abstraction.svg" alt="抽象层次"></p>
+<ul>
+<li><p>最低级抽象只提供有状态流。它通过Process Function嵌入到DataStream API中。它允许用户自由处理来自一个或多个流的事件，并使用一致的容错状态。此外，用户可以注册事件时间和处理时间回调，允许程序实现复杂的计算。</p>
+</li>
+<li><p>实际上，大多数应用不需要上述低级抽象，而是针对Core API编程， 如DataStream API（有界/无界流）和DataSet API （有界数据集）。这些流动的API提供了用于数据处理的通用构建块，例如各种形式的用户指定的转换，连接，聚合，窗口，状态等。在这些API中处理的数据类型在相应的编程语言中表示为类。</p>
+</li>
+</ul>
+<p>低级Process Function与DataStream API集成，因此只能对某些操作进行低级抽象。DataSet API提供的有限数据集的其他原语，如循环/迭代。</p>
+<ul>
+<li>Table API是以表为中心的声明性DSL，其可以是动态地改变的表（表示流时）。Table API遵循（扩展）关系模型：表附加了一个模式（类似于在关系数据库中的表），API提供了类似的操作，如选择，项目，连接，分组依据，聚合等。Table API程序以声明方式定义应该执行的逻辑操作，而不是准确指定 操作代码的外观。虽然Table API可以通过各种类型的用户定义函数进行扩展，但它的表现力不如Core API，但使用更简洁（编写的代码更少）。此外，Table API程序还会通过优化程序，在执行之前应用优化规则。</li>
+</ul>
+<p>可以在表和DataStream / DataSet之间无缝转换，允许程序混合Table API以及DataStream 和DataSet API。</p>
+<ul>
+<li>Flink提供的最高级抽象是SQL。这种抽象在语义和表达方面类似于Table API，但是将程序表示为SQL查询表达式。在SQL抽象与 Table API紧密地相互作用，和SQL查询可以在Table API中定义的表上执行。</li>
+</ul>
+<h2 id="程序和数据流"><a href="#程序和数据流" class="headerlink" title="程序和数据流"></a>程序和数据流</h2><p>Flink程序的基本构建块是流和转换。（请注意，Flink的DataSet API中使用的DataSet也是内部流 - 稍后会详细介绍。）从概念上讲，流是（可能永无止境的）数据记录流，而转换是将一个或多个流作为输入，并产生一个或多个流输出的结果。</p>
+<p>执行时，Flink程序映射到流数据流，由流和转换运算符组成。每个数据流都以一个或多个源开头，并以一个或多个接收器结束。数据流类似于任意有向无环图 （DAG）。尽管通过迭代结构允许特殊形式的循环 ，但为了简单起见，我们将在大多数情况下对此进行掩饰。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/program_dataflow.svg" alt="DataStream程序及其数据流"></p>
+<p>通常，程序中的转换与数据流中的运算符之间存在一对一的对应关系。但是，有时一个转换可能包含多个转换运算符。</p>
+<p>源流和接收器记录在流连接器和批处理连接器文档中。DataStream运算符和DataSet转换中记录了转换。</p>
+<h2 id="并行数据流"><a href="#并行数据流" class="headerlink" title="并行数据流"></a>并行数据流</h2><p>Flink中的程序本质上是并行和分布式的。在执行期间，流具有一个或多个流分区，并且每个运算符具有一个或多个运算符子任务。运算符子任务彼此独立，并且可以在不同的线程中执行，并且可能在不同的机器或容器上执行。</p>
+<p>运算符子任务的数量是该特定运算符的并行度。流的并行性始终是其生成运算符的并行性。同一程序的不同运算符可能具有不同的并行级别。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/parallel_dataflow.svg" alt="并行数据流"></p>
+<p>流可以以一对一（或转发）模式或以重新分发模式在两个算子之间传输数据：</p>
+<ul>
+<li><p>一对一流（例如，在上图中的Source和map（）算子之间）保留元素的分区和排序。这意味着map（）算子的subtask [1] 将以与Source算子的subtask [1]生成的顺序相同的顺序看到相同的元素。</p>
+</li>
+<li><p>重新分配流（在上面的map（）和keyBy / window之间，以及 keyBy / window和Sink之间）重新分配流。每个算子子任务将数据发送到不同的目标子任务，具体取决于所选的转换。实例是 keyBy（） （其通过散列密钥重新分区），广播（） ，或重新平衡（） （其重新分区随机地）。在重新分配交换中，元素之间的排序仅保留在每对发送和接收子任务中（例如，map（）的子任务[1] 和子任务[2]keyBy / window）。因此，在此示例中，保留了每个密钥内的排序，但并行性确实引入了关于不同密钥的聚合结果到达接收器的顺序的非确定性。</p>
+</li>
+</ul>
+<p>有关配置和控制并行性的详细信息，请参阅并行执行的文档。</p>
+<h2 id="视窗"><a href="#视窗" class="headerlink" title="视窗"></a>视窗</h2><p>聚合事件（例如，计数，总和）在流上的工作方式与批处理方式不同。例如，不可能计算流中的所有元素，因为流通常是无限的（无界）。相反，流上的聚合（计数，总和等）由窗口限定，例如“在最后5分钟内计数”或“最后100个元素的总和”。</p>
+<p>Windows可以是时间驱动的（例如：每30秒）或数据驱动（例如：每100个元素）。一个典型地区分不同类型的窗口，例如翻滚窗口（没有重叠）， 滑动窗口（具有重叠）和会话窗口（由不活动的间隙打断）。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/windows.svg" alt="时间和计数Windows"></p>
+<p>更多窗口示例可以在此博客文章中找到。更多详细信息在窗口文档中。</p>
+<h2 id="时间"><a href="#时间" class="headerlink" title="时间"></a>时间</h2><p>当在流程序中引用时间（例如定义窗口）时，可以参考不同的时间概念：</p>
+<ul>
+<li><p>事件时间是创建事件的时间。它通常由事件中的时间戳描述，例如由生产传感器或生产服务附加。Flink通过时间戳分配器访问事件时间戳。</p>
+</li>
+<li><p>摄取时间是事件在源操作员处输入Flink数据流的时间。</p>
+</li>
+<li><p>处理时间是执行基于时间的操作的每个算子的本地时间。</p>
+</li>
+</ul>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/event_ingestion_processing_time.svg" alt="事件时间，摄取时间和处理时间"></p>
+<p>有关如何处理时间的更多详细信息，请参阅<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/event_time.html" target="_blank" rel="noopener">事件时间文档</a>。</p>
+<h2 id="有状态的操作"><a href="#有状态的操作" class="headerlink" title="有状态的操作"></a>有状态的操作</h2><p>虽然数据流中的许多操作只是一次查看一个单独的事件（例如事件解析器），但某些操作会记住多个事件（例如窗口操作符）的信息。这些操作称为有状态。</p>
+<p>状态操作的状态保持在可以被认为是嵌入式键/值存储的状态中。状态被分区并严格地与有状态算子读取的流一起分发。因此，只有在keyBy（）函数之后才能在键控流上访问键/值状态，并且限制为与当前事件的键相关联的值。对齐流和状态的密钥可确保所有状态更新都是本地操作，从而保证一致性而无需事务开销。此对齐还允许Flink重新分配状态并透明地调整流分区。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink/state_partitioning.svg" alt="状态和分区"></p>
+<p>有关更多信息，请参阅有关状态的文档。</p>
+<h2 id="容错检查点"><a href="#容错检查点" class="headerlink" title="容错检查点"></a>容错检查点</h2><p>Flink使用流重放和检查点的组合实现容错。检查点与每个输入流中的特定点以及每个算子的对应状态相关。通过恢复算子的状态并从检查点重放事件，可以从检查点恢复流数据流，同时保持一致性（恰好一次处理语义）。</p>
+<p>检查点间隔是在执行期间用恢复时间（需要重放的事件的数量）来折衷容错开销的手段。</p>
+<p><a href="https://ci.apache.org/projects/flink/flink-docs-master/internals/stream_checkpointing.html" target="_blank" rel="noopener">容错内部</a>的描述提供了有关Flink如何管理检查点和相关主题的更多信息。有关启用和配置检查点的详细信息，请参阅检查点API文档。</p>
+<h2 id="批处理流"><a href="#批处理流" class="headerlink" title="批处理流"></a>批处理流</h2><p>Flink执行<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/index.html" target="_blank" rel="noopener">批处理程序</a>作为流程序的特殊情况，其中流是有界的（有限数量的元素）。数据集做为数据流在内部处理。因此，上述概念以适用于流程序相同的方式应用于批处理程序，只是少数例外：</p>
+<ul>
+<li><p><a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/fault_tolerance.html" target="_blank" rel="noopener">批处理程序的容错</a>不使用检查点。而是通过完全重放流来恢复。这是可能的，因为输入是有界的。这会使成本更多高，但却使常规处理更便宜，因为它避免了检查点。</p>
+</li>
+<li><p>DataSet API中的有状态操作使用简化的内存/核外数据结构，而不是键/值索引。</p>
+</li>
+<li><p>DataSet API引入了特殊的同步（基于超前的）迭代，这在有界流上是可行的。有关详细信息，请查看<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/iterations.html" target="_blank" rel="noopener">迭代文档</a>。</p>
+</li>
+</ul>
+<h2 id="下一步"><a href="#下一步" class="headerlink" title="下一步"></a>下一步</h2><p>Flink的Distributed Runtime。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/24/flink-apache-flink-home/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/24/flink-apache-flink-home/" itemprop="url">Flink handbook - Apache Flink的文档</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-24T22:01:25+08:00">2018-09-24 22:01:25</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="Apache-Flink文档"><a href="#Apache-Flink文档" class="headerlink" title="Apache Flink文档"></a>Apache Flink文档</h2><p>本文档适用于Apache Flink master版。</p>
+<p>Apache Flink是一个用于分布式流和批处理数据处理的开源平台。Flink的核心是流数据流引擎，为数据流上的分布式计算提供数据分发，通信和容错。Flink在流引擎之上构建批处理，涵盖原生的迭代支持，受管理的内存和程序优化。</p>
+<h2 id="第一步"><a href="#第一步" class="headerlink" title="第一步"></a>第一步</h2><p><strong>概念：</strong>从Flink的<a href="https://ci.apache.org/projects/flink/flink-docs-master/concepts/programming-model.html" target="_blank" rel="noopener">数据流编程模型</a>和<a href="https://ci.apache.org/projects/flink/flink-docs-master/concepts/runtime.html" target="_blank" rel="noopener">分布式运行时环境</a>的基本概念开始。这将有助于您了解文档的其他部分，包括配置和编程指南。我们建议您先阅读这部分内容。</p>
+<p><strong>教程：</strong></p>
+<ul>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/tutorials/datastream_api.html" target="_blank" rel="noopener">实现并运行DataStream应用</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/tutorials/local_setup.html" target="_blank" rel="noopener">配置本地Flink群集</a></li>
+</ul>
+<p><strong>编程指南：</strong>您可以阅读我们关于<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/api_concepts.html" target="_blank" rel="noopener">基本API概念</a>和<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/datastream_api.html" target="_blank" rel="noopener">DataStream API</a>或<a href="https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/index.html" target="_blank" rel="noopener">DataSet API</a>的指南，以了解如何编写您的第一个Flink程序。</p>
+<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>在将Flink作业投入生产之前，请阅读<a href="https://ci.apache.org/projects/flink/flink-docs-master/ops/production_ready.html" target="_blank" rel="noopener">生产准备清单</a>。</p>
+<h2 id="发行说明"><a href="#发行说明" class="headerlink" title="发行说明"></a>发行说明</h2><p>发行说明涵盖了Flink版本之间的重要更改。如果您计划将Flink升级到更高版本，请仔细阅读这些说明。</p>
+<ul>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/release-notes/flink-1.6.html" target="_blank" rel="noopener">Flink 1.6发行说明</a></li>
+<li><a href="https://ci.apache.org/projects/flink/flink-docs-master/release-notes/flink-1.5.html" target="_blank" rel="noopener">Flink 1.5的发行说明</a></li>
+</ul>
+<h2 id="外部资源"><a href="#外部资源" class="headerlink" title="外部资源"></a>外部资源</h2><ul>
+<li><p>Flink Forward：<a href="http://flink-forward.org/" target="_blank" rel="noopener">Flink Forward网站</a>和<a href="https://www.youtube.com/channel/UCY8_lgiZLZErZPF47a2hXMA" target="_blank" rel="noopener">YouTube</a>上提供了以往会议的讲座。<a href="http://2016.flink-forward.org/kb_sessions/robust-stream-processing-with-apache-flink/" target="_blank" rel="noopener">使用Apache Flink进行可靠的流处理</a>，那这些资料是一个很好的起点。</p>
+</li>
+<li><p>培训：data Artisans的<a href="http://training.data-artisans.com/" target="_blank" rel="noopener">培训材料</a>包括幻灯片，练习和示例。</p>
+</li>
+<li><p>博客：<a href="https://flink.apache.org/blog/" target="_blank" rel="noopener">Apache Flink</a>和<a href="https://data-artisans.com/blog/" target="_blank" rel="noopener">data Artisans</a>博客会比较频繁的发布flink相关的、深入的技术文章。</p>
+</li>
+</ul>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/24/flink-faq/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/24/flink-faq/" itemprop="url">Flink handbook - flink常见问题</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-24T07:43:34+08:00">2018-09-24 07:43:34</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>关于Flink项目，一般会经常被问到以下问题。</p>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h2 id="Apache-Flink仅用于（近）实时处理用例吗？"><a href="#Apache-Flink仅用于（近）实时处理用例吗？" class="headerlink" title="Apache Flink仅用于（近）实时处理用例吗？"></a>Apache Flink仅用于（近）实时处理用例吗？</h2><p>Flink是一个非常通用的系统，用于数据处理和数据驱动的应用程序，数据流作为核心构建块。这些数据流可以是实时数据流,也可以是存储的历史数据流。例如，在Flink的视图中，文件是存储的字节流。因此，Flink支持实时数据处理和应用，以及批处理应用。</p>
+<p>流可以是无界的（没有结束，事件不断发生）或受限制（流有开始和结束）。例如，来自消息队列的Twitter馈送或事件流通常是无界流，而来自文件的字节流是有界流。</p>
+<h2 id="如果一切都是流，为什么Flink中有DataStream和DataSet-API？"><a href="#如果一切都是流，为什么Flink中有DataStream和DataSet-API？" class="headerlink" title="如果一切都是流，为什么Flink中有DataStream和DataSet API？"></a>如果一切都是流，为什么Flink中有DataStream和DataSet API？</h2><p>有界流通常比无界流更有效。在（近）实时处理无限事件流需要系统能够立即对事件起作用并产生中间结果（通常具有低延迟）。处理有界流通常不需要产生低延迟结果，因为无论如何数据都是旧的（相对而言）。这允许Flink以简单且更有效的方式处理数据。</p>
+<p>DataStream API通过支持低延时的结果和对事件和时间（包括事件时间）灵活反应的模型捕获无界流和有界流的连续处理，</p>
+<p>DataSet API具有加快有界数据流的处理的技术。将来，社区计划将这些优化与DataStream API中的技术相结合。</p>
+<h2 id="Flink如何与Hadoop堆栈相关？"><a href="#Flink如何与Hadoop堆栈相关？" class="headerlink" title="Flink如何与Hadoop堆栈相关？"></a>Flink如何与Hadoop堆栈相关？</h2><p>Flink独立于Apache Hadoop，并且在没有任何Hadoop依赖性的情况下运行。</p>
+<p>但是，Flink与许多Hadoop组件集成得非常好，例如HDFS，YARN或HBase。与这些组件一起运行时，Flink可以使用HDFS读取数据，或写入结果和检查点/快照。Flink可以通过YARN轻松部署，并与YARN和HDFS Kerberos安全模块集成。</p>
+<h2 id="Flink运行的其他堆栈是什么？"><a href="#Flink运行的其他堆栈是什么？" class="headerlink" title="Flink运行的其他堆栈是什么？"></a>Flink运行的其他堆栈是什么？</h2><p>Flink可以在Kubernetes，Mesos， Docker上运行 ，甚至作为独立服务运行。</p>
+<h2 id="使用Flink有哪些先决条件？"><a href="#使用Flink有哪些先决条件？" class="headerlink" title="使用Flink有哪些先决条件？"></a>使用Flink有哪些先决条件？</h2><p>您需要Java 8来运行Flink作业/应用。<br>Scala API（可选）依赖于Scala 2.11。<br>Apache ZooKeeper需要高度可用且没有单点故障的设置。<br>对于可以从故障中恢复的高可用流处理设置，Flink需要某种形式的分布式存储用于检查点（HDFS / S3 / NFS / SAN / GFS / Kosmos / Ceph / …）。</p>
+<h2 id="Flink支持多大的规模？"><a href="#Flink支持多大的规模？" class="headerlink" title="Flink支持多大的规模？"></a>Flink支持多大的规模？</h2><p>用户在非常小的设置（少于5个节点）和1000个节点以及状态的TB上运行Flink作业。</p>
+<h2 id="Flink是否仅限于内存数据集？"><a href="#Flink是否仅限于内存数据集？" class="headerlink" title="Flink是否仅限于内存数据集？"></a>Flink是否仅限于内存数据集？</h2><p>对于DataStream API，Flink支持大于内存的状态来配置RocksDB状态后端。</p>
+<p>对于DataSet API，所有操作（delta迭代除外）都可以扩展到主内存之外。</p>
+<h2 id="常见错误消息"><a href="#常见错误消息" class="headerlink" title="常见错误消息"></a>常见错误消息</h2><p>“ 获得帮助”页面上列出了常见错误消息。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1].<a href="https://flink.apache.org/faq.html" target="_blank" rel="noopener">https://flink.apache.org/faq.html</a></p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/flink-use-cases/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/23/flink-use-cases/" itemprop="url">Flink handbook - flink用例</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-23T21:32:26+08:00">2018-09-23 21:32:26</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="用例"><a href="#用例" class="headerlink" title="用例"></a>用例</h2><p>Apache Flink因其丰富的功能集而成为开发和运行多种不同类型应用程序的绝佳选择。Flink的功能包括对流和批处理的支持，复杂的状态管理，事件时间处理语义以及状态的恰好一次一致性保证。此外，Flink可以部署在各种资源管理集群（如YARN，Apache Mesos和Kubernetes）上，也可以部署为裸机硬件上的单个群集。Flink配置为高可用性，没有单点故障。Flink已经被证明可以扩展到数千个核心和万亿字节的应用状态，提供高吞吐量和低延迟，并为世界上一些最苛刻的流处理应用程序提供支持。</p>
+<p>下面，我们将探讨由Flink提供支持的最常见类型的应用程序，并指出实际示例。</p>
+<ul>
+<li>事件驱动的应用</li>
+<li>数据分析应用</li>
+<li>数据管道应用</li>
+</ul>
+<h2 id="事件驱动的应用"><a href="#事件驱动的应用" class="headerlink" title="事件驱动的应用"></a>事件驱动的应用</h2><h3 id="什么是事件驱动的应用？"><a href="#什么是事件驱动的应用？" class="headerlink" title="什么是事件驱动的应用？"></a>什么是事件驱动的应用？</h3><p>事件驱动的应用程序是一个有状态的应用程序，它从一个或多个事件流中提取事件，并通过触发计算，状态更新或外部操作对传入事件做出响应。</p>
+<p>事件驱动的应用程序是传统应用程序设计的演变，具有分离的计算和数据存储层。在传统应用的体系结构中，应用从远程事务数据库中读取数据并将数据持久化到远程事务数据库。</p>
+<p>相比之下，事件驱动的应用程序基于有状态流处理应用程序。在这种设计中，数据和计算是共同定位的，这产生了本地（内存或磁盘）数据访问。通过定期将检查点写入远程持久存储来实现容错。下图描绘了传统应用程序体系结构和事件驱动应用程序之间的差异。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-eventdrivenapps.png" alt=""></p>
+<h3 id="事件驱动的应用有哪些优点？"><a href="#事件驱动的应用有哪些优点？" class="headerlink" title="事件驱动的应用有哪些优点？"></a>事件驱动的应用有哪些优点？</h3><p>事件驱动的应用程序不是查询远程数据库，而是在本地访问其数据，从而在吞吐量和延迟方面发挥更好的性能。远程持久存储的定期检查点可以异步和递增完成。因此，检查点对常规事件处理的影响非常小。但是，事件驱动的应用程序设计提供的不仅仅是本地数据访问。在分层体系结构中，多个应用程序共享同一数据库是很常见的。因此，需要协调数据库的任何更改，例如由于应用程序更新或扩展服务而更改数据布局。由于每个事件驱动的应用程序都负责自己的数据，因此对数据表示的更改或扩展应用程序需要较少的协调。</p>
+<h3 id="Flink如何支持事件驱动的应用？"><a href="#Flink如何支持事件驱动的应用？" class="headerlink" title="Flink如何支持事件驱动的应用？"></a>Flink如何支持事件驱动的应用？</h3><p>事件驱动应用程序的限制由流处理器处理时间和状态的程度来定义。Flink的许多杰出功能都围绕着这些概念。Flink提供了一组丰富的状态原语，可以管理非常大的数据量（最多几TB），并且具有恰好一次的一致性保证。此外，Flink支持事件时间，高度可定制的窗口逻辑，以及通过ProcessFunction实现高级业务逻辑提供的细粒度时间控制。此外，Flink还提供了一个用于复杂事件处理（CEP）的库，用于检测数据流中的模式。</p>
+<p>但是，Flink针对事件驱动应用程序的突出特点是保存点功能。保存点是一致的状态图像，可用作兼容应用程序的起点。给定保存点，可以更新应用程序或调整其规模，或者可以启动应用程序的多个版本以进行A / B测试。</p>
+<h3 id="什么是典型的事件驱动应用？"><a href="#什么是典型的事件驱动应用？" class="headerlink" title="什么是典型的事件驱动应用？"></a>什么是典型的事件驱动应用？</h3><ul>
+<li>欺诈识别</li>
+<li>异常检测</li>
+<li>基于规则的警报</li>
+<li>业务流程监控</li>
+<li>Web应用程序（社交网络）</li>
+</ul>
+<h2 id="数据分析应用"><a href="#数据分析应用" class="headerlink" title="数据分析应用"></a>数据分析应用</h2><h3 id="什么是数据分析应用？"><a href="#什么是数据分析应用？" class="headerlink" title="什么是数据分析应用？"></a>什么是数据分析应用？</h3><p>分析工作从原始数据中提取信息和洞察力。传统上，分析是在有记录事件的有界数据集上作为批查询或应用程序来执行的。为了将最新数据合并到分析结果中，必须将其添加到分析的数据集中，并重新运行查询或应用程序。结果将写入存储系统或作为报告发出。</p>
+<p>借助先进的流处理引擎，还可以实时地执行分析。流式查询或应用程序不是读取有限数据集，而是摄取实时事件流，并在消耗事件时不断生成和更新结果。结果要么写入外部数据库，要么保持为内部状态。仪表板应用程序可以从外部数据库读取最新结果或直接查询应用程序的内部状态。</p>
+<p>Apache Flink支持流式和批量分析应用程序，如下图所示。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-analytics.png" alt=""></p>
+<h3 id="流式分析应用有哪些优势？"><a href="#流式分析应用有哪些优势？" class="headerlink" title="流式分析应用有哪些优势？"></a>流式分析应用有哪些优势？</h3><p>与批量分析相比，连续流分析的优势不仅限于因消除定期导入和查询执行而从事件到洞察的低得多的延迟。与批量查询相比，流式查询不必处理输入数据中的人为边界，这些边界是由定期导入和输入的有界性质引起的。</p>
+<p>另一方面是更简单的应用程序架构。批量分析管道由若干独立组件组成，以周期性地调度数据提取和查询执行。可靠地操作这样的管道并非易事，因为一个组件的故障会影响管道的后续步骤。相比之下，在像Flink这样的复杂流处理器上运行的流分析应用程序包含从数据摄取到连续结果计算的所有步骤。因此，它可以依赖于引擎的故障恢复机制。</p>
+<h3 id="Flink如何支持数据分析应用？"><a href="#Flink如何支持数据分析应用？" class="headerlink" title="Flink如何支持数据分析应用？"></a>Flink如何支持数据分析应用？</h3><p>Flink为连续流式传输和批量分析提供了非常好的支持。具体来说，它具有符合ANSI标准的SQL接口，具有用于批处理和流式查询的统一语义。无论是在记录事件的静态数据集上还是在实时事件流上运行，SQL查询都会计算相同的结果。对用户定义函数的丰富支持可确保在SQL查询中执行自定义代码。如果需要更多的自定义逻辑，Flink的DataStream API或DataSet API提供更多的低级控制。此外，Flink的Gelly库为批量数据集上的大规模和高性能图形分析提供算法和构建块。</p>
+<h3 id="什么是典型的数据分析应用？"><a href="#什么是典型的数据分析应用？" class="headerlink" title="什么是典型的数据分析应用？"></a>什么是典型的数据分析应用？</h3><ul>
+<li>电信网络的质量监控</li>
+<li>分析移动应用程序中的产品更新和实验评估</li>
+<li>对消费者技术中的实时数据进行特别分析</li>
+<li>大规模图分析</li>
+</ul>
+<h2 id="数据管道应用"><a href="#数据管道应用" class="headerlink" title="数据管道应用"></a>数据管道应用</h2><h3 id="什么是数据管道？"><a href="#什么是数据管道？" class="headerlink" title="什么是数据管道？"></a>什么是数据管道？</h3><p>提取 - 转换 - 加载（ETL）是在存储系统之间转换和移动数据的常用方法。通常会定期触发ETL作业，以便将数据从事务数据库系统复制到分析数据库或数据仓库。</p>
+<p>数据管道与ETL作业具有相似的用途。它们可以转换和丰富数据，并可以将数据从一个存储系统移动到另一个存储系统 但是，它们以连续流模式运行，而不是周期性地触发。因此，他们能够从连续生成数据的源中读取记录，并以低延迟将其移动到目的地。例如，数据管道可能会监视文件系统目录中的新文件并将其数据写入事件日志。另一个应用程序可能会将事件流实现到数据库，或者逐步构建和优化搜索索引。</p>
+<p>下图描述了定期ETL作业和连续数据管道之间的差异。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/flink%2Fusecases-datapipelines.png" alt=""></p>
+<h3 id="数据管道有哪些优势？"><a href="#数据管道有哪些优势？" class="headerlink" title="数据管道有哪些优势？"></a>数据管道有哪些优势？</h3><p>连续数据流水线优于周期性ETL作业的显著优势是减少了将数据移动到目的地的延迟。此外，数据管道更加通用，可用于更多用例，因为它们能够连续消耗和发送数据。</p>
+<h3 id="Flink如何支持数据管道？"><a href="#Flink如何支持数据管道？" class="headerlink" title="Flink如何支持数据管道？"></a>Flink如何支持数据管道？</h3><p>Flink的SQL接口（或表API）可以解决许多常见的数据转换或丰富任务，并支持用户定义的函数。通过使用更通用的DataStream API，可以实现具有更高级要求的数据管道。Flink为各种存储系统（如Kafka，Kinesis，Elasticsearch和JDBC数据库系统）提供了丰富的连接器。它还具有连续的文件系统源，用于监视以时间分区方式写入文件的目录和接收器。</p>
+<h3 id="什么是典型的数据管道应用？"><a href="#什么是典型的数据管道应用？" class="headerlink" title="什么是典型的数据管道应用？"></a>什么是典型的数据管道应用？</h3><ul>
+<li>电子商务中的实时搜索索引构建</li>
+<li>电子商务中持续的ETL</li>
+</ul>
+<h2 id="参考资料："><a href="#参考资料：" class="headerlink" title="参考资料："></a>参考资料：</h2><p>[1].<a href="https://flink.apache.org/usecases.html" target="_blank" rel="noopener">https://flink.apache.org/usecases.html</a></p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/23/flink-what-is-apache-flink/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -469,387 +816,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/flink-deployment-kubernetes/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/20/flink-deployment-kubernetes/" itemprop="url">Flink handbook - flink集群与部署之kubernetes篇</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T06:46:49+08:00">2018-09-20 06:46:49</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>本页介绍如何在Kubernetes上部署Flink作业和会话群集。</p>
-<h2 id="设置Kubernetes"><a href="#设置Kubernetes" class="headerlink" title="设置Kubernetes"></a>设置Kubernetes</h2><p>请参照<a href="https://kubernetes.io/docs/setup/" target="_blank" rel="noopener">Kubernetes的设置指南</a>来部署Kubernetes集群。如果您想在本地运行Kubernetes，我们建议使用<a href="https://kubernetes.io/docs/setup/minikube/" target="_blank" rel="noopener">MiniKube</a>来部署集群。</p>
-<blockquote>
-<p>注意：如果使用MiniKube，请确保<code>minikube ssh &#39;sudo ip link set docker0 promisc on&#39;</code>在部署Flink群集之前执行。否则，Flink组件无法通过Kubernetes服务自行引用。</p>
-</blockquote>
-<h2 id="Kubernetes上的Flink会话群集"><a href="#Kubernetes上的Flink会话群集" class="headerlink" title="Kubernetes上的Flink会话群集"></a>Kubernetes上的Flink会话群集</h2><p>Flink会话群集作为长期运行的Kubernetes部署来执行，请注意，可以在会话群集上运行多个Flink作业。在部署了集群之后，每个作业都需要提交到群集。</p>
-<p>一个基本的部署在Kubernetes上的Flink会话群集一般会有三个组件：</p>
-<ul>
-<li>一个运行JobManager的deployment或job</li>
-<li>一个TaskManagers池 deployment</li>
-<li>一个公开JobManager的REST和UI端口的service</li>
-</ul>
-<h2 id="在Kubernetes上部署Flink会话群集"><a href="#在Kubernetes上部署Flink会话群集" class="headerlink" title="在Kubernetes上部署Flink会话群集"></a>在Kubernetes上部署Flink会话群集</h2><p>使用会话群集的资源定义，采用kubectl命令启动群集：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">kubectl create -f jobmanager-service.yaml<br>kubectl create -f jobmanager-deployment.yaml<br>kubectl create -f taskmanager-deployment.yaml<br></code></pre></td></tr></table></figure>
-<p>然后，您可以通过kubectl proxy按以下方式访问Flink UI ：</p>
-<p>第一步，保证kubectl proxy在终端中运行</p>
-<p>第二步，在浏览器里输入 <code>http://localhost:8001/api/v1/namespaces/default/services/flink-jobmanager:ui/proxy</code></p>
-<p>如果要终止Flink会话群集，可以使用如下命令：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">kubectl delete -f jobmanager-deployment.yaml<br>kubectl delete -f taskmanager-deployment.yaml<br>kubectl delete -f jobmanager-service.yaml<br></code></pre></td></tr></table></figure>
-<h2 id="Kubernetes上的Flink作业集群"><a href="#Kubernetes上的Flink作业集群" class="headerlink" title="Kubernetes上的Flink作业集群"></a>Kubernetes上的Flink作业集群</h2><p>Flink作业集群是运行单个作业的专用集群，这项作业是打包在flink镜像里的，因此，不需要提交额外的作业对象，步骤如下：</p>
-<h3 id="创建特定于作业的镜像"><a href="#创建特定于作业的镜像" class="headerlink" title="创建特定于作业的镜像"></a>创建特定于作业的镜像</h3><p>Flink作业集群镜像需要包含启动集群的作业的用户代码jar。因此，需要为每个作业构建专用的容器镜像。请按照这些<a href="https://github.com/apache/flink/blob/master/flink-container/docker/README.md" target="_blank" rel="noopener">说明</a>构建Docker镜像。</p>
-<h3 id="在Kubernetes上部署Flink作业集群"><a href="#在Kubernetes上部署Flink作业集群" class="headerlink" title="在Kubernetes上部署Flink作业集群"></a>在Kubernetes上部署Flink作业集群</h3><p>要在Kubernetes上部署作业集群，请按照这些<a href="https://github.com/apache/flink/blob/master/flink-container/kubernetes/README.md#deploy-flink-job-cluster" target="_blank" rel="noopener">说明</a>进行操作。</p>
-<h2 id="高级群集部署"><a href="#高级群集部署" class="headerlink" title="高级群集部署"></a>高级群集部署</h2><p>GitHub上提供了早期版本的<a href="https://github.com/docker-flink/examples" target="_blank" rel="noopener">Flink Helm chart</a>。</p>
-<h1 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h1><h2 id="会话群集资源定义"><a href="#会话群集资源定义" class="headerlink" title="会话群集资源定义"></a>会话群集资源定义</h2><p>部署使用的最新镜像 <code>flink:latest</code> 可在<a href="https://hub.docker.com/r/_/flink/" target="_blank" rel="noopener">Docker Hub</a>上找到。该镜像是用这个工具 <code>https://github.com/docker-flink/docker-flink</code> 构建的</p>
-<p>jobmanager-deployment.yaml</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&quot;<br>apiVersion: extensions/v1beta1<br>kind: Deployment<br>metadata:<br>  name: flink-jobmanager<br>spec:<br>  replicas: 1<br>  template:<br>    metadata:<br>      labels:<br>        app: flink<br>        component: jobmanager<br>    spec:<br>      containers:<br>      - name: jobmanager<br>        image: flink:latest<br>        args:<br>        - jobmanager<br>        ports:<br>        - containerPort: 6123<br>          name: rpc<br>        - containerPort: 6124<br>          name: blob<br>        - containerPort: 6125<br>          name: query<br>        - containerPort: 8081<br>          name: ui<br>        env:<br>        - name: JOB_MANAGER_RPC_ADDRESS<br>          value: flink-jobmanager<br>&quot;<br></code></pre></td></tr></table></figure>
-<p>taskmanager-deployment.yaml</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&quot;<br>apiVersion: extensions/v1beta1<br>kind: Deployment<br>metadata:<br>  name: flink-taskmanager<br>spec:<br>  replicas: 2<br>  template:<br>    metadata:<br>      labels:<br>        app: flink<br>        component: taskmanager<br>    spec:<br>      containers:<br>      - name: taskmanager<br>        image: flink:latest<br>        args:<br>        - taskmanager<br>        ports:<br>        - containerPort: 6121<br>          name: data<br>        - containerPort: 6122<br>          name: rpc<br>        - containerPort: 6125<br>          name: query<br>        env:<br>        - name: JOB_MANAGER_RPC_ADDRESS<br>          value: flink-jobmanager<br>&quot;<br></code></pre></td></tr></table></figure>
-<p>jobmanager-service.yaml</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs undefined">&quot;<br>apiVersion: v1<br>kind: Service<br>metadata:<br>  name: flink-jobmanager<br>spec:<br>  ports:<br>  - name: rpc<br>    port: 6123<br>  - name: blob<br>    port: 6124<br>  - name: query<br>    port: 6125<br>  - name: ui<br>    port: 8081<br>  selector:<br>    app: flink<br>    component: jobmanager<br>&quot;<br></code></pre></td></tr></table></figure>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/20/flink-deployment-docker/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/20/flink-deployment-docker/" itemprop="url">Flink handbook - flink 集群与部署之docker篇</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-20T06:46:03+08:00">2018-09-20 06:46:03</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/flink/" itemprop="url" rel="index"><span itemprop="name">flink</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="作者标注"><a href="#作者标注" class="headerlink" title="作者标注"></a>作者标注</h2><p>经过验证， 到当前版本为止 flink-1.7 snapshot，构建 flink docker镜像需要采用这个flink docker 构建工具 <code>https://github.com/docker-flink/docker-flink</code>，按照<a href="https://github.com/apache/flink/tree/master/flink-container" target="_blank" rel="noopener">flink官方代码库</a>里的构建出来的flink镜像有些功能不能用，比如 flink-standalone模式，report metrics等。</p>
-<h2 id="Docker设置"><a href="#Docker设置" class="headerlink" title="Docker设置"></a>Docker设置</h2><p>Docker Hub上有关于Apache Flink的Docker镜像，可用于部署flink群集。Flink镜像库还包含用于创建容器映像以部署flink工作集群的一些工具以及说明。</p>
-<h2 id="Flink-session群集"><a href="#Flink-session群集" class="headerlink" title="Flink session群集"></a>Flink session群集</h2><p>Flink会话群集可用于运行多个业务。在部署后，每个业务都需要提交到集群才能跑起来。</p>
-<h2 id="Docker镜像"><a href="#Docker镜像" class="headerlink" title="Docker镜像"></a>Docker镜像</h2><p>该<a href="https://hub.docker.com/_/flink/" target="_blank" rel="noopener">Flink镜像库</a>托管在docker hub，提供了flink1.2.1以及之后的版本镜像。</p>
-<p>注意： Docker镜像是由个人提供的社区项目，它们并不是Apache Flink PMC的官方版本（作者标注：所以需要用这个个人的<a href="https://github.com/docker-flink/docker-flink" target="_blank" rel="noopener">构建工具</a>，而不是官方代码库里的构建工具）。</p>
-<h2 id="Flink作业集群"><a href="#Flink作业集群" class="headerlink" title="Flink作业集群"></a>Flink作业集群</h2><p>Flink作业集群是运行单个作业的专用集群，这是镜像内容的一部分，因此，不需要额外的工作。</p>
-<h2 id="Docker镜像-1"><a href="#Docker镜像-1" class="headerlink" title="Docker镜像"></a>Docker镜像</h2><p>Flink作业集群镜像需要包含启动集群的作业的用户代码jar。因此，需要为每个作业构建专用的容器镜像。该flink-container模块包含一个build.sh脚本，可用于创建此类镜像。有关详细信息，请参阅<a href="https://github.com/apache/flink/blob/master/flink-container/docker/README.md" target="_blank" rel="noopener">说明</a>。（作者注：这个是官方的构建方式，试过有问题，比如跑 flink-standalone再 report metrics）</p>
-<h2 id="Flink与Docker-Compose"><a href="#Flink与Docker-Compose" class="headerlink" title="Flink与Docker Compose"></a>Flink与Docker Compose</h2><p>Docker Compose是一种很方便的用于在本地启动一组Flink Docker容器的方式。</p>
-<p>GitHub上提供了<a href="https://github.com/docker-flink/examples/blob/master/docker-compose.yml" target="_blank" rel="noopener">集群部署实例</a>和<a href="https://github.com/apache/flink/blob/master/flink-container/docker/docker-compose.yml" target="_blank" rel="noopener">作业群集示例</a>的配置文件。</p>
-<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><p>启动集群</p>
-<p><code>$docker-compose up</code></p>
-<p>以deamon的方式启动集群</p>
-<p> <code>$docker-compose up -d</code></p>
-<p>集群扩展 N 个 TaskManagers</p>
-<p><code>$docker-compose scale taskmanager=&lt;N&gt;</code></p>
-<p>销毁集群</p>
-<p><code>$docker-compose kill</code></p>
-<p>当拉起一个Flink群集后，您可以访问 <code>http：// localhost：8081</code>的Web UI ，在界面里您还可以将作业提交到群集。</p>
-<p>如果要通过命令行将作业提交到会话群集，必须将JAR复制到JobManager容器里并从那里执行作业。</p>
-<p>例如：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">$ JOBMANAGER_CONTAINER=$(docker ps --filter name=jobmanager --format=&#123;&#123;.ID&#125;&#125;)<br>$ docker cp path/to/jar &quot;$JOBMANAGER_CONTAINER&quot;:/job.jar<br>$ docker exec -t -i &quot;$JOBMANAGER_CONTAINER&quot; flink run /job.jar<br></code></pre></td></tr></table></figure>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/flink/" rel="tag"><i class="fas fa-tags"></i>flink</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/distributed-dht-update/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/16/distributed-dht-update/" itemprop="url">分布式系统中DHT算法改进</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T21:32:38+08:00">2018-09-16 21:32:38</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>通常，分布式存储系统以及分布式缓存系统习惯采用分布式哈希（DHT）算法来实现数据的分区分配（路由）以及负载均衡，普通的分布式hash算法通过增添虚拟节点，对物理的热点区间进行划分，将负载分配至其他节点，从而达到负载均衡的状态，但是这并不能保证集群的负载就一定很是的均衡。</p>
-<p>而一种改进过的一致性Hash算法，即带边界因子的一致性Hash算法，其严格控制每个节点的负载从而能获得更好的负载均衡效果[1][2]。</p>
-<h2 id="普通的DHT算法"><a href="#普通的DHT算法" class="headerlink" title="普通的DHT算法"></a>普通的DHT算法</h2><p>假设有8个Object，通过下图的DHT算法:</p>
-<ol>
-<li>object 0,1,2映射到了虚拟节点vNode0 ： object 0,1,2 –&gt; vNode0</li>
-<li>Object 3,4,5 映射到了vNode1：object 3,4,5 –&gt; vNode1</li>
-<li>Object 6映射到 vNode2：object 6 –&gt; vNode2</li>
-<li>Object 7映射到 vNodeN：object 7 –&gt; vNodeN</li>
-</ol>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-1.png" alt="distributed-DHT-1"></p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-2.png" alt="distributed-DHT-2"></p>
-<p>很明显，Vnode0和vNode1 都落了三个 object，而 vNode2和vNodeN 都只落了 1个Object，这里的DHT算法负债均衡因子并不是很好。</p>
-<h2 id="带负载边界因子的DHT算法"><a href="#带负载边界因子的DHT算法" class="headerlink" title="带负载边界因子的DHT算法"></a>带负载边界因子的DHT算法</h2><p>假设有8个Object，通过如下图的DHT with bounded loads算法:</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-3.png" alt="distributed-DHT-3"></p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed%2Fdistributed-DHT-4.png" alt="distributed-DHT-4"></p>
-<p>第一轮映射：</p>
-<ol>
-<li>object 0,1,2 需要映射到了虚拟节点vNode0，但是vNode0的权重因子是 2，因此只完成了 object 0,1 –&gt; vNode0， object 2不能映射到节点 vNode0；</li>
-<li>Object 3,4,5 需要映射到了虚拟节点vNode1：但是vNode1的权重因子是 2，因此只完成了 object 3,4 –&gt; vNode1， object 5不能映射到节点 vNode1；</li>
-<li>Object 6映射到 vNode2：object 6 –&gt; vNode2</li>
-<li>Object 7映射到 vNodeN：object 7 –&gt; vNodeN</li>
-</ol>
-<p>第二轮映射：</p>
-<ol>
-<li>Object 2 映射到 vNode1，但是vNode1权重因子=0， 不能被接收，继续往下一个节点走，发现vNode2 权重因子是2,还剩权重因子1，可以被映射，因此 object 2–&gt;vNode2</li>
-<li>Object 5 映射到 vNode2，但是vNode2现在的权重因子=0， 不能被接收，继续往下一个节点走，发现vNodeN 权重因子是2,还剩权重因子1，可以被映射，因此 object 5–&gt;vNodeN</li>
-</ol>
-<p>最终的映射结果是:</p>
-<ol>
-<li>object 0,1映射到了虚拟节点vNode0 ： object 0,1 –&gt; vNode0</li>
-<li>Object 3,4 映射到了vNode1：object 3,4 –&gt; vNode1</li>
-<li>Object 2,6映射到 vNode2：object 2,6 –&gt; vNode2</li>
-<li>Object 5,7映射到 vNodeN：object 5,7 –&gt; vNodeN</li>
-</ol>
-<p>很明显，Vnode0，vNode1，vNode2, vNodeN 每个节点都分到2个 object，<br>显然带负载边界因子的DHT算法负债均衡比普通的DHT算法来的好。</p>
-<p>这些节点的负载因子可以从IO，CPU，MEM，Disk，Network等输入因子计算出来。</p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a>作者简介</h2><p>常平，毕业于中国科学技术大学，获硕士研究生学历学位，10年+ 存储、布式系统、云计算以及大数据经验，曾就职于Marvell、AMD等，现就职于EMC，资深首席工程师，主要负责流式大数据处理平台的架构设计、编码及产品交付等。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] <a href="https://research.googleblog.com/2017/04/consistent-hashing-with-bounded-loads.html" target="_blank" rel="noopener">https://research.googleblog.com/2017/04/consistent-hashing-with-bounded-loads.html</a></p>
-<p>[2] <a href="https://medium.com/vimeo-engineering-blog/improving-load-balancing-with-a-new-consistent-hashing-algorithm-9f1bd75709ed" target="_blank" rel="noopener">https://medium.com/vimeo-engineering-blog/improving-load-balancing-with-a-new-consistent-hashing-algorithm-9f1bd75709ed</a></p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2018/09/16/distributed-streaming-storage/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2018/09/16/distributed-streaming-storage/" itemprop="url">下一个分布式存储系统，为万物互联的智能世界而发</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-16T21:32:38+08:00">2018-09-16 21:32:38</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>如果说互联网和云计算使得对象存储在存储市场上与块存储、文件存储三分天下，相应的业务需求直接奠定了对象存储与块存储、文件存储并列存储江湖一哥的地位，那么接下来也许我们需要为下一场数据变革的大事做好准备 – <font color="#00CED1"><strong>万物互联这样的商业场景将给数据存储带来极大的商业挑战和技术挑战。</strong></font></p>
-<h2 id="万物互联下的数据"><a href="#万物互联下的数据" class="headerlink" title="万物互联下的数据"></a><font color="#FF8C00">万物互联下的数据</font></h2><p>纵观人类历史，各种技术变革都是以人类活动为中心，然后发明各种工具。石器时代，原始人发明了石器以及用火从而提升了生活品质和社会文明。现代社会，人类为了解决各种寂寞空虚冷吃穿住用行、生理和心理上的各种需求从而发明了各种社交空间、社交工具、网络购物、生活服务APP等，为了更好的服务这些应用场景，挖掘这些场景所生产的数据的价值，从而有了今天的各种大数据技术。</p>
-<p>在互联网时代，数据主要来源于网页、APP以及一些相应的日志系统，而在万物互联的世界，数据还可以来源于有各种传感器、工业设备、监控设备、检测设备、智能家居、自动驾驶等。大数据的四个特征：数据量、时效性、多样性、价值密度在万物互联的场景下被进一步的深化，这就意味着商业成本以及技术成本的增加。</p>
-<p>理论奠定技术的基础，业务驱使技术的变革。在万物互联的智能时代，我们有一个愿景：<font color="#FF0000"> <strong>能够将万物互联下生成的海量原始数据转化为可用的信息以及行为决策，并且这个转换的时间差需要能够接近于零。</strong></font>而需要实现这个愿景，从技术角度来看，需要有计算层面的解决方案也需要有存储层面的，如今在计算层面已经有Flink、Spark等这类成熟的分布式计算应用，然而在存储层面还没有。</p>
-<h2 id="流数据与流存储"><a href="#流数据与流存储" class="headerlink" title="流数据与流存储  "></a><font color="#FF8C00">流数据与流存储  </font></h2><p>在万物互联的场景下，各种传感器以及设备生成的数据有其原生的属性，这种数据自带时间戳、实时性要求高，而且是<font color="#FF0000"> <strong>“流数据”</strong></font>。</p>
-<p>首先流数据在百度百科里是这样被定义的：</p>
-<blockquote>
-<p>流数据是一组顺序、大量、快速、连续到达的数据序列，一般情况下，数据流可被视为一个随时间延续而无限增长的动态数据集合。应用于网络监控、传感器网络、航空航天、气象测控和金融服务等领域。</p>
-</blockquote>
-<p>从数据的生产与传输场景来看流数据具有几个与众不同的带有破坏性的特性：</p>
-<ol>
-<li>数据随时间延续而无限增长，这意味着数据的无限性；</li>
-<li>数据到达的速度有快有慢、负载有高有低，这意味着灵活又细粒度的资源弹性需求；</li>
-<li>数据有序、无序、持久化以及复杂的传输环境而又要保证数据处理结果的唯一正确性。</li>
-</ol>
-<p>这是三个特性转换成存储技术的语义对应着：<font color="#FF0000"> <strong>无限性、可伸缩性以及恰好一次：持久化、有序、一致性以及事务。</strong></font></p>
-<p>从<font color="#FF0000"> <strong>存储的视角</strong></font>来说，每种类型的数据都有其原生的属性和需求，对应有最佳的适用场景以及最合适的存储系统。跑在数据库里的数据对实时性和可靠性要求非常的高，因此适合采用块存储系统。文件共享场景下需要向用户共享文件，多个用户可以共享读取一个文件，因此适合采用文件存储系统。而互联网网页与APP里的文件、图像、视频可以看作一个个的数据对象又需要租户隔离以及无限扩展，因此又非常适合采用对象存储系统。那么目前又有哪种存储系统最适合用于<font color="#FF0000"> <strong>“流数据”</strong></font>呢？</p>
-<p>正如当前技术条件下最适合<font color="#FF0000"> <strong>“流数据”</strong></font>计算的是类似Flink这样的分布式流计算应用，最适合“流数据”的应当是<font color="#00CED1"><strong>分布式流存储系统。</strong></font> </p>
-<h2 id="分布式流存储系统"><a href="#分布式流存储系统" class="headerlink" title="分布式流存储系统"></a><font color="#FF8C00">分布式流存储系统</font></h2><h3 id="产品定位"><a href="#产品定位" class="headerlink" title="产品定位"></a><font color="#00CED1">产品定位</font></h3><p>分布式流存储系统的产品定位是给万物互联这样的应用场景服务的，从技术角度来看它具有自身的特点，正如标题里提到的三个关键词：<font color="#FF8C00"> <strong>“分布式”、“流”、“存储”</strong></font>。首先是分布式的，它具有分布式系统本身所具有的一切能力，接着表示是专门给流式数据设计和实现的，最后的存储表示的是一个原生的存储解决方案，它讲究数据的<font color="#FF8C00"> <strong>可靠性、持久化、一致性、资源隔离等</strong></font>，它从<font color="#FF0000"> <strong>存储的视角</strong></font>处理流数据。分布式流存储针对 <strong>“流数据”</strong> 的自身属性以及相应的特殊的业务需求场景做了专门的设计与实现，下面从<font color="#FF8C00"> <strong>命名空间、业务场景、无限性、可伸缩性、恰好一次、字节流、数据管道、租户隔离、海量小文件、数据治理、流式架构</strong></font>的角度依据 <strong>最佳实践原则</strong> 讲述了为什么需要专门设计和实现一个流式存储系统。</p>
-<h3 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a><font color="#00CED1">命名空间</font></h3><p>通常，块存储系统以<font color="#FF0000"><strong>分区、目录、文件</strong></font>，文件存储系统以<font color="#FF0000"><strong>目录、文件</strong></font>，以及对象存储以<font color="#FF0000"><strong>租户、桶、对象</strong></font>来定义数据的存储路径以及命名空间，而流存储系统则以<font color="#FF0000"><strong>范围(scope)、流(stream)、段(segment)、事件(event)</strong></font>来描述数据的存储路径以及命名空间。</p>
-<div align="center"> 
-
-<table>
-<thead>
-<tr>
-<th>类型</th>
-<th>命名空间</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>块存储</td>
-<td>分区、目录、文件</td>
-</tr>
-<tr>
-<td>文件存储</td>
-<td>目录、文件</td>
-</tr>
-<tr>
-<td>对象存储</td>
-<td>租户、桶、对象</td>
-</tr>
-<tr>
-<td>流存储</td>
-<td>范围、流、段、事件</td>
-</tr>
-</tbody>
-</table>
-<div align="left"> 
-
-<p>在流存储系统里，如下图所示，数据的组织形式被抽象成范围、流、段和事件，范围由流组成，流由段组成，段由事件组成，事件由字节(bytes)组成。</p>
-<div align="center"> 
-
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-scope-stream.png" alt="流的组成"></p>
-<div align="left"> 
-
-<h3 id="业务场景"><a href="#业务场景" class="headerlink" title="业务场景"></a><font color="#00CED1">业务场景</font></h3><h5 id="可穿戴设备、自动驾驶与工业厂房"><a href="#可穿戴设备、自动驾驶与工业厂房" class="headerlink" title=" 可穿戴设备、自动驾驶与工业厂房"></a><font color="#FF00ff"> 可穿戴设备、自动驾驶与工业厂房</font></h5><p>可以想象一下这样的业务场景：某个商家销售了几千万个智能手表，这些智能手表可以记录每个用户每天走了多少步，同时还可以分析过往的历史数据，用柱状图给用户展示历史数据，如下图所示：</p>
-<div align="center"> 
-
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-watch.png" alt="步数分析"></p>
-<div align="left">  
-
-<p>考虑到信息安全，用户A是不能看到用户B的数据的，那么就需要按智能手表为单位进行租户隔离，这种的场景下就有几千万个租户，同时每个租户还有自己的存储空间配额，比如给每个智能手表分配5GB 存储空间。光是这样的租户隔离场景，依据<strong>最佳实践</strong>的系统设计原则，不管是块存储系统、文件存储系统、对象存储系统还是Kafka这样的消息系统，按他们本身的隔离特性以及支持的租户规模都是难以在单个系统里支持这样的租户隔离场景。但是用流存储来实现就很方便，比如以智能手表的业务场景为例：</p>
-<ul>
-<li>默认分配5GB存储空间给一个智能手表，然后定义一个智能手表类型的命名空间用于与其他智能设备进行隔离，给每个智能手表分配一个流，每个智能手表上报的字节数据以事件为单位存储在流内的段里。</li>
-<li>也可以这样来定义：给每个智能手表分配一个5GB 存储空间的命名空间，手表里的每个传感器都对应一个流，每个传感器以事件为单位上报字节数据存储到流的段里。</li>
-</ul>
-<p>还可以想象一下这样的业务场景：自动驾驶。采用分布式流存储的话，我们可以这样处理自动驾驶的数据：给每一辆无人车定义一个1TB存储空间的范围，车上的每个传感器都归属于一个流，传感器上报的事件都在段内持久化。再假设每辆车都有1000个传感器（实际情况只多不少），那么10万辆车就需要定义1亿个流，可以想象要进行这种规模的隔离也就只有这种专门针对流数据而设计的流存储系统能够支持。</p>
-<p>在工业互联网的场景下，还可以这样定义工业设备的数据：给一个厂房里的每台设备定义一个范围，每台设备里的每个传感器都对应一个流，传感器上传的事件数据保存在流内的段里，这样就很方便的对工业设备进行了大规模的租户数据隔离。</p>
-<p>因此，以<font color="#FF0000"><strong>“范围、流、段、事件”</strong></font>的方式很方便的进行了大规模的租户隔离保证了用户信息安全同时又进行了存储资源配额的隔离。</p>
-<h5 id="大数据处理平台"><a href="#大数据处理平台" class="headerlink" title=" 大数据处理平台"></a><font color="#FF00FF"> 大数据处理平台</font></h5><p>万物互联场景下无限量的数据给数据处理技术带来巨大的挑战与压力，不同的应用场景意味着不同的数据处理要求与复杂度，要把这些不同的甚至矛盾的数据处理要求都很好的综合在一个大数据处理系统里，对现有的大数据处理技术来说是个非常大的挑战，比如无人车的处理要求毫秒甚至纳秒级的数据处理实时性、而有些工业设备数据只需要分析历史数据，要让一个大数据处理系统既能能处理历史数据又能提供毫秒级甚至纳秒级的实时性处理能力还能应对各种不同格式不同传输场景的数据，而且每种数据处理都能达到这些应用场景原生指标的处理需求。相信这样的场景对工程技术人员来说是个很大的挑战。为了解决上述问题，按照现有的成熟的技术能力，通常开发人员采用类似Lambda架构（如下图）这样的大数据处理平台来处理大数据。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/streaming-bigdata-lambda-arch.PNG" alt="Lambda架构"></p>
-<p>Lambda架构即支持批处理也支持实时处理，能应对数据的多样性、具有容错功能、复杂性分离、能处理流式数据也能处理历史数据等优点，但是缺点也很明显：<strong>批处理一套独立的数据处理路径，实时处理又一套数据处理路径，然后还要合并结果再输出展示，同时系统里同样的数据存在存储多份的问题，比如同样的数据在Elasticsearch里有、HDFS里有、ceph里有、Kafka里也有，除了这些甚至还存在其他一些复杂的存储组件，而且同样的数据还都是多份冗余的，因此存储成本太高太过于复杂。Lambda架构里为了提供一个功能却引入一个组件，在复杂之上堆积复杂，存储成本、开发与运维成本都太过于复杂。</strong></p>
-<p>那么应当如何解决Lambda架构带来的这些缺点？<font color="#FF0000"><strong>以数据流向为核心</strong></font>重构大数据处理平台是一个比较好的方案，它具体包括数据的采集、聚合、传输、缓存、持久化、处理、展示等。依据这种设计理念我们可以推出一个端到端的原生的流式大数据处理平台：原生的流式计算加上一个原生的流式存储并且可以平衡商业成本与技术成本。</p>
-<p>流式计算可以采用Flink，然而并没有发现当前有合适的流式存储可以使用，如果采用Flink加上传统的文件存储或者块存储、对象存储的方式，也只能认为是半原生的大数据处理平台：<font color="#FF0000"><strong>计算是原生的流式计算而存储却不是原生的流式存储</strong></font>。</p>
-<p>因此，综合思考万物互联场景下的数据处理场景也需要一个原生的分布式流存储系统，<font color="#FF0000"><strong>重构Lambda架构里的存储栈</strong></font>，使得分布式流计算加上分布式流存储即为原生的流式大数据处理系统，同时还能很好的平衡商业成本与技术成本之间的关系。</p>
-<h3 id="数据无限性"><a href="#数据无限性" class="headerlink" title="数据无限性"></a><font color="#00CED1">数据无限性</font></h3><p>无限性是分布式流存储最为重要的设计原则。从流数据的角度来看，数据是大量、快速、连续而又无限的，这就给流存储系统的设计与实现带来极大的困难，无限的数据使得存储系统必须能支持连续且无限规模的数据流，光这一点就对存储系统的可扩展性要求非常的高，同时还要求存储系统能够根据到达的数据量动态而又优雅地进行扩容与缩容。从技术与成本的角度来看，数据无限性意味着冷热数据分离，长期不用的数据淘汰到长期存储系统里，热点数据需要缓存，同时还需要能支持历史数据的读取与实时数据的读取与写入。</p>
-<h3 id="可伸缩性"><a href="#可伸缩性" class="headerlink" title="可伸缩性"></a><font color="#00CED1">可伸缩性</font></h3><p>可伸缩性也是分布式流存储最为重要的设计原则之一，而且流存储里的可伸缩性要求还是自动化的资源细粒度的可伸缩。通常，在云原生的场景下，资源的缩放是以主机、虚机或容器为单位的，这样的缩放对流存储来说粒度太大。在流存储的场景下需要能够以数据的<strong>“流段”</strong>为单位，比如一个流段2MB，那么就需要能支持一次自动扩容或缩容2MB的存储空间。另外在流存储里还要求写入与读取对数据子集的操作是解耦分离的，并且写入与读取二者之间跟数据流段还要有一个合理的平衡。</p>
-<h3 id="恰好一次"><a href="#恰好一次" class="headerlink" title="恰好一次"></a><font color="#00CED1">恰好一次</font></h3><p>恰好一次也是分布式流存储最为重要的设计原则之一，恰好一次意味着数据的可持久化、有序、一致性以及事务性的支持。持久性意味着一旦得到确认，即使存储组件发生故障，写入的数据也不会丢失。有序意味着读客户端将严格按照写入的顺序处理数据。一致性意味着所有的读客户端即使面对存储故障、网络故障也都会看到相同的有序数据视图。事务性写入对于保证Flink这样的计算应用处理结果的完全正确是非常必要的。</p>
-<h3 id="字节流"><a href="#字节流" class="headerlink" title="字节流"></a><font color="#00CED1">字节流</font></h3><p>分布式流存储里采用字节流的格式组织数据而不是像消息系统里采用消息报文的方式，这意味着接口的通用性。二进制的字节流是与数据格式无关的，字节流可以组成事件封装在分布式存储的流段里。而消息系统里数据是消息头消息体的格式封装的，在兼容性上不如字节流。</p>
-<h3 id="数据管道"><a href="#数据管道" class="headerlink" title=" 数据管道"></a><font color="#00CED1"> 数据管道</font></h3><p>在存储界通常喜欢用跑车、卡车、渡轮来比喻块存储、文件存储以及对象存储，打个比方来说块存储类似跑车：极快、极稳、装的人少、成本高；文件存储类似卡车：快、稳、装的人比跑车多，但是没跑车那么快；对象存储类似渡轮：可以装非常多的货，讲究量大、成本低；那么分布式流存储像什么呢？ 在我们的定义里它就像管道：<font color="#FF0000"><strong>数据如同流水一般流过管道，又快又稳源源不断而又永无止境</strong>。</font></p>
-<h3 id="租户隔离"><a href="#租户隔离" class="headerlink" title="租户隔离"></a><font color="#00CED1">租户隔离</font></h3><p>分布式流存储从一开始设计的时候就将”租户隔离“作为其基本特性进行实现，”隔离“是分布式流存储的最基本的特性之一，在分布式流存储里租户隔离不只是租户B绝对不能看的到租户A的任何信息这样的信息安全层面的隔离，它支持范围、流、段、事件层面的隔离还将支持的租户规模作为设计的目标之一，在分布式流存储里单集群需要能支持千万量级起的租户数，另外还有资源、命名、可视空间、权限以及服务质量层面的隔离。</p>
-<h3 id="海量小文件"><a href="#海量小文件" class="headerlink" title="海量小文件"></a><font color="#00CED1">海量小文件</font></h3><p>对巨量小文件的支持是分布式流存储的设计原则之一。正如前面提到的，万物互联下的海量数据来源于传感器，而传感器上传的数据都是类似温度、地理位置、告警信息这样的几个字节几个字节的小数据，这就意味着在万物互联的场景下会有巨量的小数据上传，而且90%以上的数据操作行为都是写入。为了保证数据写入的性能以及可靠性、正确性、持久性以及保证介质的使用寿命降低成本，这也需要存储系统针对这种业务场景进行专门的设计。</p>
-<p>在分布式流存储里每个事件第一步是被仅附加写入一个缓存的段内进行封装的，在段达到一定的尺寸（比如64MB）后会被封闭不再写入，这时再将整个段写入下一级的持久化存储里。通过这样的设计，实现小数据在缓存里封装成大块的数据，再将大块数据写入持久化存储设备的方式保证了存储系统整体的性能。</p>
-<h3 id="数据治理"><a href="#数据治理" class="headerlink" title="数据治理"></a><font color="#00CED1">数据治理</font></h3><p>当前的大数据处理平台，不管是Kappa架构还是lambda架构，数据的存储都是多组件化、多份化的。比如同样的数据在Kafka里有、在HDFS里有、在Elasticsearch里又有，有些用户还使用了更多的存储中间件，而且这些数据还是多份冗余的。这一方面增加了数据的存储成本，另一方面也降低了数据的可信性、可靠性、合规性，给数据标准化以及数据的重复利用带来了困难，不利于数据的分享、合规、降低成本以及安全可靠地支持业务和决策。数据治理也是分布式流存储的基本设计原则之一，通过使用分布式流存储，大数据处理平台的架构可以进化成<font color="#FF0000"><strong>”分布式流计算+ 分布式流存储“</strong></font>这样的原生流式数据处理平台架构。</p>
-<h3 id="流式架构"><a href="#流式架构" class="headerlink" title="流式架构"></a><font color="#00CED1">流式架构</font></h3><p>下图体现了<font color="#FF0000"><strong>”分布式流计算+ 分布式流存储“</strong></font>这样的原生流式大数据处理平台的架构理念。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/streaming-bigdata-processor.PNG" alt="流式架构"></p>
-<p>这个架构体现了<font color="#FF0000"> <strong>“流原生”(stream native)式</strong> </font>的设计哲学，“流原生”的计算加上“流原生”的存储管道组成了“流原生”的大数据处理平台。数据从分布式流存储输入经过map算子计算，输出中间计算结果到分布式流存储里，数据又从分布式流存储里读入到Filter算子里，再经过计算，中间结果放到了分布式流存储里，再最后的计算结果经过聚合算子的计算放到了目的地的分布式流存储里。这个过程体现了算子编排和管道式编程的设计哲学，在这里分布式流存储起了大数据处理平台里的管道的作用。</p>
-<p>同时，在分布式流存储里数据的存储单位是流段，当输入的数据速率或者负载增加时，流段就会自动扩容，通过流协议联动，流计算应用的算子也相应扩容。相应的，如果输入的数据速率或负载降低，流段就自动收缩，通过流协议联动，流计算应用的算子也相应的缩容，所有这些行为都是自动完成的，无需人工干预，这种行为体现了分布式流存储的细粒度可伸缩性。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>综上所述，在万物互联的智能世界里，为了实现将海量数据近实时转化成信息和决策的愿景，除了流式计算应用还需要一个流式存储系统，未来已来，已有开源的分布式流存储系统正走在这条路上。另本文仅为作者愚见，与任何组织机构无关，作者能力也很有限，如有不足之处欢迎留言批评指正。</p>
-<h2 id="问题思考"><a href="#问题思考" class="headerlink" title="问题思考"></a><font color="#FF8C00">问题思考</font></h2><p>最后给大家留一个思考题：<font color="#00CED1"><strong>如果让你来设计一个分布式流存储产品，你会如何定义它的产品灵魂？</strong></font></p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及大数据，现就职于DELL EMC。个人技术博客：<a href="https://changping.me" target="_blank" rel="noopener">https://changping.me</a></p>
-<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a> ，可以自由阅读、分享、转发、复制、分发等，限制是需署名、非商业使用（以获利为准）以及禁止演绎。</p>
-</div></div></div></div></div></div>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/6/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/8/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -875,7 +841,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">57</a></div>
+      <div><a href="/archives">61</a></div>
     </div>
     
     
@@ -884,7 +850,7 @@
     
     <div class="categories-count">
       <div class="site-count-title">分类</div>
-      <div><a href="/categories">6</a></div>
+      <div><a href="/categories">7</a></div>
     </div>
     
     
@@ -893,7 +859,7 @@
     
     <div class="tags-count">
       <div class="site-count-title">标签</div>
-      <div><a href="/tags">6</a></div>
+      <div><a href="/tags">7</a></div>
     </div>
     
   </div>

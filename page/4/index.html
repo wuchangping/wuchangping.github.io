@@ -115,6 +115,394 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2020/01/21/distributed-ideamodel-cicd-toowheel/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2020/01/21/distributed-ideamodel-cicd-toowheel/" itemprop="url">分布式系统架构设计 – 第13式 - 产品交付之双轮驱动思维模型</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-01-21T22:25:10+08:00">2020-01-21 22:25:10</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>日拱一卒，功不唐捐，一个知识领域里的 “道 法 术 器” 这四个境界需要从 微观、中观以及宏观 三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计36式》，讲诉分布式系统里最重要的三十六个的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
+<p><strong>“兵者，国之大事，死生之地，存亡之道，不可不察也”</strong>，这句话对企业来讲，兵即产品，国即企业，察即研究探讨，产品关系到企业的存亡，所以不可以不慎重地加以研究探讨。本文提出toB产品交付双轮驱动思维模型以探讨toB软件产品的交付方法论。</p>
+<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>架构设计人员是业务与技术之间的桥梁，其既需要保证产品需求合理，也要保证产品交付的功能是对客户、用户有用、有价值的。为了能够准确的落地业务需求同时又能保证产品按时交付，架构设计人员就需要一个可以量化执行的产品业务需求与产品交付的思维模型。</p>
+<h2 id="双轮驱动思维模型"><a href="#双轮驱动思维模型" class="headerlink" title="双轮驱动思维模型"></a><font color="#FF8C00">双轮驱动思维模型</font></h2><p>受 《持续交付2.0》的启发这里提出toB产品交付之双轮驱动思维模型。双轮驱动思维模型以业务需求为出发点，探索业务真实有用的价值，以最节约的成本和最可控的风险，通过持续的业务价值探索和产品迭代交付快速交付价值与市场锲合的产品，其思维模型如下图所示：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/ideamodel/idea-model-cicd-twoWheel.PNG" alt="双轮驱动模型"></p>
+<h4 id="总则"><a href="#总则" class="headerlink" title="总则"></a><font color="#00CED1">总则</font></h4><p>产品的交付的是价值，因此双轮驱动思维模型是一个产品价值交付模型，总的理念是以“真北业务价值”为导向，以“产品快速交付”为动力，将“业务价值”与“产品交付”双个环节紧密结合，前轮业务价值把握方向，后轮产品交付提供动力，从而驱动业务与产品一起前进。它以“产品价值与市场锲合”为指导思想，以“以客户为中心”为工作理念，以“指北需求”，“精简过滤”、“量化分解”、“快速反馈”和“演化迭代”为工作原则，是一套持续集成持续交付产品的思维模型。</p>
+<ul>
+<li><p><strong>产品价值与市场锲合</strong>，指的是客户需要什么以及你能提供什么的从而获得产品商业成功的问题。朴素的说法就是产品的价值是市场需要的，是客户的痛点、恐惧点、难点以及挑战点，是客户要什么你就给什么，而不是从自己的角度出发，自我感觉良好地强塞给客户什么，是自身提供的产品能否准确满足市场真实需求的问题，度量的指标是<strong>”客户是否愿意快速的为你的产品买单“</strong>。</p>
+</li>
+<li><p><strong>以客户为中心</strong>，指的是“以客户需求为导向、为客户提供高质量低价格的产品、为客户提供满意的服务以及快速响应客户需求”，以客户为中心不是没有底线的跪添客户或者一些违法的行为，而是走正道为客户提供优质低价的产品或服务，快速响应客户的需求，帮助客户取得商业上的成功的问题。</p>
+</li>
+<li><p><strong>“指北需求”，“精简过滤”、“量化分解”、“快速反馈”和“演化迭代”</strong>，指的是挖掘客户的真需求，需要对客户的需求精简过滤、去伪存真，再通过量化分解客户的需求为可落地执行的行为，这样才能快速交付产品、快速验证、迭代演进。</p>
+</li>
+</ul>
+<h4 id="价值轮"><a href="#价值轮" class="headerlink" title=" 价值轮 "></a><font color="#00CED1"> 价值轮 </font></h4><p>价值轮是一个理解真北需求、去伪存真的过程，具体包括以下四个环节：</p>
+<ul>
+<li><p>需求：通过”客户、用户、团队“三个维度收集需求，将收集到的业务需求信息输入到价值轮；</p>
+</li>
+<li><p>确定：针对输入的需求去伪存真、去粗存精确定真北需求，识别客户的痛点、难点、恐惧点以及挑战点；</p>
+</li>
+<li><p>探讨：团队讨论，深入理解需求，拿出可行的解决方案以及实现方案；</p>
+</li>
+<li><p>精炼：为了节约团队资源，不是所有的方案都需要传递给产品交付环去执行，因此需要精炼过滤这些方案，有些通过常识就可以判断不合理的方案就不需要往交付轮传递，其次要进行价值优先级评估，筛选出最有价值的需求与方案，以作为交付轮的输入，并等待交付轮的交付与反馈。</p>
+</li>
+</ul>
+<h4 id="交付轮"><a href="#交付轮" class="headerlink" title="交付轮"></a><font color="#00CED1">交付轮</font></h4><p>产品或服务在被客户买单之前都是成本，只有被客户采购并且最终能够买单或者被用户使用并且最终兑现，才能证明其价值的存在。因此在价值轮达成共识后要借助“交付轮”快速交付，才能将其传递到客户或用户手中，从而得到真实且可靠的反馈以验证之。</p>
+<p>交付轮它也包含四个环节，分别是（1）开发；（2）测试；（3）运维；（4）反馈：</p>
+<ul>
+<li><p>开发：指以及价值轮的输入需求以及精简过的方案，依据质量要求进行软件架构设计以及进行软件开发并且达到可运行要求；</p>
+</li>
+<li><p>测试：指的是测试以及验证设计开发阶段交付的软件是否达到功能、质量与约束的要求；</p>
+</li>
+<li><p>运维：指的是将开发以及测试好的软件包部署到生产环境中运行或交付给客户为客户提供生产服务；</p>
+</li>
+<li><p>反馈：指的是监测生产运行情况以及收集用户使用情况与反馈的信息，再将收集到的信息反馈给价值轮，作为业务参考以便做出下一步的业务决策与判断。</p>
+</li>
+</ul>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲述”toB产品交付双轮驱动思维模型“，日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这几个思维模型对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“[1]，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，主要从事分布式产品的交付、架构设计以及开发工作。</p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1]《持续交付2.0 - 业务引领的DevOps精要》 乔梁著</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/12/21/distributed-product-info-analysis-basic-knowledge/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/12/21/distributed-product-info-analysis-basic-knowledge/" itemprop="url">分布式计算中间件 - 信息分析基础</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-12-21T16:09:02+08:00">2019-12-21 16:09:02</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h3 id="分布式计算中间件之信息分析基础"><a href="#分布式计算中间件之信息分析基础" class="headerlink" title="分布式计算中间件之信息分析基础"></a><font color="#FF8C00">分布式计算中间件之信息分析基础</font></h3><h4 id="构建与领域设计"><a href="#构建与领域设计" class="headerlink" title="构建与领域设计"></a><font color="#00CED1">构建与领域设计</font></h4><p>通常分布式计算中间件可以从两个层面进行划分：</p>
+<p>1，构建与运维 ： 分布式功能的设计与实现</p>
+<p>2，领域设计 ： 具体领域相关功能的设计与实现</p>
+<ul>
+<li>数据计算与分析中间件，实现数据计算与分析领域功能，比如 Flink, Spark, elasticsearch等</li>
+<li>深度学习计算中间件， 实现深度学习领域功能，比如 tensorflow, caffe等；</li>
+</ul>
+<h4 id="信息分析基础"><a href="#信息分析基础" class="headerlink" title="信息分析基础"></a><font color="#00CED1">信息分析基础</font></h4><p>信息分析基础：下图从功能，质量、模型、定义、本质、视角、职责、相关性、难题以及Lucene 等方面归纳了检索与分析技术领域基础10项。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/analysis/distributed-infomation-analysis-basic-knowledge.PNG" alt="信息检索模型"></p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，主要从事分布式产品的交付、架构设计以及开发工作。</p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1]《信息检索导论》 </p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/12/21/distributed-ideamodel-requirement/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/12/21/distributed-ideamodel-requirement/" itemprop="url">分布式系统架构设计 – 第12式- 需求分析思维模型</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-12-21T14:56:42+08:00">2019-12-21 14:56:42</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>日拱一卒，功不唐捐，一个知识领域里的 “道 法 术 器” 这四个境界需要从 微观、中观以及宏观 三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计36式》，讲诉分布式系统里最重要的三十六个的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
+<p>实现一个分布式系统通常会面临只见“点与线”而不见“面与体”的难题 。本系列中的思维模型章节主要是为了解决分布式系统设计中的“面与体”的难题，它包括：需求分析思维模型、 技术思维模型、产品思维模型、创新思维模型以及商业思维模型，依据这些模型往上套就可以从“点、线、面、体”这四个层面系统性的设计一个分布式系统。</p>
+<p>如果说技术是分布式系统工程师的一根DNA螺旋线，那么“产品、创新、商业”等就是DNA的另外一根螺旋线，只有两根螺旋线俱全并且不停的演化才能进化出新物种，本文将讲述思维模型里的 “需求分析思维” 模型。</p>
+<h2 id="需求分析思维模型"><a href="#需求分析思维模型" class="headerlink" title="需求分析思维模型"></a><font color="#FF8C00">需求分析思维模型</font></h2><p>架构师是业务需求与产品落地之间的桥梁，因此准确地理解业务需求也是架构师必备的一个基本能力，准确地理解业务需求需要从理解业务愿景、策略与执行以及软件需求开始。理解业务愿景需要理清楚业务目标与产品的技术目标，理解策略与执行需要看清楚企业的战略方针、团队定位以及执行方法论，再次才是理解软件的产品需求。</p>
+<h4 id="业务愿景"><a href="#业务愿景" class="headerlink" title=" 业务愿景"></a><font color="#00CED1"> 业务愿景</font></h4><p>1，业务目标</p>
+<p>业务目标是很粗略的业务描述，比如需要提供物联网数据的存储服务或者比如给深度学习框架提供专门的训练芯片等.</p>
+<p>2，技术目标</p>
+<p>技术目标分为功能目标与非功能目标，功能目标是跟业务需求强相关的软件功能需求，比如提供原生的时序数据存储功能，还比如分布式计算功能。非功能目标可以分为质量目标与约束目标，比如性能质量、可用质量以及系统硬件规格约束等，对于产品来说质量与约束都需要可度量化、可验证化。</p>
+<h4 id="策略与执行"><a href="#策略与执行" class="headerlink" title=" 策略与执行"></a><font color="#00CED1"> 策略与执行</font></h4><p>1, 战略方针</p>
+<p>产品的战略意味着方向、资源以及取舍，方针是如何打造出这么一款产品的策略，一开始从全方位复制再处处差异化竞争也是一个思路，比如全面复制市场上已有的产品，再从产品、技术、销售、服务、运营、客户定位等方面处处差异化竞争。</p>
+<p>2, 团队定位</p>
+<p>团队文化即产品文化，打造一款产品需要一个团队，组织文化也深刻的影响着产品，团队不同意味着不同。国内一些企业团队复制国外产品的时候，往往有其形而无其神，原因之一往往是团队定位以及企业文化的不同。</p>
+<p>通常来讲团队可以用四种类型来类比：海盗、特种兵、军队以及警察。海盗团队求生存，特种作战团队求根据地，军队团队求统一全国，警察团队求维稳。采用不愁吃喝的警察维稳的思路开发一款新产品又怎么能跟需要打下根据地的特种作战部队一样呢，跟需要求生存的海盗部队更不一样。</p>
+<p>3, 执行策略</p>
+<p>执行策略是指产品落地的方法论，持续交付2.0的方法论就很类似火箭思维，采用火箭思维意味着先开工再在过程中矫正，先确保大方向正确，开工过程中矫正直至准确命中目标。</p>
+<h4 id="软件需求"><a href="#软件需求" class="headerlink" title=" 软件需求"></a><font color="#00CED1"> 软件需求</font></h4><p>架构师需要能准确理解业务愿景、产品策略，将抽象的愿景、目标、策略等分解成可量化的、可执行的具体任务，从而准确实现业务到产品的落地。</p>
+<p>从业务到产品的过程中，能够准确的理解业务的软件需求也是一个非常重要的思维能力，这样可以保证大方向的正确性，这里提出一种从业务到产品的需求分析模型，以准确的理解软件需求，从而保证软件产品的落地方向的准确性。这里我提出一个公式：</p>
+<p><strong><font color="#00CE00">软件需求 = [客户，用户，团队] x [功能，质量，约束]</font></strong></p>
+<p>依据这个公式我提出<strong><font color="#00CE00">“三三制需求分析思维模型”</font></strong>以抛砖引玉，如下图：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">需求分析</th>
+<th style="text-align:center">功能</th>
+<th style="text-align:center">质量</th>
+<th style="text-align:center">约束</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">“大”客户</td>
+<td style="text-align:center">业务目标</td>
+<td style="text-align:center">多、快、好、省</td>
+<td style="text-align:center">时间、质量、成本<br>遗留系统，法律法规<br>技术趋势，竞争对手<br>行业标准等</td>
+</tr>
+<tr>
+<td style="text-align:center">“大”用户</td>
+<td style="text-align:center">业务需求</td>
+<td style="text-align:center">性能，可用性<br>可靠性，可伸缩性<br>可观测性，可运维性<br>易用性，安全性，韧性</td>
+<td style="text-align:center">业务环境<br>用户能力<br>用户群特征</td>
+</tr>
+<tr>
+<td style="text-align:center">“大”团队</td>
+<td style="text-align:center">基本功能 ，核心功能 <br>增值功能 ，可有可无功能 <br>有害无益功能</td>
+<td style="text-align:center">可扩展<br>可读性<br>可测试性<br>可维护性</td>
+<td style="text-align:center">资源预算，上级要求<br>开发团队能力<br>产品规划，信息安全<br>运行环境</td>
+</tr>
+</tbody>
+</table>
+<h5 id="“大”客户"><a href="#“大”客户" class="headerlink" title="“大”客户"></a><font color="#00CE00">“大”客户</font></h5><p>这里的“大”字有两个层面的意思，首先是范围上的”大“，三三制模型里的客户不只是狭义上的产品的客户，还包括整个产品利益链上的客户，比如客户的客户，因此这里称之为 “大“客户。第二这里的”大“字是规模上的大，从商业的角度来看大订单客户理应获得更大的关注。</p>
+<p><strong>功能</strong></p>
+<p>客户关注的功能即为业务目标，比如获取商业上的成功、业务难点、恐惧点、挑战点以及压力点等。对架构师来说 “以客户为中心”导向的业务功能目标不只是提供“高质量、低成本、服务好、响应及时”的基本产品或服务需求，还包括帮助客户获取商业上的成功，帮助客户解决难点、痛点、恐惧点、挑战点以及压力点。</p>
+<p><strong>质量</strong></p>
+<p>客户对产品质量的需求一般可以用四个字概括，即”多、快、好、省“，当然从软件工程的角度来说，四个方面全满足是极其困难的，因此应该根据实际情况合理取舍，对客户的需求需要进行合理的”过滤“，去粗存精，去伪纯真。</p>
+<p><strong>约束</strong></p>
+<p>对于客户的需求只关注功能和质量而忽视约束也是不够全面的。客户在产品交付的时间、质量与成本上需要取舍，客户原来遗留的系统以及资产，当前国家的法律法规，市场上的技术趋势，以及竞争对手与行业标准等都属于当前需要考虑的约束需求。</p>
+<h5 id="”大“用户"><a href="#”大“用户" class="headerlink" title="”大“用户"></a><font color="#00CE00">”大“用户</font></h5><p>这里的”大“用户的”大“字，也分为两个层面的意思，一是范围”大“，不只是当前产品的用户，还包括用户的用户以及整个产品使用链上的所有用户，二是规模”大“，主流用户的需求更应该第一时间满足，有限的资源应该在第一时间满足主流用户的需求。</p>
+<p><strong>功能</strong></p>
+<p> 功能需求指的是满足用户对业务的需求，用户需要什么就提供什么，而不是我有什么就非要给用户什么，以”用户“为中心的思路也是正确的。    </p>
+<p><strong>质量</strong></p>
+<p>用户的产品质量需求一般称为使用质量需求，可以从以下几个维度进行分析：</p>
+<ul>
+<li><p>合适的性能（Performant），性能指标一般包括 TPS,  QPS,  Latency, IOPS， response time等，这里用”合适的性能“作为表达，指的是性能合适即可、够用即可，高性能当然好，但是高性能也意味着更高的成本，有些场景高性能反而是一种浪费行为，性能需求需要理解业务场景适可而止；</p>
+</li>
+<li><p>可用性(Availability)，可用性指的是系统长时间可对外提供服务的能力，通常采用小数点后的9的个数作为度量指标，按照这种约定“五个九”等于0.99999（或99.999％）的可用性，默认企业级达标的可用性为6个9。但是当前从时间维度来度量可用性已经没有太大的意义，因为设计得好的系统可以在系统出现故障得情况下也能保证对外提供得服务不中断，因此，当前更合适得可用性度量指标 是请求失败率；</p>
+</li>
+<li><p>可靠性(Reliability)，可靠性一般指系统在一定时间内、在一定条件下可以无故障地执行指定功能的能力或可能性， 也是采用小数点后的9的个数作为度量指标，通常5个9的可靠性就可以满足企业级达标；</p>
+</li>
+<li><p>可伸缩性(Scalability)，是指通过向系统添加资源来处理越来越多的工作并且维持高质量服务的能力；</p>
+</li>
+<li><p>韧性(resilience)，通常也叫容错性（fault-tolerant），也就是健壮和强壮的意思，指的是系统的对故障与异常的处理能力，比如在软件故障、硬件故障、认为故障这样的场景下，系统还能保持正常工作的能力；</p>
+</li>
+<li><p>可观测性(Observability)，是一种设计理念，包括告警、监控、日志与跟踪，可以实时地更深入地观测系统内部的工作状态；</p>
+</li>
+<li><p>安全性（security），指的是阻止非授权使用，阻止非法访问以及使用，保护合法用户的资产的能力；</p>
+</li>
+<li><p>易用性（usability），指的是软件的使用难易程度，对于产品的易用性来说，  易用性不仅仅 是软件使用角度的易用，还包括安装、部署、升级上的易用,升值还包括硬件层面的易用，比如产品的外观，形状等；</p>
+</li>
+<li><p>可运维性（operability），可运维性指的是运维人员对系统进行运维操作的难易程度，主要包含以下几个方面的难以程度： 系统的部署、升级、修改、监控以及告警等。</p>
+</li>
+</ul>
+<p><strong>约束</strong></p>
+<p>用户的约束需求包括 用户的业务环境，用户的能力以及用户群的特征等。</p>
+<h5 id="”大“团队"><a href="#”大“团队" class="headerlink" title="”大“团队"></a><font color="#00CE00">”大“团队</font></h5><p>这里的大团队的”大“指的是范围上的大，不只是直接开发人员，还包括跨职级、跨部门的利益相关人员。</p>
+<p><strong>功能</strong></p>
+<p>软件功能需求从产品的角度来说可以分为五种，即：</p>
+<ul>
+<li>基本功能，这是在产品概念阶段就必须实现的功能也是在产品的第一个发布版本中必须提供的功能，比如数据处理产品的”读与写“；</li>
+<li><p>核心功能，核心功能是产品的主要功能，扩展了基本功能的外延，比如为了保证性能达标的缓存功能、分布式功能等；</p>
+</li>
+<li><p>增值功能，这里指的是一些产品差异化的能力，比如安全、监控、告警、日志、升级、部署等；</p>
+</li>
+<li><p>可有可无功能，有些特性存在还是不存在不影响产品的使用也不会带来产品的优势，只起到锦上添花的作用，因此属于可有可无的功能；</p>
+</li>
+<li>有害无益功能，指的一些功能不只没用还有害，没有识别出来消耗了团队资源不说还对产品有拉后腿的作用。</li>
+</ul>
+<p><strong>质量</strong></p>
+<p>团队的质量需求，指的是产品开发周期内的质量需求，高质量的代码几个最重要的要素有：</p>
+<ul>
+<li><p>可测试性（ testability），指的是单元测试，集成测试，打桩测试等的难易；</p>
+</li>
+<li><p>可维护性（Maintainability）， 指的是代码升级，部署，定位bug，添加功能的难易；</p>
+</li>
+<li><p>可扩展性（ extensibility）， 指的是未来增加新的功能与模块的难易；</p>
+</li>
+<li><p>可读性（ readability），指的是代码的易理解程度。</p>
+</li>
+</ul>
+<p><strong>约束</strong></p>
+<p>几个中药得团队的约束需求有：</p>
+<ul>
+<li><p>资源预算，产品的质量与功能以及发布周期受限于预算；</p>
+</li>
+<li><p>上级要求，上级的要求相当于客户要求也是非常重要的约束条件；</p>
+</li>
+<li><p>开发团队的能力，开发团队的能力组成、知识结构组成决定了产品是否能够交付以及能否高质量的交付；</p>
+</li>
+<li><p>产品规划，产品规划得进度是产品的交付周期以及开发进度得约束条件；</p>
+</li>
+<li><p>此外还有信息安全以及产品运行环境 的约束。</p>
+</li>
+</ul>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本系列文章讲述了五个思维模型： “需求分析思维模型、技术思维模型、创新思维模型、商业思维模型以及产品思维模型”，再结合分布式流存储做了简单的举例分析。本文讲述”需求思维模型“，日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这几个思维模型对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“[1]，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，主要从事分布式产品的交付、架构设计以及开发工作。</p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1]《软件架构设计》 温昱著</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/12/21/person-emc-codeline-and-awarded/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的技术博客">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2019/12/21/person-emc-codeline-and-awarded/" itemprop="url">进EMC马上两年，里程碑两件</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-12-21T10:30:01+08:00">2019-12-21 10:30:01</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/person/" itemprop="url" rel="index"><span itemprop="name">person</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>进EMC马上两年，12月份里程碑两件。</p>
+<p>一是硬技能，项目里个人提交的代码突破6万行，产品第一个版本月底发布；</p>
+<p>二是软技能，专利公司内过审3个，写文章推广产品以及提升团队的技术影响力获得公司副总裁认可给了个奖。</p>
+<h2 id="代码行数突破6万行"><a href="#代码行数突破6万行" class="headerlink" title="代码行数突破6万行"></a>代码行数突破6万行</h2><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/person/emc-20191220-codeline.png" alt="codeline"></p>
+<h4 id="专利过三"><a href="#专利过三" class="headerlink" title="专利过三"></a>专利过三</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/person/emc-2019-patent-1.PNG" alt="patent"></p>
+<h4 id="GEEK-BANG-技术文章活动奖"><a href="#GEEK-BANG-技术文章活动奖" class="headerlink" title="GEEK BANG 技术文章活动奖"></a>GEEK BANG 技术文章活动奖</h4><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/person/emc-201912-award-1.JPG" alt="award"></p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/person/" rel="tag"><i class="fas fa-tags"></i>person</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="www.changping.me/2019/11/20/distributed-ideamodel-product/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -469,424 +857,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/10/21/distributed-product-architecture-daoist/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/10/21/distributed-product-architecture-daoist/" itemprop="url">产品思维奇点图</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-10-21T20:28:20+08:00">2019-10-21 20:28:20</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/product/" itemprop="url" rel="index"><span itemprop="name">product</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="产品思维奇点图"><a href="#产品思维奇点图" class="headerlink" title="产品思维奇点图"></a>产品思维奇点图</h2><p>理解技术、产品与商业是产品架构师的基本职责，架构思维、产品思维与商业思维是架构师的底层思维，就个人领悟来说技术与产品是其实不分家的，二者互补互利。</p>
-<p>这里先放出一张我自己用的产品思维图（如下），接下来会写一篇文章详细解读这个产品思维模型，这张图我称之为产品思维奇点图，结合了“第一性原理”、“奇点理论”以及中国古朴的哲学，口诀是“四点一线五元组”。</p>
-<p>四点分为“产品定位点、价值点、业务点以及奇点”，一线是指“能力线”，五元组是指 “势、道、法、术、器”，对应产品的“趋势、优势、劣势”，“本质、灵魂、规律、价值”，“方法论”，“技能”，“工具”。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/daoist/product-architecture-daoist.PNG" alt="产品架构奇点图"></p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/product/" rel="tag"><i class="fas fa-tags"></i>product</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/06/23/bigdata-streaming-refactor-iot-platform/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/06/23/bigdata-streaming-refactor-iot-platform/" itemprop="url">重构工业物联网大数据处理平台的存储栈</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-06-23T21:32:38+08:00">2019-06-23 21:32:38</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>本文为《下一个分布式存储系统，为万物互联的智能世界而发》升级版。</p>
-<h2 id="导言"><a href="#导言" class="headerlink" title="导言"></a><font color="#FF8C00">导言</font></h2><p>纵观人类历史，各种技术变革都是以人类活动为中心，然后发明各种工具。石器时代，原始人发明了石器以及用火从而提升了生活品质和社会文明。现代社会，人类为了解决各种寂寞空虚冷吃穿住用行、生理和心理上的各种需求从而发明了各种社交空间、社交工具、网络购物、生活服务APP等，为了更好的服务这些应用场景，挖掘这些场景所生产的数据的价值，从而有了今天的各种大数据技术。</p>
-<p>在互联网时代，数据主要来源于网页、APP以及一些相应的日志系统，而在万物互联的世界，数据还可以来源于有各种传感器、工业设备、监控设备、检测设备、智能家居、自动驾驶等。大数据的四个特征：数据量、时效性、多样性、价值密度在万物互联的场景下被进一步的深化，这就意味着商业成本以及技术成本的增加。</p>
-<p>理论奠定技术的基础，业务驱使技术的变革。在万物互联的智能时代，我们有一个愿景：<font color="#FF0000"> <strong>能够将万物互联下生成的海量原始数据转化为可用的信息以及行为决策，并且这个转换的时间差需要能够接近于零。</strong></font>通过现有技术的组合，技术人员打造了工业物联网平台从而希望能达成这个愿景。</p>
-<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>现有的工业物联网大数据处理平台很多是基于开源的技术<font color="#00CED1"><strong>“D-I-Y”</strong></font>而来，它是一个”DIY“系统，往往为了一个功能而引入一个复杂的组件，这就容易造成平台只关注功能而忽略“质量与约束”，在复杂之上堆积复杂，致使客户商业成本、技术成本以及运维成本高昂。</p>
-<p>从商业角度来说，在构建物联网大数据处理平台的时候，大家都用的开源的技术，构建出来的平台同质化严重，那么有个问题需要回答的就是：“大家都用的同样的开源技术，客户凭什么需要买单你的？”</p>
-<p>从产品的角度来看，一个好的产品既能<font color="#00CED1"><strong>“顶天”</strong></font>，还能<font color="#00CED1"><strong>“立地”</strong></font>，它除了能有自己独到的灵魂与创新，还能将自己扎根于用户，替客户解决实际的生产问题，而不是又给客户带来新的问题。然而现有的工业物联网大数据处理平台除了给客户解决了一部分的生产问题，但是又引入了新的问题：成本高昂以及平台质量还往往难以达标。</p>
-<font color="#00CED1"><strong>新的技术不仅可以来源于已有技术的组合与进化，还可以来自于对现有现象的理解与征服。</strong></font>因此，出于对现有的工业物联网平台的理解以及降低客户的商业成本、技术成本以及运维成本的目的，这里提出了重构工业物联网大数据平台存储栈的理念。<br><br><font> </font>
-
-
-
-<h2 id="工业物联网平台"><a href="#工业物联网平台" class="headerlink" title="工业物联网平台"></a><font color="#FF8C00">工业物联网平台</font></h2><p>如下图所示，通常一个工业物联网平台是以<font color="#FF0000"> <strong>“云-管-端”</strong></font>三部分组成的，类似x86服务器主板南桥北桥的叫法，工业物联网平台也是如此，在“管”的左边跟外设传感器之类打交道的地方我们称之为“南向”，跟数据处理相关“管”的右边我们称之为“北向”。南向由各种传感器以及SCADA/PLC/HMI组成，负责数据的采集，然后数据再经过RTU、DTU、网关或路由传输到云端的工业大数据处理平台进行处理，从而完成监控、告警、预测性维护、分析等功能。</p>
-<p>​                             </p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/iot_platform.PNG" alt="工业物联网平台"></p>
-<h5 id="流数据-时序数据"><a href="#流数据-时序数据" class="headerlink" title="流数据/时序数据"></a><font color="#FF00FF">流数据/时序数据</font></h5><p>如下表所示，工业物联网平台南向传感器采集的数据，具有时间属性并且自带标签与数值，每条数据代表一个监测指标并且反应数值的变化，同时这些数据又随时间延续而无限增长，因此被称之为流数据或时序数据。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/iot_data_format.PNG" alt="时序数据"></p>
-<p> 南向采集数据的设备虽然多种多样，然而本质上它们的数据格式是一样的，都由“timestamp,tags,metrics”这三部分组成。数据格式看上去是很简单的，但是对于数据处理系统来说复杂度的来源在于：</p>
-<ol>
-<li>数据自带时间戳具有时间有效性，这意味着数据处理的实时性;</li>
-<li>数据都是小数据，这意味着数据存储系统需要对此进行专门的高性能设计；</li>
-<li>数据随时间延续而无限增长，这意味着数据的无限性；</li>
-<li>数据到达的速度有快有慢、负载有高有低，这意味着灵活又细粒度的资源弹性需求；</li>
-<li>数据有序、无序、持久化以及复杂的传输环境而又要保证数据处理结果的唯一正确性。</li>
-</ol>
-<p>这是几个特性转换成存储技术的语义对应着：<font color="#FF0000"> <strong>实时性、高性能、无限性、可伸缩性以及恰好一次：持久化、有序、一致性以及事务。</strong></font>从<font color="#FF0000"> <strong>存储的视角</strong></font>来说，每种类型的数据都有其原生的属性和需求，对应有最佳的适用场景以及最合适的存储系统。那么目前又有哪种存储系统最适合用于<font color="#FF0000"> <strong>“流数据”</strong></font>呢？正如当前技术条件下最适合<font color="#FF0000"> <strong>“流数据”</strong></font>计算的是类似Flink这样的分布式流计算应用，最适合“流数据”的我们认为应当是专门针对流数据而设计的<font color="#00CED1"><strong>分布式流存储系统。</strong></font> </p>
-<h5 id="工业大数据处理"><a href="#工业大数据处理" class="headerlink" title="工业大数据处理"></a><font color="#FF00FF">工业大数据处理</font></h5><p>工业物联网平台北向负责大数据的处理，万物互联场景下无限量的数据给数据处理技术带来巨大的挑战与压力，不同的应用场景意味着不同的数据处理要求与复杂度，要把这些不同的甚至矛盾的数据处理要求都很好的综合在一个大数据处理系统里，对现有的大数据处理技术来说是个非常大的挑战，比如无人车的处理要求毫秒甚至纳秒级的数据处理实时性、而有些工业设备数据只需要分析历史数据，要让一个大数据处理系统既能能处理历史数据又能提供毫秒级甚至纳秒级的实时性处理能力还能应对各种不同格式不同传输场景的数据，而且每种数据处理都能达到这些应用场景原生指标的处理需求，相信这样的场景对工程技术人员来说是个很大的挑战。为了解决上述问题，按照现有的成熟的技术能力，通常开发人员采用类似Lambda架构（如下图）这样的大数据处理平台组合了各种复杂的中间件来达成这个数据处理的目标。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/streaming-bigdata-lambda-arch.PNG" alt="Lambda架构"></p>
-<p>Lambda架构即支持批处理也支持实时处理，能应对数据的多样性、具有容错功能、复杂性分离、能处理流式数据也能处理历史数据等优点，但是缺点也很明显：批处理一套独立的数据处理路径，实时处理又一套数据处理路径，然后还要合并结果再输出展示，同时系统里同样的数据存在存储多份的问题，比如同样的数据在Elasticsearch里有、HDFS里有、ceph里有、Kafka里也有，除了这些甚至还存在其他一些复杂的存储组件，而且同样的数据还都是多份冗余的，因此存储成本太高太过于复杂。Lambda架构里为了提供一个功能却引入一个组件，在复杂之上堆积复杂，存储成本、开发与运维成本都太过于复杂。</p>
-<p>那么应当如何解决Lambda架构带来的这些缺点？<font color="#FF0000"><strong>以数据流向为核心</strong></font>重构大数据处理平台是一个比较好的方案，它具体包括数据的采集、聚合、传输、处理、展示等。依据这种设计理念我们可以推出一个端到端的原生的流式大数据处理平台：原生的流式计算加上一个原生的流式存储并且可以平衡商业成本与技术成本。</p>
-<p>流式计算可以采用Flink，然而并没有发现当前有合适的流式存储可以使用，因此，综合思考万物互联场景下的数据处理场景也需要一个原生的分布式流存储系统，<font color="#FF0000"><strong>重构Lambda架构里的存储栈</strong></font>，使得分布式流计算加上分布式流存储即为原生的流式大数据处理系统，同时还能很好的平衡商业成本与技术成本之间的关系。</p>
-<h2 id="设计思路"><a href="#设计思路" class="headerlink" title="设计思路"></a><font color="#FF8C00">设计思路</font></h2><h3 id="数据中台"><a href="#数据中台" class="headerlink" title="数据中台"></a><font color="#00CED1">数据中台</font></h3><p>通常数据中台的目标是：<font color="#FF0000"><strong>“治理与聚合数据，将数据抽象封装成服务提供给前台业务使用”</strong></font>，因此，数据的治理、聚合以及抽象是数据中台的关键点。当前的大数据处理平台，不管是Kappa架构还是lambda架构，数据的存储都是多组件化、多份化的。比如同样的数据在Kafka里有、在HDFS里有、在Elasticsearch里又有，有些用户还使用了更多的存储中间件，而且这些数据还是多份冗余的。这一方面增加了数据的存储成本，另一方面也降低了数据的可信性、可靠性、合规性，给数据标准化以及数据的重复利用带来了困难，不利于数据的分享、合规、降低成本以及安全可靠地支持业务和决策。因此需要对数据进行治理、聚合以及抽象。通过使用分布式流存储，大数据处理平台的架构可以进化成<font color="#FF0000"><strong>”分布式流计算+ 分布式流存储“</strong></font>这样的原生流式数据处理平台架构，这也体现了<font color="#FF0000"><strong>“数据中台”</strong></font>的理念。</p>
-<h3 id="流原生架构"><a href="#流原生架构" class="headerlink" title="流原生架构"></a><font color="#00CED1">流原生架构</font></h3><p>依据<font color="#FF0000"> <strong>“流原生”</strong> </font>的架构设计哲学以及数据中台的理念，这里提出<font color="#FF0000"><strong>”分布式流计算+ 分布式流存储“</strong></font>这样的原生流式工业大数据处理平台的架构理念，不同于Lambda架构与Kappa架构，流原生架构最主要的工作是对数据进行了治理、聚合与抽象，使得工业大数据平台的计算层通过统一的数据API接口调用底层的流存储系统。如下图所示，Spark,Flink以及检索系统等都调用统一的流存储接口，从而减少了平台复杂度以及降低数据存储成本和运维成本。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/stream_native_platform.PNG" alt="流原生架构"></p>
-<h3 id="算子编排"><a href="#算子编排" class="headerlink" title="算子编排"></a><font color="#00CED1">算子编排</font></h3><p>工业大数据处理平台虽然很复杂，然而抽象到最后就一个简单的数学公式：<font color="#FF0000"><strong>“Y = F(X)”</strong></font>，输入数据x，经过F算子计算再输出结果Y，数学表达式并不复杂，如同质能方程E=mc²，但是从理论到落地还有一个浩大的工程，Y=F(x)其复杂度主要来源于：</p>
-<ol>
-<li><p>每个数据算子都认为是一个Y=F(x)，需要对无数个这样的算子进行高性能的计算，算子无限性；</p>
-</li>
-<li><p>需要对无限个随时可能乱序的Y=F(x)算子进行编排、组合、拆分，算子编排。</p>
-</li>
-<li>需要对无限个Y=F(x)算子的中间结果进行持久化、保序，以及保证计算结果的正确性，算子结果确定性；</li>
-</ol>
-<p>因此需要一个专门的数据处理架构来解决这些复杂度。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/stream_platform.PNG" alt="流式架构"></p>
-<p>如上图所示，“流原生”的Flink计算加上“流原生”的存储管道组成了“流原生”的大数据处理平台。数据从分布式流存储输入经过map算子计算，输出中间计算结果到分布式流存储里，数据又从分布式流存储里读入到Filter算子里，再经过计算，中间结果放到了分布式流存储里，再最后的计算结果经过Apply算子的计算放到了目的地的分布式流存储里。这个过程体现了算子编排和管道式编程的设计哲学，在这里分布式流存储起了大数据处理平台里的管道的作用。</p>
-<h2 id="分布式流存储"><a href="#分布式流存储" class="headerlink" title="分布式流存储"></a><font color="#FF8C00">分布式流存储</font></h2><p>分布式流存储的产品定位是给万物互联这样的应用场景服务的，从技术角度来看它具有自身的特点，正如标题里提到的三个关键词：<font color="#FF8C00"> <strong>“分布式”、“流”、“存储”</strong></font>。首先是分布式的，它具有分布式系统本身所具有的一切能力，接着表示是专门给流式数据设计和实现的，最后的存储表示的是一个原生的存储解决方案，它讲究数据的<font color="#FF8C00"> <strong>可靠性、持久化、一致性、资源隔离等</strong></font>，它从<font color="#FF0000"> <strong>存储的视角</strong></font>处理流数据。分布式流存储针对 <strong>“流数据”</strong> 的自身属性以及相应的特殊的业务需求场景做了专门的设计与实现，下面从<font color="#FF8C00"> <strong>命名空间、业务场景、无限性、可伸缩性、恰好一次、字节流、数据管道、租户隔离、海量小文件</strong></font>的角度依据 <strong>最佳实践原则</strong> 讲述了为什么需要专门设计和实现一个流式存储系统。</p>
-<h3 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a><font color="#00CED1">命名空间</font></h3><p>通常，块存储系统以<font color="#FF0000"><strong>分区、目录、文件</strong></font>，文件存储系统以<font color="#FF0000"><strong>目录、文件</strong></font>，以及对象存储以<font color="#FF0000"><strong>租户、桶、对象</strong></font>来定义数据的存储路径以及命名空间，而流存储系统则以<font color="#FF0000"><strong>范围(scope)、流(stream)、段(segment)、事件(event)</strong></font>来描述数据的存储路径以及命名空间。</p>
-<div align="center"> 
-
-<table>
-<thead>
-<tr>
-<th>类型</th>
-<th>命名空间</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>块存储</td>
-<td>分区、目录、文件</td>
-</tr>
-<tr>
-<td>文件存储</td>
-<td>目录、文件</td>
-</tr>
-<tr>
-<td>对象存储</td>
-<td>租户、桶、对象</td>
-</tr>
-<tr>
-<td>流存储</td>
-<td>范围、流、段、事件</td>
-</tr>
-</tbody>
-</table>
-<div align="left"> 
-
-<p>在流存储系统里，如下图所示，数据的组织形式被抽象成范围、流、段和事件，范围由流组成，流由段组成，段由事件组成，事件由字节(bytes)组成。</p>
-<div align="center"> 
-
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-scope-stream.png" alt="流的组成"></p>
-<div align="left"> 
-
-
-
-<h3 id="业务场景"><a href="#业务场景" class="headerlink" title="业务场景"></a><font color="#00CED1">业务场景</font></h3><p>在自动驾驶的场景里采用分布式流存储，我们可以这样处理自动驾驶的数据：给每一辆无人车定义一个1TB存储空间的范围，车上的每个传感器都归属于一个流，传感器上报的事件都在段内持久化。再假设每辆车都有1000个传感器（实际情况只多不少），那么10万辆车就需要定义1亿个流，可以想象要进行这种规模的隔离也就只有这种专门针对流数据而设计的流存储系统能够支持。</p>
-<p>在工业厂房的场景下，还可以这样定义工业设备的数据：给一个厂房里的每台设备定义一个范围，每台设备里的每个传感器都对应一个流，传感器上传的事件数据保存在流内的段里，这样就很方便的对工业设备进行了大规模的租户数据隔离。</p>
-<p>因此，以<font color="#FF0000"><strong>“范围、流、段、事件”</strong></font>的方式很方便的进行了大规模的租户隔离保证了用户信息安全同时又进行了存储资源配额的隔离。</p>
-<h3 id="数据无限性"><a href="#数据无限性" class="headerlink" title="数据无限性"></a><font color="#00CED1">数据无限性</font></h3><p>无限性是分布式流存储最为重要的设计原则。从流数据的角度来看，数据是大量、快速、连续而又无限的，这就给流存储系统的设计与实现带来极大的困难，无限的数据使得存储系统必须能支持连续且无限规模的数据流，光这一点就对存储系统的可扩展性要求非常的高，同时还要求存储系统能够根据到达的数据量动态而又优雅地进行扩容与缩容。从技术与成本的角度来看，数据无限性意味着冷热数据分离，长期不用的数据淘汰到长期存储系统里，热点数据需要缓存，同时还需要能支持历史数据的读取与实时数据的读取与写入。</p>
-<h3 id="可伸缩性"><a href="#可伸缩性" class="headerlink" title="可伸缩性"></a><font color="#00CED1">可伸缩性</font></h3><p>可伸缩性也是分布式流存储最为重要的设计原则之一，而且流存储里的可伸缩性要求还是自动化的资源细粒度的可伸缩。通常，在云原生的场景下，资源的缩放是以主机、虚机或容器为单位的，这样的缩放对流存储来说粒度太大。在流存储的场景下需要能够以数据的<strong>“流段”</strong>为单位，比如一个流段2MB，那么就需要能支持一次自动扩容或缩容2MB的存储空间。另外在流存储里还要求写入与读取对数据子集的操作是解耦分离的，并且写入与读取二者之间跟数据流段还要有一个合理的平衡。</p>
-<h3 id="恰好一次"><a href="#恰好一次" class="headerlink" title="恰好一次"></a><font color="#00CED1">恰好一次</font></h3><p>恰好一次也是分布式流存储最为重要的设计原则之一，恰好一次意味着数据的可持久化、有序、一致性以及事务性的支持。持久性意味着一旦得到确认，即使存储组件发生故障，写入的数据也不会丢失。有序意味着读客户端将严格按照写入的顺序处理数据。一致性意味着所有的读客户端即使面对存储故障、网络故障也都会看到相同的有序数据视图。事务性写入对于保证Flink这样的计算应用处理结果的完全正确是非常必要的。</p>
-<h3 id="字节流"><a href="#字节流" class="headerlink" title="字节流"></a><font color="#00CED1">字节流</font></h3><p>分布式流存储里采用字节流的格式组织数据而不是像消息系统里采用消息报文的方式，这意味着接口的通用性。二进制的字节流是与数据格式无关的，字节流可以组成事件封装在分布式存储的流段里。而消息系统里数据是消息头消息体的格式封装的，在兼容性上不如字节流。</p>
-<h3 id="数据管道"><a href="#数据管道" class="headerlink" title=" 数据管道"></a><font color="#00CED1"> 数据管道</font></h3><p>在存储界通常喜欢用跑车、卡车、渡轮来比喻块存储、文件存储以及对象存储，打个比方来说块存储类似跑车：极快、极稳、装的人少、成本高；文件存储类似卡车：快、稳、装的人比跑车多，但是没跑车那么快；对象存储类似渡轮：可以装非常多的货，讲究量大、成本低；那么分布式流存储像什么呢？ 在我们的定义里它就像管道：<font color="#FF0000"><strong>数据如同流水一般流过管道，又快又稳源源不断而又永无止境</strong>。</font></p>
-<h3 id="租户隔离"><a href="#租户隔离" class="headerlink" title="租户隔离"></a><font color="#00CED1">租户隔离</font></h3><p>分布式流存储从一开始设计的时候就将”租户隔离“作为其基本特性进行实现，”隔离“是分布式流存储的最基本的特性之一，在分布式流存储里租户隔离不只是租户B绝对不能看的到租户A的任何信息这样的信息安全层面的隔离，它支持范围、流、段、事件层面的隔离还将支持的租户规模作为设计的目标之一，在分布式流存储里单集群需要能支持千万量级起的租户数，另外还有资源、命名、可视空间、权限以及服务质量层面的隔离。</p>
-<h3 id="海量小文件"><a href="#海量小文件" class="headerlink" title="海量小文件"></a><font color="#00CED1">海量小文件</font></h3><p>对巨量小文件的支持是分布式流存储的设计原则之一。正如前面提到的，万物互联下的海量数据来源于传感器，而传感器上传的数据都是类似温度、地理位置、告警信息这样的几个字节几个字节的小数据，这就意味着在万物互联的场景下会有巨量的小数据上传，而且90%以上的数据操作行为都是写入。为了保证数据写入的性能以及可靠性、正确性、持久性以及保证介质的使用寿命降低成本，这也需要存储系统针对这种业务场景进行专门的设计。</p>
-<p>在分布式流存储里每个事件第一步是被仅附加写入一个缓存的段内进行封装的，在段达到一定的尺寸（比如64MB）后会被封闭不再写入，这时再将整个段写入下一级的持久化存储里。通过这样的设计，实现小数据在缓存里封装成大块的数据，再将大块数据写入持久化存储设备的方式保证了存储系统整体的性能。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>电影《一代宗师》里提到习武之人有三个境界：<font color="#00CED1"><strong>“见自己，见天地，见众生”</strong></font>。做技术做产品也同样如是，“三见”如同一体三面不可分割，认知上从关注自己到关注格局创新，再扎根到用户当中替用户解决有价值的实际问题。现有的工业物联网大数据处理平台有创新也有替客户解决了部分工业数据处理的难题，但是还是属于一个”DIY“的系统，离产品化还有距离，因此需要我们继续扎根下去替客户解决新的实际问题。</p>
-<p>综上所述，在万物互联的智能世界里，为了实现将海量数据近实时转化成信息和决策的愿景，除了流式计算应用还需要一个流式存储系统，未来已来，已有开源的分布式流存储系统正走在这条路上。另本文仅为作者愚见，与任何组织机构无关，作者能力也很有限，如有不足之处欢迎留言批评指正。</p>
-<h2 id="问题思考"><a href="#问题思考" class="headerlink" title="问题思考"></a><font color="#FF8C00">问题思考</font></h2><p>最后给大家留一个思考题：<font color="#00CED1"><strong>如果让你来设计一个工业物联网平台产品，你会如何定义它的产品灵魂？</strong></font></p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及工业物联网大数据，现就职于DELL EMC。个人技术博客：<a href="https://changping.me" target="_blank" rel="noopener">https://changping.me</a></p>
-<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a> ，可以自由阅读、分享、转发、复制、分发等，限制是需署名、非商业使用（以获利为准）以及禁止演绎。</p>
-</div></div></div></div>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/05/24/bigdata-streaming-the-next-storage/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/05/24/bigdata-streaming-the-next-storage/" itemprop="url">下一个分布式存储系统，为万物互联的智能世界而发</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-05-24T21:32:38+08:00">2019-05-24 21:32:38</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <p>如果说互联网和云计算使得对象存储在存储市场上与块存储、文件存储三分天下，相应的业务需求直接奠定了对象存储与块存储、文件存储并列存储江湖一哥的地位，那么接下来也许我们需要为下一场数据变革的大事做好准备 – <font color="#00CED1"><strong>万物互联这样的商业场景将给数据存储带来极大的商业挑战和技术挑战。</strong></font></p>
-<h2 id="万物互联下的数据"><a href="#万物互联下的数据" class="headerlink" title="万物互联下的数据"></a><font color="#FF8C00">万物互联下的数据</font></h2><p>纵观人类历史，各种技术变革都是以人类活动为中心，然后发明各种工具。石器时代，原始人发明了石器以及用火从而提升了生活品质和社会文明。现代社会，人类为了解决各种寂寞空虚冷吃穿住用行、生理和心理上的各种需求从而发明了各种社交空间、社交工具、网络购物、生活服务APP等，为了更好的服务这些应用场景，挖掘这些场景所生产的数据的价值，从而有了今天的各种大数据技术。</p>
-<p>在互联网时代，数据主要来源于网页、APP以及一些相应的日志系统，而在万物互联的世界，数据还可以来源于有各种传感器、工业设备、监控设备、检测设备、智能家居、自动驾驶等。大数据的四个特征：数据量、时效性、多样性、价值密度在万物互联的场景下被进一步的深化，这就意味着商业成本以及技术成本的增加。</p>
-<p>理论奠定技术的基础，业务驱使技术的变革。在万物互联的智能时代，我们有一个愿景：<font color="#FF0000"> <strong>能够将万物互联下生成的海量原始数据转化为可用的信息以及行为决策，并且这个转换的时间差需要能够接近于零。</strong></font>而需要实现这个愿景，从技术角度来看，需要有计算层面的解决方案也需要有存储层面的，如今在计算层面已经有Flink、Spark等这类成熟的分布式计算应用，然而在存储层面还没有。</p>
-<h2 id="流数据与流存储"><a href="#流数据与流存储" class="headerlink" title="流数据与流存储  "></a><font color="#FF8C00">流数据与流存储  </font></h2><p>在万物互联的场景下，各种传感器以及设备生成的数据有其原生的属性，这种数据自带时间戳、实时性要求高，而且是<font color="#FF0000"> <strong>“流数据”</strong></font>。</p>
-<p>首先流数据在百度百科里是这样被定义的：</p>
-<blockquote>
-<p>流数据是一组顺序、大量、快速、连续到达的数据序列，一般情况下，数据流可被视为一个随时间延续而无限增长的动态数据集合。应用于网络监控、传感器网络、航空航天、气象测控和金融服务等领域。</p>
-</blockquote>
-<p>从数据的生产与传输场景来看流数据具有几个与众不同的带有破坏性的特性：</p>
-<ol>
-<li>数据随时间延续而无限增长，这意味着数据的无限性；</li>
-<li>数据到达的速度有快有慢、负载有高有低，这意味着灵活又细粒度的资源弹性需求；</li>
-<li>数据有序、无序、持久化以及复杂的传输环境而又要保证数据处理结果的唯一正确性。</li>
-</ol>
-<p>这是三个特性转换成存储技术的语义对应着：<font color="#FF0000"> <strong>无限性、可伸缩性以及恰好一次：持久化、有序、一致性以及事务。</strong></font></p>
-<p>从<font color="#FF0000"> <strong>存储的视角</strong></font>来说，每种类型的数据都有其原生的属性和需求，对应有最佳的适用场景以及最合适的存储系统。跑在数据库里的数据对实时性和可靠性要求非常的高，因此适合采用块存储系统。文件共享场景下需要向用户共享文件，多个用户可以共享读取一个文件，因此适合采用文件存储系统。而互联网网页与APP里的文件、图像、视频可以看作一个个的数据对象又需要租户隔离以及无限扩展，因此又非常适合采用对象存储系统。那么目前又有哪种存储系统最适合用于<font color="#FF0000"> <strong>“流数据”</strong></font>呢？</p>
-<p>正如当前技术条件下最适合<font color="#FF0000"> <strong>“流数据”</strong></font>计算的是类似Flink这样的分布式流计算应用，最适合“流数据”的应当是<font color="#00CED1"><strong>分布式流存储系统。</strong></font> </p>
-<h2 id="分布式流存储系统"><a href="#分布式流存储系统" class="headerlink" title="分布式流存储系统"></a><font color="#FF8C00">分布式流存储系统</font></h2><h3 id="产品定位"><a href="#产品定位" class="headerlink" title="产品定位"></a><font color="#00CED1">产品定位</font></h3><p>分布式流存储系统的产品定位是给万物互联这样的应用场景服务的，从技术角度来看它具有自身的特点，正如标题里提到的三个关键词：<font color="#FF8C00"> <strong>“分布式”、“流”、“存储”</strong></font>。首先是分布式的，它具有分布式系统本身所具有的一切能力，接着表示是专门给流式数据设计和实现的，最后的存储表示的是一个原生的存储解决方案，它讲究数据的<font color="#FF8C00"> <strong>可靠性、持久化、一致性、资源隔离等</strong></font>，它从<font color="#FF0000"> <strong>存储的视角</strong></font>处理流数据。分布式流存储针对 <strong>“流数据”</strong> 的自身属性以及相应的特殊的业务需求场景做了专门的设计与实现，下面从<font color="#FF8C00"> <strong>命名空间、业务场景、无限性、可伸缩性、恰好一次、字节流、数据管道、租户隔离、海量小文件、数据治理、流式架构</strong></font>的角度依据 <strong>最佳实践原则</strong> 讲述了为什么需要专门设计和实现一个流式存储系统。</p>
-<h3 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a><font color="#00CED1">命名空间</font></h3><p>通常，块存储系统以<font color="#FF0000"><strong>分区、目录、文件</strong></font>，文件存储系统以<font color="#FF0000"><strong>目录、文件</strong></font>，以及对象存储以<font color="#FF0000"><strong>租户、桶、对象</strong></font>来定义数据的存储路径以及命名空间，而流存储系统则以<font color="#FF0000"><strong>范围(scope)、流(stream)、段(segment)、事件(event)</strong></font>来描述数据的存储路径以及命名空间。</p>
-<div align="center"> 
-
-<table>
-<thead>
-<tr>
-<th>类型</th>
-<th>命名空间</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>块存储</td>
-<td>分区、目录、文件</td>
-</tr>
-<tr>
-<td>文件存储</td>
-<td>目录、文件</td>
-</tr>
-<tr>
-<td>对象存储</td>
-<td>租户、桶、对象</td>
-</tr>
-<tr>
-<td>流存储</td>
-<td>范围、流、段、事件</td>
-</tr>
-</tbody>
-</table>
-<div align="left"> 
-
-<p>在流存储系统里，如下图所示，数据的组织形式被抽象成范围、流、段和事件，范围由流组成，流由段组成，段由事件组成，事件由字节(bytes)组成。</p>
-<div align="center"> 
-
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-scope-stream.png" alt="流的组成"></p>
-<div align="left"> 
-
-<h3 id="业务场景"><a href="#业务场景" class="headerlink" title="业务场景"></a><font color="#00CED1">业务场景</font></h3><h5 id="可穿戴设备、自动驾驶与工业厂房"><a href="#可穿戴设备、自动驾驶与工业厂房" class="headerlink" title=" 可穿戴设备、自动驾驶与工业厂房"></a><font color="#FF00ff"> 可穿戴设备、自动驾驶与工业厂房</font></h5><p>可以想象一下这样的业务场景：某个商家销售了几千万个智能手表，这些智能手表可以记录每个用户每天走了多少步，同时还可以分析过往的历史数据，用柱状图给用户展示历史数据，如下图所示：</p>
-<div align="center"> 
-
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/pravega/pravega-infoq-watch.png" alt="步数分析"></p>
-<div align="left">  
-
-<p>考虑到信息安全，用户A是不能看到用户B的数据的，那么就需要按智能手表为单位进行租户隔离，这种的场景下就有几千万个租户，同时每个租户还有自己的存储空间配额，比如给每个智能手表分配5GB 存储空间。光是这样的租户隔离场景，依据<strong>最佳实践</strong>的系统设计原则，不管是块存储系统、文件存储系统、对象存储系统还是Kafka这样的消息系统，按他们本身的隔离特性以及支持的租户规模都是难以在单个系统里支持这样的租户隔离场景。但是用流存储来实现就很方便，比如以智能手表的业务场景为例：</p>
-<ul>
-<li>默认分配5GB存储空间给一个智能手表，然后定义一个智能手表类型的命名空间用于与其他智能设备进行隔离，给每个智能手表分配一个流，每个智能手表上报的字节数据以事件为单位存储在流内的段里。</li>
-<li>也可以这样来定义：给每个智能手表分配一个5GB 存储空间的命名空间，手表里的每个传感器都对应一个流，每个传感器以事件为单位上报字节数据存储到流的段里。</li>
-</ul>
-<p>还可以想象一下这样的业务场景：自动驾驶。采用分布式流存储的话，我们可以这样处理自动驾驶的数据：给每一辆无人车定义一个1TB存储空间的范围，车上的每个传感器都归属于一个流，传感器上报的事件都在段内持久化。再假设每辆车都有1000个传感器（实际情况只多不少），那么10万辆车就需要定义1亿个流，可以想象要进行这种规模的隔离也就只有这种专门针对流数据而设计的流存储系统能够支持。</p>
-<p>在工业互联网的场景下，还可以这样定义工业设备的数据：给一个厂房里的每台设备定义一个范围，每台设备里的每个传感器都对应一个流，传感器上传的事件数据保存在流内的段里，这样就很方便的对工业设备进行了大规模的租户数据隔离。</p>
-<p>因此，以<font color="#FF0000"><strong>“范围、流、段、事件”</strong></font>的方式很方便的进行了大规模的租户隔离保证了用户信息安全同时又进行了存储资源配额的隔离。</p>
-<h5 id="大数据处理平台"><a href="#大数据处理平台" class="headerlink" title=" 大数据处理平台"></a><font color="#FF00FF"> 大数据处理平台</font></h5><p>万物互联场景下无限量的数据给数据处理技术带来巨大的挑战与压力，不同的应用场景意味着不同的数据处理要求与复杂度，要把这些不同的甚至矛盾的数据处理要求都很好的综合在一个大数据处理系统里，对现有的大数据处理技术来说是个非常大的挑战，比如无人车的处理要求毫秒甚至纳秒级的数据处理实时性、而有些工业设备数据只需要分析历史数据，要让一个大数据处理系统既能能处理历史数据又能提供毫秒级甚至纳秒级的实时性处理能力还能应对各种不同格式不同传输场景的数据，而且每种数据处理都能达到这些应用场景原生指标的处理需求。相信这样的场景对工程技术人员来说是个很大的挑战。为了解决上述问题，按照现有的成熟的技术能力，通常开发人员采用类似Lambda架构（如下图）这样的大数据处理平台来处理大数据。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/streaming-bigdata-lambda-arch.PNG" alt="Lambda架构"></p>
-<p>Lambda架构即支持批处理也支持实时处理，能应对数据的多样性、具有容错功能、复杂性分离、能处理流式数据也能处理历史数据等优点，但是缺点也很明显：<strong>批处理一套独立的数据处理路径，实时处理又一套数据处理路径，然后还要合并结果再输出展示，同时系统里同样的数据存在存储多份的问题，比如同样的数据在Elasticsearch里有、HDFS里有、ceph里有、Kafka里也有，除了这些甚至还存在其他一些复杂的存储组件，而且同样的数据还都是多份冗余的，因此存储成本太高太过于复杂。Lambda架构里为了提供一个功能却引入一个组件，在复杂之上堆积复杂，存储成本、开发与运维成本都太过于复杂。</strong></p>
-<p>那么应当如何解决Lambda架构带来的这些缺点？<font color="#FF0000"><strong>以数据流向为核心</strong></font>重构大数据处理平台是一个比较好的方案，它具体包括数据的采集、聚合、传输、缓存、持久化、处理、展示等。依据这种设计理念我们可以推出一个端到端的原生的流式大数据处理平台：原生的流式计算加上一个原生的流式存储并且可以平衡商业成本与技术成本。</p>
-<p>流式计算可以采用Flink，然而并没有发现当前有合适的流式存储可以使用，如果采用Flink加上传统的文件存储或者块存储、对象存储的方式，也只能认为是半原生的大数据处理平台：<font color="#FF0000"><strong>计算是原生的流式计算而存储却不是原生的流式存储</strong></font>。</p>
-<p>因此，综合思考万物互联场景下的数据处理场景也需要一个原生的分布式流存储系统，<font color="#FF0000"><strong>重构Lambda架构里的存储栈</strong></font>，使得分布式流计算加上分布式流存储即为原生的流式大数据处理系统，同时还能很好的平衡商业成本与技术成本之间的关系。</p>
-<h3 id="数据无限性"><a href="#数据无限性" class="headerlink" title="数据无限性"></a><font color="#00CED1">数据无限性</font></h3><p>无限性是分布式流存储最为重要的设计原则。从流数据的角度来看，数据是大量、快速、连续而又无限的，这就给流存储系统的设计与实现带来极大的困难，无限的数据使得存储系统必须能支持连续且无限规模的数据流，光这一点就对存储系统的可扩展性要求非常的高，同时还要求存储系统能够根据到达的数据量动态而又优雅地进行扩容与缩容。从技术与成本的角度来看，数据无限性意味着冷热数据分离，长期不用的数据淘汰到长期存储系统里，热点数据需要缓存，同时还需要能支持历史数据的读取与实时数据的读取与写入。</p>
-<h3 id="可伸缩性"><a href="#可伸缩性" class="headerlink" title="可伸缩性"></a><font color="#00CED1">可伸缩性</font></h3><p>可伸缩性也是分布式流存储最为重要的设计原则之一，而且流存储里的可伸缩性要求还是自动化的资源细粒度的可伸缩。通常，在云原生的场景下，资源的缩放是以主机、虚机或容器为单位的，这样的缩放对流存储来说粒度太大。在流存储的场景下需要能够以数据的<strong>“流段”</strong>为单位，比如一个流段2MB，那么就需要能支持一次自动扩容或缩容2MB的存储空间。另外在流存储里还要求写入与读取对数据子集的操作是解耦分离的，并且写入与读取二者之间跟数据流段还要有一个合理的平衡。</p>
-<h3 id="恰好一次"><a href="#恰好一次" class="headerlink" title="恰好一次"></a><font color="#00CED1">恰好一次</font></h3><p>恰好一次也是分布式流存储最为重要的设计原则之一，恰好一次意味着数据的可持久化、有序、一致性以及事务性的支持。持久性意味着一旦得到确认，即使存储组件发生故障，写入的数据也不会丢失。有序意味着读客户端将严格按照写入的顺序处理数据。一致性意味着所有的读客户端即使面对存储故障、网络故障也都会看到相同的有序数据视图。事务性写入对于保证Flink这样的计算应用处理结果的完全正确是非常必要的。</p>
-<h3 id="字节流"><a href="#字节流" class="headerlink" title="字节流"></a><font color="#00CED1">字节流</font></h3><p>分布式流存储里采用字节流的格式组织数据而不是像消息系统里采用消息报文的方式，这意味着接口的通用性。二进制的字节流是与数据格式无关的，字节流可以组成事件封装在分布式存储的流段里。而消息系统里数据是消息头消息体的格式封装的，在兼容性上不如字节流。</p>
-<h3 id="数据管道"><a href="#数据管道" class="headerlink" title=" 数据管道"></a><font color="#00CED1"> 数据管道</font></h3><p>在存储界通常喜欢用跑车、卡车、渡轮来比喻块存储、文件存储以及对象存储，打个比方来说块存储类似跑车：极快、极稳、装的人少、成本高；文件存储类似卡车：快、稳、装的人比跑车多，但是没跑车那么快；对象存储类似渡轮：可以装非常多的货，讲究量大、成本低；那么分布式流存储像什么呢？ 在我们的定义里它就像管道：<font color="#FF0000"><strong>数据如同流水一般流过管道，又快又稳源源不断而又永无止境</strong>。</font></p>
-<h3 id="租户隔离"><a href="#租户隔离" class="headerlink" title="租户隔离"></a><font color="#00CED1">租户隔离</font></h3><p>分布式流存储从一开始设计的时候就将”租户隔离“作为其基本特性进行实现，”隔离“是分布式流存储的最基本的特性之一，在分布式流存储里租户隔离不只是租户B绝对不能看的到租户A的任何信息这样的信息安全层面的隔离，它支持范围、流、段、事件层面的隔离还将支持的租户规模作为设计的目标之一，在分布式流存储里单集群需要能支持千万量级起的租户数，另外还有资源、命名、可视空间、权限以及服务质量层面的隔离。</p>
-<h3 id="海量小文件"><a href="#海量小文件" class="headerlink" title="海量小文件"></a><font color="#00CED1">海量小文件</font></h3><p>对巨量小文件的支持是分布式流存储的设计原则之一。正如前面提到的，万物互联下的海量数据来源于传感器，而传感器上传的数据都是类似温度、地理位置、告警信息这样的几个字节几个字节的小数据，这就意味着在万物互联的场景下会有巨量的小数据上传，而且90%以上的数据操作行为都是写入。为了保证数据写入的性能以及可靠性、正确性、持久性以及保证介质的使用寿命降低成本，这也需要存储系统针对这种业务场景进行专门的设计。</p>
-<p>在分布式流存储里每个事件第一步是被仅附加写入一个缓存的段内进行封装的，在段达到一定的尺寸（比如64MB）后会被封闭不再写入，这时再将整个段写入下一级的持久化存储里。通过这样的设计，实现小数据在缓存里封装成大块的数据，再将大块数据写入持久化存储设备的方式保证了存储系统整体的性能。</p>
-<h3 id="数据治理"><a href="#数据治理" class="headerlink" title="数据治理"></a><font color="#00CED1">数据治理</font></h3><p>当前的大数据处理平台，不管是Kappa架构还是lambda架构，数据的存储都是多组件化、多份化的。比如同样的数据在Kafka里有、在HDFS里有、在Elasticsearch里又有，有些用户还使用了更多的存储中间件，而且这些数据还是多份冗余的。这一方面增加了数据的存储成本，另一方面也降低了数据的可信性、可靠性、合规性，给数据标准化以及数据的重复利用带来了困难，不利于数据的分享、合规、降低成本以及安全可靠地支持业务和决策。数据治理也是分布式流存储的基本设计原则之一，通过使用分布式流存储，大数据处理平台的架构可以进化成<font color="#FF0000"><strong>”分布式流计算+ 分布式流存储“</strong></font>这样的原生流式数据处理平台架构。</p>
-<h3 id="流式架构"><a href="#流式架构" class="headerlink" title="流式架构"></a><font color="#00CED1">流式架构</font></h3><p>下图体现了<font color="#FF0000"><strong>”分布式流计算+ 分布式流存储“</strong></font>这样的原生流式大数据处理平台的架构理念。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/streaming/streaming-bigdata-processor.PNG" alt="流式架构"></p>
-<p>这个架构体现了<font color="#FF0000"> <strong>“流原生”(stream native)式</strong> </font>的设计哲学，“流原生”的计算加上“流原生”的存储管道组成了“流原生”的大数据处理平台。数据从分布式流存储输入经过map算子计算，输出中间计算结果到分布式流存储里，数据又从分布式流存储里读入到Filter算子里，再经过计算，中间结果放到了分布式流存储里，再最后的计算结果经过聚合算子的计算放到了目的地的分布式流存储里。这个过程体现了算子编排和管道式编程的设计哲学，在这里分布式流存储起了大数据处理平台里的管道的作用。</p>
-<p>同时，在分布式流存储里数据的存储单位是流段，当输入的数据速率或者负载增加时，流段就会自动扩容，通过流协议联动，流计算应用的算子也相应扩容。相应的，如果输入的数据速率或负载降低，流段就自动收缩，通过流协议联动，流计算应用的算子也相应的缩容，所有这些行为都是自动完成的，无需人工干预，这种行为体现了分布式流存储的细粒度可伸缩性。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>综上所述，在万物互联的智能世界里，为了实现将海量数据近实时转化成信息和决策的愿景，除了流式计算应用还需要一个流式存储系统，未来已来，已有开源的分布式流存储系统正走在这条路上。另本文仅为作者愚见，与任何组织机构无关，作者能力也很有限，如有不足之处欢迎留言批评指正。</p>
-<h2 id="问题思考"><a href="#问题思考" class="headerlink" title="问题思考"></a><font color="#FF8C00">问题思考</font></h2><p>最后给大家留一个思考题：<font color="#00CED1"><strong>如果让你来设计一个分布式流存储产品，你会如何定义它的产品灵魂？</strong></font></p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及大数据，现就职于DELL EMC。个人技术博客：<a href="https://changping.me" target="_blank" rel="noopener">https://changping.me</a></p>
-<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a> ，可以自由阅读、分享、转发、复制、分发等，限制是需署名、非商业使用（以获利为准）以及禁止演绎。</p>
-</div></div></div></div></div></div>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="www.changping.me/2019/04/21/distributed-servicegovernance-systemadaptive/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的技术博客">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2019/04/21/distributed-servicegovernance-systemadaptive/" itemprop="url">分布式系统架构设计 – 第7式 - 服务治理之系统自适应模式</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2019-04-21T19:33:30+08:00">2019-04-21 19:33:30</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="导读"><a href="#导读" class="headerlink" title="导读"></a><font color="#FF8C00">导读</font></h2><p>日拱一卒，功不唐捐，分享是最好的学习，一个知识领域里的 <font color="#00CED1"> <strong>“道 法 术 器”</strong> </font> 这四个境界需要从 <font color="#00CED1"> <strong>微观、中观以及宏观</strong> </font>三个角度来把握。微观是实践，中观讲套路，宏观靠领悟。本系列文章我把它命名为《分布式系统架构设计三十六式》，讲诉分布式系统里最重要的三十六个虚数的中观套路，而微服务的本质也是分布式，因此搞明白这三十六个最重要的知识点也就同时能搞明白微服务。</p>
-<p>实现一个分布式系统通常会面临三大难题： <font color="#00CED1"> <strong>故障传播性、业务拆分与聚合以及分布式事务</strong> </font>。本系列中的服务治理章节主要是为了解决故障传播性的难题，它包括： <font color="#00CED1"> <strong>隔离、熔断、降级、限流、容错以及资源管控-系统自适应算法</strong> </font>，本文将讲述服务治理里的 <font color="#00CED1"> <strong>“系统自适应模式”</strong> </font>模式。</p>
-<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><font color="#00CED1"> <strong>分布式系统的灵魂</strong>  </font>：从产品思维的角度来看，好的产品都是有自己灵魂的。比如微信的产品灵魂被定位成“善良”，善有大善、上善、小善。《道德经》有言：“上善若水，水善利万物而不争，处众人之所恶（wù），故几于道。”，水善利万物而不与万物争，水无处不在，万物感觉不到水的存在又离不开水，不争故天下莫能与之争。每种好的产品背后都隐藏着自己的设计哲学，有自己的灵魂。而一个分布式系统的灵魂又应该怎么定义呢？认知层次不同，对分布式系统的理解也不同，度量一个分布式系统的灵魂，在我看来可以采用分布式系统的SLO图形指标来表达。好的分布式系统SLO指标也是很有规律很漂亮的，如下图所示，左图波形上跳下串，很明显不如右边波形来的漂亮。<br><br><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/systemadaptive/system-jitter.PNG" alt="系统抖动"><br><br>波形上跳下串带来的后果是什么呢？想象一下在高速路开车的场景，如果一辆车一会快，一会慢，后面的车会发生什么事？这样开车是很容易出事故的，而开得很稳的车出故障的概率就较小。波形上跳下串，说明该系统里头没有解决好资源竞用性以及服务治理的问题。<br><br><font color="#00CED1"> <strong>可靠性与高性能的平衡</strong>  </font>：我们知道要让一个水管里的水流的又快又多，一是给水管灌满水，二是水管通畅同时保证不炸裂水管。同样的道理，在分布式系统里要让系统跑出最好的性能和最可靠的效果，一方面压榨整个系统的资源，另一方面又要保证系统不出故障，在系统不出故障的前提下，尽量榨尽系统资源。<br><br>因此为了解决以上问题，这里提出了系统自适应模式。<br><br><font></font>
-
-<h2 id="系统自适应模式设计思路"><a href="#系统自适应模式设计思路" class="headerlink" title="系统自适应模式设计思路"></a><font color="#FF8C00">系统自适应模式设计思路</font></h2><h3 id="资源平衡"><a href="#资源平衡" class="headerlink" title="资源平衡"></a><font color="#00CED1">资源平衡</font></h3><p>服务治理与其说是分布式下的套路，不如说是控制论下的套路，其本质是资源的细粒度管控，精巧的平衡整个系统里的资源竞用，从而保证分布式系统对外提供高质量的服务。如下图《一根羽毛的力量》所示，其将平衡的思想用到极致，我们也希望在分布式系统里体现有限资源下的平衡。</p>
-<div align="center"> 
-
-<p> <img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/systemadaptive/balance.jpg" alt=" 图片来源于网络版权归原作者所有"></p>
-<div align="left"> 
-
-<p>我们将平衡的思想融入分布式系统，在系统健康的前提下，极致的压榨系统的能力(capacity)，同时又保证不会主动造成系统故障，如果发现系统内部出现故障，又会自动调整下发的压力，这就是系统自适应保护。</p>
-<h3 id="最佳衡量指标"><a href="#最佳衡量指标" class="headerlink" title="最佳衡量指标"></a><font color="#00CED1"><strong>最佳衡量指标</strong></font></h3><p>如何确定最佳的衡量指标？通常比较的原始情况下，是以工作负载比如1分钟、5分钟、15分钟的CPU负载作为系统衡量指标，但是这并不大正确。比如假设 CPU load &gt; 2 就 触发一个系统保护，如果这个 时候系统的CPU load是在下降的，它虽然此时刻大于2， 但是趋势却是下降，因此没必要触发系统保护。还有就是干扰性，比如 按 1分钟负载&amp;&amp; 5分钟负载&amp;&amp;15分钟负载，全都是满足大于2的条件就触发系统保护。但是实际上，也许 5分钟负载是不大于2的，因此这个条件就不成立，并不会触发系统过载保护， 这种行为我称之为负载干扰性。</p>
-<p>参考水管的流量算法只依赖于管的截面大小以及流速，我们定义系统的自适应算法依赖的参数为系统入口处的 QPS或TPS ，以及请求的返回时间（RT），这里我将这个公式定义为 System Balance Capacity = QPS * RT。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/systemadaptive/qps-and-rt.PNG" alt="最佳值"></p>
-<p>如上图，最好的情况就是即满足 最大的QPS 又满足最小的RT，通过一个时间窗口计算QPS 和 RT ，自适应调整整个系统。</p>
-<h3 id="系统自适应算法"><a href="#系统自适应算法" class="headerlink" title="系统自适应算法"></a><font color="#00CED1"><strong>系统自适应算法</strong></font></h3><p>下图表示了一个自适应算法，造成系统负载过高以及故障传播的因素很多，比如不合适的线程数、TPS或QPS过大、返回时间过长都有可能，通过合适的算法可以自动调整下发的压力从而保持系统的内部资源平衡。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/distributed/systemadaptive/systemadaptive.PNG" alt="自适应算法"></p>
-<p>通过采用系统自适应算法在系统的入口处，实时采集QPS/TPS 以及RT， 然后跟最佳样本值进行比较，依据调节系数进行计算，再调节发送的请求量，发送请求后又采集造成的影响，再反馈在系统入口处。其中，样本值可以在系统启动时按动态采样的方式计算，逐渐增加QPS ，当发现时延发生转折时，我们就确定这个转折点为分布式系统自适应最佳平衡点，记下该值作为当前样本。 </p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文讲诉了服务治理里的 <font color="#00CED1"><strong>“系统自适应”</strong></font>模式，在前一篇《分布式系统架构设计三十六式之服务治理-5F容错模式》里讲诉了分布式系统服务治理的容错模式。另作者能力与认知都有限，欢迎大家拍砖留念。</p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，10年+数据相关经验，主要工作背景为分布式系统、存储、缓存、微服务、云计算以及大数据，现就职于DELL EMC。个人技术博客：<a href="https://changping.me" target="_blank" rel="noopener">https://changping.me</a></p>
-<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a> ，可以自由阅读、分享、转发、复制、分发等，限制是需署名、非商业使用（以获利为准）以及禁止演绎。</p>
-</div></div>
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <a class="extend prev" rel="prev" href="/page/3/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/5/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -912,7 +882,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">57</a></div>
+      <div><a href="/archives">61</a></div>
     </div>
     
     
@@ -921,7 +891,7 @@
     
     <div class="categories-count">
       <div class="site-count-title">分类</div>
-      <div><a href="/categories">6</a></div>
+      <div><a href="/categories">7</a></div>
     </div>
     
     
@@ -930,7 +900,7 @@
     
     <div class="tags-count">
       <div class="site-count-title">标签</div>
-      <div><a href="/tags">6</a></div>
+      <div><a href="/tags">7</a></div>
     </div>
     
   </div>
