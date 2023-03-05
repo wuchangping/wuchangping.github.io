@@ -68,7 +68,7 @@
     <script defer type="text/javascript" src="/js/index.js"></script>
     
     <script defer type="text/javascript" src="/js/custom.js"></script>
-    <title>常平的笔记 - 认识世界是为了改造世界</title>
+    <title>常平的笔记 - 实事求是</title>
   </head>
   <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
     
@@ -115,10 +115,161 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="https://www.changping.me/2023/03/03/ai-distributed-training-6/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“实践认识、认识实践”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的笔记">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2023/03/03/ai-distributed-training-6/" itemprop="url">分布式训练 - 第6篇 - 超大规模分布式训练集群性能调优之美</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2023-03-03T22:58:38+08:00">2023-03-03 22:58:38</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/AI/" itemprop="url" rel="index"><span itemprop="name">AI</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <p>​                </p>
+<h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a><font color="#FF8C00">1. 概述</font></h2><p><strong>考虑到信息安全问题，这里不会写什么架构设计方案，更不会写什么具体的落地方案，有的只是从理论到实践再从实践回到理论的一些系统工程经验总结</strong>。超大规模集群性能调优的目标是为了解决以下两个系统级难题：</p>
+<p>1）如何将Ai加速卡千卡分布式训练集群某个模型的加速比调到0.90+以上？</p>
+<p>2）如何夯实Ai加速卡整体的分布式训练集群产品的系统级性能质量？</p>
+<p>千卡级别的超大规模分布式训练集群性能调试是一个系统级的难题，将理论与实践相结合，从实践中来到实践中去，需要手把手的去调、去敲代码、系统梳理、具体问题具体分析、人技合一，才能有效达成目标。</p>
+<p>系统级的性能优化考验的是具体问题具体分析的能力，考验的是根据不同的实际情况的变化进行全局优化的能力。</p>
+<h2 id="2-基本约束条件"><a href="#2-基本约束条件" class="headerlink" title="2. 基本约束条件"></a><font color="#FF8C00">2. 基本约束条件</font></h2><p>1）分布式训练必须以模型能收敛、精度达标、曲线拟合为前提，一切不能收敛、精度不达标、不能曲线集合的性能优化方案都是无效的；</p>
+<p>2）加速比计算公式的 speedup = 分布式的单卡性能/单卡性能，这里的分母不是单机的性能，也不是单机内多卡并行计算的单卡性能，做低分母数值从而获得较高的加速比数据属于自欺欺人的行为；</p>
+<p>3）理论上加速比也可以是  计算时间/(计算时间 + 非计算时间)，因此，加速比调优的本质在于减少或者隐藏非计算时间；</p>
+<p>4）这里讲的属于数据并行的分布式训练范畴，非模型并行、流水并行以及混合并行；</p>
+<p>5）这里的Ai加速卡指的是某国产化加速卡，在软硬件功能与生态上对比GPU都还有很大差距，短板也更明显，因此更难以调试。</p>
+<h2 id="3-性能优化总诀"><a href="#3-性能优化总诀" class="headerlink" title="3.性能优化总诀"></a><font color="#FF8C00">3.性能优化总诀</font></h2><p>在软件工程中，不管场景是怎么样的，性能优化的策略本质上都可以抽象成以下几个方案：</p>
+<ul>
+<li><p>少读少写少依赖: 少读，即减少读放大，减少需要读的数据量；少写，即减少写放大，减少需要写的数据量；少读少写的策略可以是提高cache命中率也可以是进行数据压缩，还可以是合适的读写算法与数据结构等，少依赖，高内聚低耦合、资源解耦与隔离，一个组件的IO尽量做到不需要等待另外组件IO完成才能返回；</p>
+</li>
+<li><p>时空换同异换： 时空换同异换讲的是性能优化的路数，解读开来说即是：时间换空间、空间换时间、同步换异步。例如：采用cache的功能可以减少计算的时间，这是存储空间换时间从而提升性能；采用批处理的方式提升性能，这是减少计算时间；采用同步换异步的方式提升性能也是减少计算时间；减少IO的数据量从而提升性能，这是存储空间换时间；缩短IO路径提升性能，这也是网络空间换时间，采用最新的硬件提升性能，这可以是计算换时间，也可以是存储或网络空间换时间；</p>
+</li>
+<li><p>硬件顺天性：硬件顺天性讲的是软件设计要遵循硬件的原生特性，XPU不同于GPU、CPU的亲合性、机械盘性能不如固态硬盘、磁盘数据分块需要对齐、内存性能好适合做缓存但是下电就丢数据、网络是不可靠的并且有带宽限制、RDMA网络比IP网络性能好、且是可以双工的，不同的应用场景要依据硬件的不同特性做架构选型以及架构设计等。</p>
+</li>
+</ul>
+<p>对于系统优化来说，不管场景怎么变化，不变的道理其实也还是上面那三项，性能优化也是万变不离其宗的。</p>
+<h2 id="4-几个关键点"><a href="#4-几个关键点" class="headerlink" title="4. 几个关键点"></a><font color="#FF8C00">4. 几个关键点</font></h2><p>关于整体的超大规模分布式训练系统性能优化，需要考虑的主要关键点有以下几项：</p>
+<ul>
+<li><p>工程方法论</p>
+</li>
+<li><p>极致系统平衡</p>
+</li>
+<li><p>具体问题具体分析</p>
+</li>
+<li><p>网络通信优化</p>
+</li>
+<li><p>数据IO优化</p>
+</li>
+<li><p>训练框架优化</p>
+</li>
+<li><p>模型优化</p>
+</li>
+<li><p>系统优化</p>
+</li>
+</ul>
+<p>下面将围绕这几项展开讲述。</p>
+<h2 id="5-工程方法论之美"><a href="#5-工程方法论之美" class="headerlink" title="5. 工程方法论之美"></a><font color="#FF8C00">5. 工程方法论之美</font></h2><h3 id="5-1-组织到位"><a href="#5-1-组织到位" class="headerlink" title="5.1 组织到位"></a>5.1 组织到位</h3><p>千卡性能调优是个系统工程，要干活就首先需要有人，有人就需要组织能到位。这里的组织到位有两层意思：一是需要有人，需要组织给与人力保障以及多团队合作保障；二是合适的人，事是需要人去做的，攻坚的课题用到合适的人才具备达成目标的可能性，用错人半途而废或者数据造假忽悠群众、效果打折的可能性也不是没有。</p>
+<h3 id="5-2-架构先行"><a href="#5-2-架构先行" class="headerlink" title="5.2 架构先行"></a>5.2 架构先行</h3><p>从系统而非单点的角度分析问题，要解决问题首先是需要能发现问题，在对调优任务进行拆解之前需要对性能调优方案先进行系统分析，挖掘出存在的软硬件问题拿出具体可执行的调优解决方案，并形成架构设计文档。</p>
+<h3 id="5-3-分而治之"><a href="#5-3-分而治之" class="headerlink" title="5.3 分而治之"></a>5.3 分而治之</h3><p>系统思考分而治之，大问题拆解成小问题，将非常大的不确定性的千卡加速比 0.90+ 这个目标进行拆解，将非确定性的大问题拆解成确定性的小问题，步步迭代进行解决。宏观是不确定的，但微观却可以确定，系统梳理每个要素，拆解为确定的细分任务，先将确定的任务落实到人，再将剩下的不确定任务根据实际情况的变化，逐步进一步分解，逐步迭代。</p>
+<h3 id="5-4-小即是大"><a href="#5-4-小即是大" class="headerlink" title="5.4 小即是大"></a>5.4 小即是大</h3><p>从主机内单卡到主机内多卡，新增主机内通信单元，从主机内多卡到主机间多卡新增主机间通信单元，这些系统间要素连接关系变化会引起系统整体功能的变化，因此，需要先聚焦主机内单机多卡调优，再聚焦主机间2机性能调优，在这二者达成既定目标后，后续扩展到千卡规模也就是水到渠成之事。</p>
+<h3 id="5-5-众策众智"><a href="#5-5-众策众智" class="headerlink" title="5.5 众策众智"></a>5.5 众策众智</h3><p>众策众智多方协作，集群性能调优是个系统工程，需要多方合作与协调，其涉及多方组件，千卡性能调优是多方合作的结果，是软硬件联合，软件内部多方合作，跨部门跨团队联调达成的结果。</p>
+<h3 id="5-6-躬身入局"><a href="#5-6-躬身入局" class="headerlink" title="5.6 躬身入局"></a>5.6 躬身入局</h3><p>躬身入局不达目标不罢休，实践出真知，“黄沙百战穿金甲,不破楼兰终不还”，在认知上确定关键路径后，更重要的是躬身入局实践，一个问题一个问题的攻克，步步为营，步步迭代，一个小目标一个小目标的攻克递进。</p>
+<h2 id="6-系统平衡之美"><a href="#6-系统平衡之美" class="headerlink" title="6. 系统平衡之美"></a><font color="#FF8C00">6. 系统平衡之美</font></h2><p>系统是有灵魂的，如下图《一根羽毛的力量》(图片来源于网络版权归原作者所有)，其将平衡用到极致，风、呼吸、声音等微小的外部条件变化都可能造成失败，体现了整体的系统平衡之美。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/6/1-1.png" title="" alt="平衡之美" data-align="center"></p>
+<p>而分布式训练系统也有自己的灵魂，其可以表达为FPS每秒处理的帧数指标图，一个好的分布式训练系统FPS指标也是很有规律很漂亮的，如下图所示，千卡某模型加速比0.90+达标的训练集群FPS指标可以稳得如同一根直线，完美的诠释了什么是系统工程平衡之美。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/6/1-2.png" title="" alt="平衡之美" data-align="center"></p>
+<p>而一个加速比指标很差的训练系统FPS指标可能如下图，各种指标上串下跳极其不稳定，缺少一种平衡感。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/6/1-3.png" title="" alt="平衡之美" data-align="center"></p>
+<h2 id="7-具体问题具体分析之美"><a href="#7-具体问题具体分析之美" class="headerlink" title="7. 具体问题具体分析之美"></a><font color="#FF8C00">7. 具体问题具体分析之美</font></h2><p>GPU有适合GPU的最佳性能优化方案，XPU有XPU的最佳性能优化方案，而现有的分布式训练方案基本上都是基于GPU硬件体系结构以及CUDA的软件生态方案，不一定适合于各家国产化的AI加速卡的实际情况，因此针对国产化加速卡的性能优化方案也需要具体问题具体分析。</p>
+<p>其实对于分布式训练性能优化来说，具体问题具体分析这一步才是最重要的，也是各路性能优化专家的掉坑点。每个AI加速卡都具备矛盾的普遍性也具备自身的矛盾特殊性。要根据自家加速卡的实际情况具体问题具体分析，首先是需要能发现具体的问题，再根据这个具体问题进行具体分析，再根据分析的结果给出最佳适合的性能优化方案，这就跟人的能力强相关，不是看完这篇文章或者网上找的几篇论文就可以完成超大规模训练集群性能优化这个系统级难题的。</p>
+<p>各个国产化厂家的硬件存在矛盾特殊性，软件也存在自身的矛盾特殊性，具体问题具体分析就是挖掘这些矛盾特殊性，形成系统性的调研报告，从而给出系统级的性能优化方案。</p>
+<h2 id="8-网络通信优化之美"><a href="#8-网络通信优化之美" class="headerlink" title="8.网络通信优化之美"></a><font color="#FF8C00">8.网络通信优化之美</font></h2><h3 id="8-1-网络拓扑结构"><a href="#8-1-网络拓扑结构" class="headerlink" title="8.1 网络拓扑结构"></a>8.1 网络拓扑结构</h3><p>实践证明，如果网络优化的足够到位，2D-RING ALLReduce拓扑算法就能满足千卡集群某模型的加速比达0.90+的，如下图，主机内一个ring  Allreduce，主机间一个ring AllReduce，再主机内一个Broadcast：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/6/1-5.png" title="" alt="2DRING" data-align="center"></p>
+<p>这种拓扑算法只需要消耗一个RDMA网卡的一个网口以及一个交换机端口，因此，适合在有成本约束的生产环境，除非有更高的加速比要求，不然简单的两层RING结构拓扑算法就能满足绝大多数的生产需求。</p>
+<p>而这种网络拓扑优化的关键在于主机内从单卡到多卡，发生了物理连接结构变化，主机间从单机到多机也发生了物理连接结构的变化，要专注于这两种结构变化的优化，使得FPS性能掉的足够少，才有望在千卡这种规模的集群下获得较高的加速比。</p>
+<h3 id="8-2-网络存在的问题"><a href="#8-2-网络存在的问题" class="headerlink" title="8.2 网络存在的问题"></a>8.2 网络存在的问题</h3><p>网络是分布式训练系统的连接方式，因此分布式训练系统也继承了网络的原生缺点，即：</p>
+<ul>
+<li>网络是不可靠的；</li>
+<li>网络是会出故障的；</li>
+<li>网络是有时延的；</li>
+<li>网络是会抖动的；</li>
+<li>网络是不安全的；</li>
+<li>网络是会丢包的；</li>
+<li>网络是有带宽限制的；</li>
+<li>网络消息是会乱序的</li>
+</ul>
+<p>这些原生缺点的存在会给分布式训练系统带来以下一些问题：</p>
+<h4 id="8-2-1-同步通信问题"><a href="#8-2-1-同步通信问题" class="headerlink" title="8.2.1 同步通信问题"></a>8.2.1 同步通信问题</h4><p>在Ring拓扑下每个XPU只与相邻XPU通信，而在该拓扑下所有传输都是在离散迭代中同步进行的并且每张XPU都需要进行迭代周期同步，所有传输的速度受到环中相邻XPU之间最慢(或最低带宽)连接的限制，性能瓶颈也非常明显。</p>
+<h4 id="8-2-2-落后者问题"><a href="#8-2-2-落后者问题" class="headerlink" title="8.2.2 落后者问题"></a>8.2.2 落后者问题</h4><p>落后者 (Straggler)问题，指的是当一个平台上不同的工作单元具有不同的运行性能时，整个系统的性能受限于运行效率最低的工作单元。Straggler可能是确定性的，比如某台机器的计算能力或者网络带宽低于其他机器。也可能是随机性的，比如低性能是因为资源共享，后台操作系统任务，缓存，功耗限制等引起的，解决Straggler问题的一种常用方式是进行<strong>异步训练</strong>。</p>
+<h4 id="8-2-3-异质问题"><a href="#8-2-3-异质问题" class="headerlink" title="8.2.3  异质问题"></a>8.2.3  异质问题</h4><p>当前我们的国产化软硬件存在一些技术约束，这些约束条件会造成很大的计算异质问题，比如主机内网络非全连接，主机间RDMA全连接并且主机间RDMA有些场景下又是分层交换机互联，这就是网络异质，而目前使用的Ring-Based通信拓扑又是同步的，当整个集群内存在较慢的计算节点时，整个系统的性能受限于这个性能最差的节点。除了网络拓扑，网络本身的缺点也决定了需要对网络进行细致的优化。</p>
+<h2 id="9-数据IO优化之美"><a href="#9-数据IO优化之美" class="headerlink" title="9.数据IO优化之美"></a><font color="#FF8C00">9.数据IO优化之美</font></h2><p>在分布式训练系统里，数据IO最重要的优化即数据预取以及IO时间隐藏的优化，如下图所示，数据首先从磁盘读取进主机缓存，再从主机缓存读取进加速卡内存HBM，这个过程带宽是受PCIE限制的，如果IO 速率跟不上加速卡的计算消耗数据速率，数据IO就会成为整个训练系统的瓶颈。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/6/1-7.png" alt="数据IO"></p>
+<p>基于此，需要打通pinned memory ，数据预取以及IO时间隐藏功能。</p>
+<h2 id="10-训练框架优化之美"><a href="#10-训练框架优化之美" class="headerlink" title="10.训练框架优化之美"></a><font color="#FF8C00">10.训练框架优化之美</font></h2><p>如下图所示，神经网路是分层的，因此训练框架计算出来的梯度也是分层结构，如果不进行融合优化，那么每个梯度层都会触发一次全局通信规约，100个梯度就需要进行100次全局通信100次全局规约，这种行为会极大的拖垮整个分布式训练系统的性能。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/6/1-8.png" alt="神经网络"></p>
+<p>基于此需要采用 梯度融合的策略进行优化，通过梯度融合计算将多个梯度合成一个，从而减少全局规约的次数能大幅提高分布式训练的训练性能，如下图所示，将N个小梯度Tensor合成两个，能将全局通信的次数减少到2次，从而大幅提升训练性能：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/6/1-9.png" alt="tensorfusion"></p>
+<h2 id="11-模型优化之美"><a href="#11-模型优化之美" class="headerlink" title="11. 模型优化之美"></a><font color="#FF8C00">11. 模型优化之美</font></h2><p>这需要具体问题具体分析，根据不同的模型以及实际情况进行优化。除了通信、框架、数据IO等，模型也是影响整体系统性能的一个关键点，数据dataset的效率，训练session 的合并还是分离，采用的是动态训练策略还是静态训练策略，FPS统计的计算方式这些要素也会极大的影响整体的系统性能，因此也需要针对具体情况进行具体分析。</p>
+<h2 id="12-系统优化之美"><a href="#12-系统优化之美" class="headerlink" title="12.系统优化之美"></a><font color="#FF8C00">12.系统优化之美</font></h2><p>如下图，是一个AI服务器主板，在这个服务器里，加速卡间的通信带宽大于PCIE带宽又大于CPU间的UPI带宽，因此需要启用NUMA优化，使得数据不跨越UPI通信，另外CPU 的AFFINITY也需要进行平衡优化。</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/aitraining/6/1-4.png" alt="数据IO"></p>
+<p>除了CPU的优化，计算机节点还有一下特性：</p>
+<ul>
+<li>计算机节点是会出故障的，主板、CPU、网卡、硬盘、内存、电源等都会出故障，比如老化、失效等；</li>
+<li>计算机节点内的操作系统是会突然奔溃不能提供服务的；</li>
+<li>计算机节点是会突然掉电的；</li>
+<li>计算机节点里的内存下电是不保数据的；</li>
+<li>计算机节点的资源是有限的：CPU是有算力上限的、内存是有大小限制的、网卡有吞吐量限制、硬盘有空间大小限制以及速率限制；</li>
+</ul>
+<p>这些特性也会影响到训练FPS的平衡，也需要针对性的根据具体情况进行优化。</p>
+<h2 id="13-小结"><a href="#13-小结" class="headerlink" title="13. 小结"></a><font color="#FF8C00">13. 小结</font></h2><p>本文介绍了从实践中来的关于一些超大规模训练集群性能优化的理论上的思考，考虑到信息安全问题，有些地方写的不是很透明，见谅。另外性能优化也是需要具体问题具体分析，根据不同的实际情况而进行优化的，普遍的策略可以学习，但是特殊的情况考验的还是个人以及团队发现问题、分析问题、解决问题的能力。</p>
+<p>日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
+<h2 id="14-作者简介"><a href="#14-作者简介" class="headerlink" title="14. 作者简介"></a><font color="#FF8C00">14. 作者简介</font></h2><p>常平，中科大硕，某AI芯片公司深度学习高级软件主管、架构师，前EMC资深首席工程师，主要工作背景在深度学习、Ai平台、系统调优、大数据、云计算以及Linux内核领域。</p>
+<h2 id="15-参考资料"><a href="#15-参考资料" class="headerlink" title="15. 参考资料"></a><font color="#FF8C00">15. 参考资料</font></h2><p>[1] <a href="https://www.changping.me">https://www.changping.me</a></p>
+<p>[2] NF5468M5 用户手册</p>
+<h2 id="16-版权申明"><a href="#16-版权申明" class="headerlink" title="16. 版权申明"></a><font color="#FF8C00">16. 版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/AI/" rel="tag"><i class="fas fa-tags"></i>AI</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="https://www.changping.me/2023/02/12/ideology_5/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="description" content="“实践认识、认识实践”">
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -213,7 +364,7 @@
 <p>社会存在决定社会意识，但社会意识也能反作用于社会存在。高层可以通过躬身实践获得更多的细节特殊性，而执行层也能通过学习以及请教获得更多的信息以及提升自己的全局观能力。</p>
 <p>但，虽然社会意识也能反作用于社会存在，要改变自己的社会意识（认知），最主要的还是要改变自己的社会存在方式，毕竟，认识来自于实践。</p>
 <h2 id="7-小结"><a href="#7-小结" class="headerlink" title="7. 小结"></a><font color="#FF8C00">7. 小结</font></h2><p>基于以上的五大哲学心法：世界观、辩证法、实践论、矛盾论、历史观。可知要做成事、做好事，首先要解放思想 、实事求是 、一切从客观实际出发、使主观符合客观，要全面 、本质、联系 、发展 、矛盾地看待问题与分析问题，工作上要走群众路线，抓重点带一般，抓普遍带特殊，抓整体带局部，看利益也看价值，具体问题具体分析，事前调查研究、事中交换意见比较调整、事后复盘总结，实践认识认识再实践如此循环往复以至无穷。</p>
-<h2 id="8-作者简介"><a href="#8-作者简介" class="headerlink" title="8. 作者简介"></a><font color="#FF8C00">8. 作者简介</font></h2><p>常平，中科大硕，某AI独角兽深度学习高级软件主管工程师、架构师，前EMC资深首席工程师，主要工作背景在深度学习、大数据、云计算、分布式中间件以及Linux内核领域。</p>
+<h2 id="8-作者简介"><a href="#8-作者简介" class="headerlink" title="8. 作者简介"></a><font color="#FF8C00">8. 作者简介</font></h2><p>常平，中科大硕，某AI芯片公司深度学习高级软件主管、架构师，前EMC资深首席工程师，主要工作背景在深度学习、Ai平台、系统调优、大数据、云计算以及Linux内核领域。邮箱：<a href="mailto:wu@changping.me" target="_blank" rel="noopener">wu@changping.me</a></p>
 <h2 id="9-参考资料"><a href="#9-参考资料" class="headerlink" title="9. 参考资料"></a><font color="#FF8C00">9. 参考资料</font></h2><p>[1] 《新大众哲学》</p>
 <p>[2] 《哲学思维方式与领导工作方法》</p>
 <p>[3] 《遨游之舟》公众号</p>
@@ -239,7 +390,7 @@
       <link itemprop="mainEntityOfPage" href="https://www.changping.me/2022/04/17/ai-distributed-training-framework-1/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="description" content="“实践认识、认识实践”">
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -358,7 +509,7 @@
 <p>可以说明的是，这三个问题解决后还能继续提升Horovod在DSA架构芯片上的整体的分布式训练系统级性能。</p>
 <h2 id="6-小结"><a href="#6-小结" class="headerlink" title="6. 小结"></a><font color="#FF8C00">6. 小结</font></h2><p>本文介绍了分布式训练的基础知识以及剖析了分布式训练服务框架所面临的几个核心问题，以Horovod为例从计算与通信解耦、通信隐藏、梯度协商、梯度融合、易用性以及可移植这几个角度倒推了分布式训练服务框架背后的设计意图，从而帮助大家能更好的理解分布式训练服务框架。</p>
 <p>日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
-<h2 id="7-作者简介"><a href="#7-作者简介" class="headerlink" title="7. 作者简介"></a><font color="#FF8C00">7. 作者简介</font></h2><p>常平，中科大硕，某AI独角兽深度学习高级软件主管工程师、架构师，前EMC资深首席工程师，主要工作背景在深度学习、大数据、云计算、分布式中间件以及Linux内核领域。</p>
+<h2 id="7-作者简介"><a href="#7-作者简介" class="headerlink" title="7. 作者简介"></a><font color="#FF8C00">7. 作者简介</font></h2><p>常平，中科大硕，某AI芯片公司深度学习高级软件主管、架构师，前EMC资深首席工程师，主要工作背景在深度学习、Ai平台、系统调优、大数据、云计算以及Linux内核领域。</p>
 <h2 id="8-参考资料"><a href="#8-参考资料" class="headerlink" title="8. 参考资料"></a><font color="#FF8C00">8. 参考资料</font></h2><p>[1] <a href="https://www.changping.me">https://www.changping.me</a><br>[2] <a href="https://horovod.ai" target="_blank" rel="noopener">https://horovod.ai</a><br>[3] <a href="https://www.cnblogs.com/rossiXYZ/p/14910959.html" target="_blank" rel="noopener">https://www.cnblogs.com/rossiXYZ/p/14910959.html</a><br>[4] <a href="https://zhuanlan.zhihu.com/p/374575049" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/374575049</a></p>
 <h2 id="9-版权申明"><a href="#9-版权申明" class="headerlink" title="9. 版权申明"></a><font color="#FF8C00">9. 版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
 <p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
@@ -381,7 +532,7 @@
       <link itemprop="mainEntityOfPage" href="https://www.changping.me/2022/04/10/ai-distributed-training-coll-topo/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="description" content="“实践认识、认识实践”">
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -522,7 +673,7 @@
 </ul>
 <p>Ring AllReduce适合主机内互联Ring的情况使用，2D-Ring AllReduce适合一台服务器配置了一张网卡的异构网络场景，2D-Torus AllReduce与2D-Mesh AllReduce适合一台服务器配置了2/4/8张网卡的异构网络场景。</p>
 <p>集合通信拓扑算法多种多样，但基于成本以及效率的取舍考虑，可生产适用的其实也不多，除了理论上的理解之外更重要的是自己编写代码去实践落地。除此之外，还需要解决网络带宽有限、网络容易出故障、落后者效应、部署约束、多租户等产品化的质量要求。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
-<h2 id="6-作者简介"><a href="#6-作者简介" class="headerlink" title="6. 作者简介"></a><font color="#FF8C00">6. 作者简介</font></h2><p>常平，中科大硕，某AI独角兽深度学习高级软件主管工程师、架构师，前EMC资深首席工程师，主要工作背景在深度学习、大数据、云计算、分布式中间件以及Linux内核领域。</p>
+<h2 id="6-作者简介"><a href="#6-作者简介" class="headerlink" title="6. 作者简介"></a><font color="#FF8C00">6. 作者简介</font></h2><p>常平，中科大硕，某AI芯片公司深度学习高级软件主管、架构师，前EMC资深首席工程师，主要工作背景在深度学习、Ai平台、系统调优、大数据、云计算以及Linux内核领域。</p>
 <h2 id="7-参考资料"><a href="#7-参考资料" class="headerlink" title="7. 参考资料"></a><font color="#FF8C00">7. 参考资料</font></h2><p>[1]  <a href="https://www.changping.me">https://www.changping.me</a></p>
 <p>[2] 《volta-architecture-whitepaper》</p>
 <p>[3]  2D-HRA: Two-Dimensional Hierarchical Ring-based All-reduce Algorithm in Large-Scale  Distributed Machine Learning</p>
@@ -552,7 +703,7 @@
       <link itemprop="mainEntityOfPage" href="https://www.changping.me/2022/04/04/ai-distributed-training-coll-lang/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="description" content="“实践认识、认识实践”">
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -636,7 +787,7 @@
 <h3 id="2-11-Signal与Wait"><a href="#2-11-Signal与Wait" class="headerlink" title="2.11 Signal与Wait"></a>2.11 Signal与Wait</h3><p>Signal与Wait属于记录型信号量机制： wait(s)，signal(s)可用于解决进程间的同步问题，在通信原语里从一个节点发送一个数据到另外一个节点时，会同时signal一个event值到对端，对端的wait操作接收到这个event时会返回一个确认给signal，这样保证在节点的进程间进行数据的同步操作。</p>
 <h2 id="3-小结"><a href="#3-小结" class="headerlink" title="3. 小结"></a><font color="#FF8C00">3. 小结</font></h2><p>在分布式训练过程中，深度学习训练框架不会去直接操作底层的通信网络，而是通过使用网络通信库来完成数据的集合通信，各家AI芯片加速卡厂家都会提供私有的网络通信库比如：xxx-AWARE OpenMPI或xCCL来完成这个底层通信硬件的屏蔽与抽象。在分布式训练集群里网络通信硬件连接样式多种多样，可以是Ethernet、InfiniBand 、RoCE v2/v1 等也可以是CXL、NVLINK等私有协议，这就要求在通信的后端层根据各个厂家的自己的SDK开发库接口，根据实际情况实现 各自的网络通信库，比如cuda-aware MPI、NCCL、NVSHMEM，以及根据实际的网络拓扑组合完成对应的最有效的网络拓扑算法。</p>
 <p>本文讲述了分布式训练里的集合通信原语，这些原语是集合通信拓扑算法的基本组成单元，后续的文章里会讲述如何组合这些通信原语以完成合适的通信拓扑算法。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
-<h2 id="4-作者简介"><a href="#4-作者简介" class="headerlink" title="4. 作者简介"></a><font color="#FF8C00">4. 作者简介</font></h2><p>常平，中科大硕，某AI独角兽深度学习高级软件主管工程师、架构师，前EMC资深首席工程师，主要工作背景在深度学习、大数据、云计算、分布式中间件以及Linux内核领域。</p>
+<h2 id="4-作者简介"><a href="#4-作者简介" class="headerlink" title="4. 作者简介"></a><font color="#FF8C00">4. 作者简介</font></h2><p>常平，中科大硕，某AI芯片公司深度学习高级软件主管、架构师，前EMC资深首席工程师，主要工作背景在深度学习、Ai平台、系统调优、大数据、云计算以及Linux内核领域。</p>
 <h2 id="5-参考资料"><a href="#5-参考资料" class="headerlink" title="5. 参考资料"></a><font color="#FF8C00">5. 参考资料</font></h2><p>[1] <a href="https://www.changping.me">https://www.changping.me</a></p>
 <p>[2] <a href="http://scc.ustc.edu.cn/zlsc/cxyy/200910/MPICH" target="_blank" rel="noopener">http://scc.ustc.edu.cn/zlsc/cxyy/200910/MPICH</a></p>
 <p>[3] 《用这拌元宵，一个字：香！| 分布式训练硬核技术——通讯原语》</p>
@@ -663,7 +814,7 @@
       <link itemprop="mainEntityOfPage" href="https://www.changping.me/2022/04/03/ideology_4/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="description" content="“实践认识、认识实践”">
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -783,7 +934,7 @@
       <link itemprop="mainEntityOfPage" href="https://www.changping.me/2022/04/03/ideology_3/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="description" content="“实践认识、认识实践”">
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -914,7 +1065,7 @@
       <link itemprop="mainEntityOfPage" href="https://www.changping.me/2022/04/02/ideology_2/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
+        <meta itemprop="description" content="“实践认识、认识实践”">
         <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -1058,132 +1209,6 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="https://www.changping.me/2022/04/01/ideology_1/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“认识实践，实践认识”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的笔记">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2022/04/01/ideology_1/" itemprop="url">思想体系 – 第1篇 - 系统思考，分而治之 - 工作分解结构法</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2022-04-01T21:30:00+08:00">2022-04-01 21:30:00</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/ideology/" itemprop="url" rel="index"><span itemprop="name">ideology</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1. 前言"></a><font color="#FF8C00">1. 前言</font></h2><p>在一个软件工程项目组里有四种角色特别重要，即：架构师、领域专家、产品经理以及项目经理，在一个比较大的项目里或者大公司大部门里，这四类角色一般分别对应四个人，然而在中小型项目里，特别是创业型公司或大公司里的小部门，这四类角色可能是四者合一的，即从团队当中选定一位有能力担当这四个角色的成员。如果这个成员原来就是架构师，那么对这位架构师的要求就是除了专业技能之外还应该具有项目管理能力。</p>
-<p>根据定义项目是“为提供某项独特产品或服务所做的临时性努力”，其本身的特点是<strong>“变化”</strong>，因此，项目管理对架构师本身来说也是具有很大的挑战性的一项管理工作。项目管理具有入门容易、精通难的特性，大多数项目管理给工程师的感觉就是定计划、看进度、催活、做汇报，实际上这是没有领悟项目管理的精髓。</p>
-<p>PMBOK定义项目管理为：“项目的管理者，在有限的资源约束下，运用系统的观点、方法和理论，对项目涉及的全部工作进行有效地管理。即从项目开始到项目结束的全过程进行启动、计划、执行、监控和验收，以实现项目的目标。”，即项目管理有其自身的<strong>“观点、方法与理论”</strong>，而在项目的落地过程中，所有节点的计划、执行、监控、风险管理以及验收等都依赖于工作分解结构（WBS: Work Breakdown Structure ），不同的行业对项目管理有不同的需求，进而有不同的工作分解结构方法，本文讲述的是与软件工程紧密相关的工作分解结构法。</p>
-<h2 id="2-项目管理方法论"><a href="#2-项目管理方法论" class="headerlink" title="2. 项目管理方法论"></a><font color="#FF8C00">2. 项目管理方法论</font></h2><p>依据PMBOK理论定义以及软件工程实践，软件工程项目管理可以分为两大部分：一是5大流程，二是12大知识领域 ，如下：</p>
-<h3 id="2-1-项目管理五过程"><a href="#2-1-项目管理五过程" class="headerlink" title="2.1 项目管理五过程"></a>2.1 项目管理五过程</h3><p>项目管理五大过程包括项目的启动、计划、执行、监视和验收，如下图所示：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/wbs/wbs-2.PNG" alt="项目5过程"></p>
-<ul>
-<li><p>启动阶段，首先需要确定项目的目标和项目的关键负责人、进行业务分析、需求分析以及组建团队，并且宣布项目正式立项；</p>
-</li>
-<li><p>计划阶段，编写项目计划，把项目目标量化与质化，制定达到目标的里程碑，在这个阶段，还需要完成的是概要设计、目标分解、任务分派、风险评估等工作内容；</p>
-</li>
-<li>执行阶段，按计划开展项目，进行详细设计、编写代码、调试自测，阶段性的实现目标，这一步是软件工程最核心的一个步骤；</li>
-<li>监控阶段，监控阶段与执行阶段是循环的关系，这一阶段需要准确识别偏差，判断影响项目进度因素，同时进行计划刷新与风险刷新以及任务刷新；</li>
-<li>验收阶段，按照项目要求，进行项目验收，包括版本发布、文档归档以及项目复盘。</li>
-</ul>
-<p>不同于理论，在实践中，这5大过程是个计划、执行、检查、更新的循环过程，而不是一个线性过程。</p>
-<h3 id="2-2-项目管理12项"><a href="#2-2-项目管理12项" class="headerlink" title="2.2 项目管理12项"></a>2.2 项目管理12项</h3><p>项目管理1.0版里涉及 范围、时间、成本以及质量，这四者是个平衡的过程。项目管理2.0里，又增加了 业务与组织，项目管理是为业务服务的，同时给组织保证结果。而在实践过程中容易发现软件工程项目管理其实涉及12大领域，即：业务、范围、进度、成本、质量、资源、风险、采购、相关方、沟通、测试以及综合管理，具体如下：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/wbs/wbs-0.PNG" alt="项目12项"></p>
-<ul>
-<li>业务管理，其涉及业务分析、客户管理；</li>
-<li>范围管理，包括规划范围、需求分析、定义范围、工作分解、确认范围以及控制范围；</li>
-<li>进度管理，其包括：规划进度里程碑，定义任务，排列任务优先级，估算人力资源，估算所需时间，制定进度计划表以及控制进度；</li>
-<li>成本管理，包括规划成本管理，估算成本，制定预算以及控制成本；</li>
-<li>质量管理，包括规划质量指标，QA测试，质量保证以及控制质量；</li>
-<li>资源管理，这一部分与组织结构相关，是决定项目成败的关键要素，合适的项目需要合适的人选，其包括4个子过程：人力资源管理，组建团队，建设团队以及管理团队；</li>
-<li>沟通管理，包括3个子过程：规划沟通，管理沟通，控制沟通；</li>
-<li>风险管理，包括识别风险，风险分析，定量风险，提出应对以及控制风险；</li>
-<li>采购管理，包括4个子过程：规划采购，实施采购，控制采购，结束采购；</li>
-<li>相关方管理，相关方管理也是项目成败与否的一个非常关键的要素，包括4个过程：识别相关方，相关方参与，相关方满意度等；</li>
-<li>测试管理，项目管理往往容易忽略掉QA测试的作用，在代码编写好后需要提前安排QA介入，记住一点没有经过QA严格质量测试的软件包是不能输出给客户的；</li>
-<li>综合管理，综合管理的关键是综合平衡最优，平衡以上11项使之达到最优，包括制订章程，制定计划，指导与管理执行，监控项目，变更控制，结束项目。</li>
-</ul>
-<p>不管是项目管理5大流程还是项目管理12项，其中有一个非常重要的工作即创建<strong>“工作分解结构”</strong>，工作分解结构是开展一切项目管理的依据与基础，可以说没有“工作分解结构”就没有项目管理。</p>
-<h3 id="2-3-工作分解结构"><a href="#2-3-工作分解结构" class="headerlink" title="2.3 工作分解结构"></a>2.3 工作分解结构</h3><p>在工作过程中，人的认知是有差异的，比较资深的人员描述一个任务或问题时会比较的抽象，而初级工程师比较能理解的是具体的任务描述，为了团队具有较好的执行力，就需要把抽象的概念或描述分解成具体的可执行的行为或任务，这就需要一种合适的工具或方法来分解概念与工作。</p>
-<p>工作分解结构法（WBS: Work Breakdown Structure，是一个“描述思路的规划和设计的工具”，是以项目结果为导向的工作过程的结构分解方法论，是将抽象的概念或任务分解成具体的行为的一种工具。将工作进行合理的分解是项目负责人的重要能力之一，缺乏项目分解能力的项目负责人容易造成项目失败，“工作分解”的好坏与否 也可以决定项目的成败与否。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/wbs/wbs-1.PNG" alt="项目"></p>
-<p>如上图所示，项目管理有两大基石：<strong>工作分解结构法与 企业文化+组织结构</strong>， WBS在PMBOK中给出的定义是：“WBS是针对可交付成果对项目要素进行的分组，它归纳和定义了项目的整个工作范围，每下降一层就代表对项目工作更详细地定义。”。这一定义说明WBS所分解的目标是工作包(Work Package)，以可交付成果为导向的。企业文化与组织结构也是项目成功与否的基石，企业文化作保证，组织调整到位可以给项目提供坚强的基础资源与能力。</p>
-<p>“工作分解结构法”的任务拆解是个有拆有合的过程。一个大的工程任务往往是由很多的小个的任务组成的，如何将一个大任务拆解成合适的小任务，能将大任务拆解成什么样的小任务，能拆解到什么粒度，拆解是否准确，这是”拆“的过程。怎样对任务进行量化与质化，怎么将任务落地到具体的执行人员上，怎么进集成怎么验收，这是“合”。任务拆解比较的考验工程人员的工程能力，任务拆解是否成功是工程进度与工程交付能否成功的关键要素。</p>
-<h2 id="3-如何进行工作结构分解"><a href="#3-如何进行工作结构分解" class="headerlink" title="3. 如何进行工作结构分解"></a><font color="#FF8C00">3. 如何进行工作结构分解</font></h2><h3 id="3-1-任务树分解法"><a href="#3-1-任务树分解法" class="headerlink" title="3.1 任务树分解法"></a>3.1 任务树分解法</h3><p>如下图所示，工作分解结构就是把项目可交付成果，比如总目标一级级的分解成较小的、更易于执行的组成部分的过程，建立工作分解结构的过程就是将项目进行显性化、结构化，将复杂的总目标分解成一级任务、二级任务，最后分解成最小可执行工作包的过程。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/wbs/wbs-4.PNG" alt="项目"></p>
-<p>工作分解结构可以按功能、组成、生命周期以及组织的形式进行分析，在软件工程项目中，通常以项目生命周期 + 功能以任务树的方式分解项目。如下图所示，</p>
-<p><strong>最终交付成果</strong>按生命周期分解成了 项目管理、业务、需求、设计与编码、集成以及交付这6项。然后设计与编码又按功能的形式分为一级任务特性：关键特性1、关键特性2、关键特性N，以此类推，直至分解成最小可执行工作包。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/wbs/wbs-3.PNG" alt="项目"></p>
-<p>工作分解结构法是面向结果为导向的分解，分解过程中也需要适可而止，比如初级工程师需要给他分解到很具体的最小可执行工作包这种层次，而比较资深的工程师可以给他分解到关键特性这一层次即可，当然前提是这个资深工程师有能力承担这一特性的分解与执行。</p>
-<p>此外，任务树适合项目汇报使用，而工作包表格适合团队内部协作使用，其能提供更详细的细节，因此在任务树拆解后，下一步是进行工作表格分解。</p>
-<h3 id="3-2-工作表格分解法"><a href="#3-2-工作表格分解法" class="headerlink" title="3.2 工作表格分解法"></a>3.2 工作表格分解法</h3><p>对比于任务树，工作包表格可以在右侧增加更多的细节，这有利于团队协作，以下图的软件项目工作包表格为例：</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/wbs/wbs-7.PNG" alt="项目"></p>
-<p>1，首先前三行定义了项目的目标、原则以及投入，说明了项目的交付目标、交付的原则以及约束、还有确定了人力资源的投入,；</p>
-<p>2，任务分解成了一级任务、二级任务以及工作包、工作包名称；</p>
-<p>3，除这些在任务树上也可以体现的内容外，还增加了 工作进展、状态、评论、风险、阶段目标、执行的人员、复杂度以及依赖条件；</p>
-<p>4，输出最终交付成果。</p>
-<p>工作包表格的这些细节可以使得团队协作更加顺畅，所以一般开发过程中选用工作包分解表作为项目跟进的任务进度表。</p>
-<h3 id="3-3-关键路径网络图分解法"><a href="#3-3-关键路径网络图分解法" class="headerlink" title="3.3 关键路径网络图分解法"></a>3.3 关键路径网络图分解法</h3><p>除了任务树与工作包表格之外还有关键路径网络图分解法，在项目当中有些任务比较重要而复杂，有些任务相互独立、有些任务又有依赖关系，</p>
-<p>如下图所示，S 表示Start，F表示Finish，SS 表示同时启动，FS表示先完成再启动。F11任务需要在F1任务启动后10天再启动，F23与F31任务可以同时并发进行，</p>
-<p>而最终交付的目标需要 F2211 与 F3111 同时完成。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/wbs/wbs-5.PNG" alt="项目"></p>
-<p>关键路径网络图分解法明确了任务之间逻辑关系、先后关系、时间关系，有利于项目计划进度时间的评估与规划。</p>
-<h2 id="4-工作分解结构法的理念与原则"><a href="#4-工作分解结构法的理念与原则" class="headerlink" title="4. 工作分解结构法的理念与原则"></a><font color="#FF8C00">4. 工作分解结构法的理念与原则</font></h2><p>以上内容讲的都是 工作分解结构法的 “术”的层次，其本身还有背后的理念 ，即“道”。工作分解结构法是<strong>“系统思维与分治思维”</strong>在软件工程项目中的应用。工作分解除了非常重要的专业技能，还需要遵循以下几个理念与原则：</p>
-<p>1，滚动原则</p>
-<p>如下图所示，项目的推进是一个 “分解、执行、检查、更新”滚动推进的过程，依据导弹思维，先保证大方向正确，开工，然后再在过程中调整小方向，直至最终精确的命中目标。项目管理也是一个逐步实现目标的过程，时间上近的获取的信息多、那么分解的层次与类目自然也就更细、更多、更准确，而时间上远的，因为信息不够完善，分解的层次与类目自然更少少，也没那么精确，在目标逐步达成后，可以进行刷新重新进行分解，完善工作包，直至最终达成目标。</p>
-<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/wbs/wbs-6.PNG" alt="项目"></p>
-<p>2，MECE原则</p>
-<p>MECE即“相互独立，完全穷尽”，是应用系统思维从全局的角度分解任务，既不重复也不遗漏，纵向递进，横向遍历。</p>
-<p>3，量化质化原则</p>
-<p>分解出来的工作包需要能量化，需要可量化的完成时间、可量化的验收标准，不能量化的任务需要质化，即以满意度的方式验收。</p>
-<p>4，以上统下原则</p>
-<p>工作包分解的目标是可交付成果，每一个下级成果有且只有一个上级成果，每一个上级成果是其下级成果之和，不同的交付成果可以分解到不同的层级；</p>
-<p>5，适可而止原则</p>
-<p>工作包并不是分解的越细越好，而应当根据项目特性的难易程度进行分解，难的复杂度高的分解细点、适当增加分解的层级，而容易的复杂度低的可以减少分层。</p>
-<p>6，人事匹配原则</p>
-<p>需要考虑每一级任务到底需要什么样的领域专家或者工程人员，任务要能匹配工程人员的能力，工程人员能力要能匹配任务，考虑到执行力，还需要将任务分解到人人有事做，事事能完成的层次。</p>
-<h2 id="5-小结"><a href="#5-小结" class="headerlink" title="5. 小结"></a><font color="#FF8C00">5. 小结</font></h2><p>本文从宏观角度讲述了工作分解结构法的“术”与“道”，在宏观上理解了工作分解结构法，还需要微观上进行实践，才能做到“学以致用”。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
-<h2 id="6-作者简介"><a href="#6-作者简介" class="headerlink" title="6. 作者简介"></a><font color="#FF8C00">6. 作者简介</font></h2><p>常平，中科大硕，某AI独角兽深度学习高级软件主管工程师、架构师，前EMC资深首席工程师，主要工作背景在深度学习、大数据、云计算、分布式中间件以及Linux内核领域。</p>
-<h2 id="7-版权申明"><a href="#7-版权申明" class="headerlink" title="7. 版权申明"></a><font color="#FF8C00">7. 版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
-<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
-<h2 id="8-参考资料"><a href="#8-参考资料" class="headerlink" title="8. 参考资料"></a><font color="#FF8C00">8. 参考资料</font></h2><p>[1] 《极简项目管理》 郭致星著</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/ideology/" rel="tag"><i class="fas fa-tags"></i>ideology</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/2/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
@@ -1204,12 +1229,12 @@
   <img class="author-avatar" src="/images/avatar.jpg" alt="常平">
   
   <h1 class="author-name">常平</h1>
-  <h2 class="author-description">“认识实践，实践认识”</h2>
+  <h2 class="author-description">“实践认识、认识实践”</h2>
   <div class="site-count">
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">62</a></div>
+      <div><a href="/archives">63</a></div>
     </div>
     
     

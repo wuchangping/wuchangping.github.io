@@ -68,7 +68,7 @@
     <script defer type="text/javascript" src="/js/index.js"></script>
     
     <script defer type="text/javascript" src="/js/custom.js"></script>
-    <title>分布式训练 – 第3篇 - 集合通信及其通信原语 | 常平的笔记 - 认识世界是为了改造世界</title>
+    <title>分布式训练 – 第3篇 - 集合通信及其通信原语 | 常平的笔记 - 实事求是</title>
   </head>
   <body itemscope itemtype="http://schema.org/WebPage" lang="zh_CN"  data-spy="scroll" data-target=".list-group">
     
@@ -117,7 +117,7 @@
       <link itemprop="mainEntityOfPage" href="https://www.changping.me/2022/04/04/ai-distributed-training-coll-lang/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
        <meta itemprop="name" content="常平">
-       <meta itemprop="description" content="“认识实践，实践认识”">
+       <meta itemprop="description" content="“实践认识、认识实践”">
        <meta itemprop="image" content="/images/avatar.jpg">
       </span>
       <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -198,7 +198,7 @@
 <h3 id="2-11-Signal与Wait"><a href="#2-11-Signal与Wait" class="headerlink" title="2.11 Signal与Wait"></a>2.11 Signal与Wait</h3><p>Signal与Wait属于记录型信号量机制： wait(s)，signal(s)可用于解决进程间的同步问题，在通信原语里从一个节点发送一个数据到另外一个节点时，会同时signal一个event值到对端，对端的wait操作接收到这个event时会返回一个确认给signal，这样保证在节点的进程间进行数据的同步操作。</p>
 <h2 id="3-小结"><a href="#3-小结" class="headerlink" title="3. 小结"></a><font color="#FF8C00">3. 小结</font></h2><p>在分布式训练过程中，深度学习训练框架不会去直接操作底层的通信网络，而是通过使用网络通信库来完成数据的集合通信，各家AI芯片加速卡厂家都会提供私有的网络通信库比如：xxx-AWARE OpenMPI或xCCL来完成这个底层通信硬件的屏蔽与抽象。在分布式训练集群里网络通信硬件连接样式多种多样，可以是Ethernet、InfiniBand 、RoCE v2/v1 等也可以是CXL、NVLINK等私有协议，这就要求在通信的后端层根据各个厂家的自己的SDK开发库接口，根据实际情况实现 各自的网络通信库，比如cuda-aware MPI、NCCL、NVSHMEM，以及根据实际的网络拓扑组合完成对应的最有效的网络拓扑算法。</p>
 <p>本文讲述了分布式训练里的集合通信原语，这些原语是集合通信拓扑算法的基本组成单元，后续的文章里会讲述如何组合这些通信原语以完成合适的通信拓扑算法。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
-<h2 id="4-作者简介"><a href="#4-作者简介" class="headerlink" title="4. 作者简介"></a><font color="#FF8C00">4. 作者简介</font></h2><p>常平，中科大硕，某AI独角兽深度学习高级软件主管工程师、架构师，前EMC资深首席工程师，主要工作背景在深度学习、大数据、云计算、分布式中间件以及Linux内核领域。</p>
+<h2 id="4-作者简介"><a href="#4-作者简介" class="headerlink" title="4. 作者简介"></a><font color="#FF8C00">4. 作者简介</font></h2><p>常平，中科大硕，某AI芯片公司深度学习高级软件主管、架构师，前EMC资深首席工程师，主要工作背景在深度学习、Ai平台、系统调优、大数据、云计算以及Linux内核领域。</p>
 <h2 id="5-参考资料"><a href="#5-参考资料" class="headerlink" title="5. 参考资料"></a><font color="#FF8C00">5. 参考资料</font></h2><p>[1] <a href="https://www.changping.me">https://www.changping.me</a></p>
 <p>[2] <a href="http://scc.ustc.edu.cn/zlsc/cxyy/200910/MPICH" target="_blank" rel="noopener">http://scc.ustc.edu.cn/zlsc/cxyy/200910/MPICH</a></p>
 <p>[3] 《用这拌元宵，一个字：香！| 分布式训练硬核技术——通讯原语》</p>
@@ -248,12 +248,12 @@
   <img class="author-avatar" src="/images/avatar.jpg" alt="常平">
   
   <h1 class="author-name">常平</h1>
-  <h2 class="author-description">“认识实践，实践认识”</h2>
+  <h2 class="author-description">“实践认识、认识实践”</h2>
   <div class="site-count">
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">62</a></div>
+      <div><a href="/archives">63</a></div>
     </div>
     
     
