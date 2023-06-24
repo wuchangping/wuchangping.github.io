@@ -115,6 +115,103 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="https://www.changping.me/2018/09/23/distributed-microservice-weifuwunaxieshier/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“实践认识、认识实践”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的笔记">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2018/09/23/distributed-microservice-weifuwunaxieshier/" itemprop="url">微服务-微服务解惑</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2018-09-23T19:38:30+08:00">2018-09-23 19:38:30</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="微服务解惑"><a href="#微服务解惑" class="headerlink" title="微服务解惑"></a>微服务解惑</h2><h3 id="微服务与容器"><a href="#微服务与容器" class="headerlink" title="微服务与容器"></a>微服务与容器</h3><p>微服务又指的是在传统应用架构的基础上，按照业务能力将系统拆分成多个服务，每个服务都是一个独立的应用，对外提供一些列的公共服务API，服务之间以轻量的方式互相调用。<br>微服务里的每个服务都是一个组件，通过编排组合从而达到独立、解耦、组件化、易维护、可复用、可替换、高可用的设计原则。微服务后，自动化部署以及运维是比较头疼的事，容器技术解决了这个问题。</p>
+<ul>
+<li>好的架构需要考虑后面的扩展以及修改</li>
+<li>好的架构是解耦的，需改一个地方不会影响另外一个地方</li>
+<li>好的架构是轻便灵活的，一个应用最好只解决一个问题，而不是叠加功能</li>
+</ul>
+<h3 id="微服务的标签"><a href="#微服务的标签" class="headerlink" title="微服务的标签"></a>微服务的标签</h3><ul>
+<li>单一职责</li>
+<li>微</li>
+<li>面向服务</li>
+<li>自治</li>
+<li>易扩展</li>
+<li>流程化</li>
+</ul>
+<h3 id="微服务的不足"><a href="#微服务的不足" class="headerlink" title="微服务的不足"></a>微服务的不足</h3><ul>
+<li>时效性·服务间的调用延时可能导致系统相应慢的问题</li>
+<li>一致性·微服务在保证一致性上需要做更多的工作</li>
+</ul>
+<h3 id="微服务的价值"><a href="#微服务的价值" class="headerlink" title="微服务的价值"></a>微服务的价值</h3><ul>
+<li>资源价值，资源不足是自动扩容，资源过量时自动缩容；</li>
+<li>业务价值，工作量、人员数量、交付质量、交付周期；</li>
+<li>技术价值，技术是为业务来服务的（个人标注：技术也是业务的一部分而不只是为业务而服务）</li>
+<li>用户价值，用户体验好，服务上线快</li>
+<li>未来价值，技术不成为业务的瓶颈</li>
+</ul>
+<h3 id="微服务的小目标"><a href="#微服务的小目标" class="headerlink" title="微服务的小目标"></a>微服务的小目标</h3><ul>
+<li>持续交付</li>
+<li>业务敏捷</li>
+<li>独立演进</li>
+<li>高可用</li>
+<li>高性能</li>
+</ul>
+<h3 id="微服务的拆与不拆"><a href="#微服务的拆与不拆" class="headerlink" title="微服务的拆与不拆"></a>微服务的拆与不拆</h3><p>依据：数据模型、业务模型、关键指标，粒度平衡，边界合理</p>
+<h3 id="DevOPS"><a href="#DevOPS" class="headerlink" title="DevOPS"></a>DevOPS</h3><p>开发与运维是一个整体，devops是一种思维方式，微服务与devops是天生一对</p>
+<h3 id="SpringCloud特点"><a href="#SpringCloud特点" class="headerlink" title="SpringCloud特点"></a>SpringCloud特点</h3><ul>
+<li>功能齐全</li>
+<li>标准化</li>
+<li>简单方便</li>
+<li>按需取用</li>
+<li>轻量</li>
+<li>易扩展、易维护</li>
+<li>可复用性</li>
+</ul>
+<h3 id="分布式系统组件及操作"><a href="#分布式系统组件及操作" class="headerlink" title="分布式系统组件及操作"></a>分布式系统组件及操作</h3><p>配置管理（Spring cloud config）、服务发现/调用(Feign)、断路器、智能路由（ZUUL）、微代理、控制总线、一次性Token、全局锁、决策竞选、分布式会话、集群状态。</p>
+<p>注册中心(Eureka)、负载均衡(Ribbon)、断路器（Hystrix）、服务追踪（Sleuth，zipkin）、权限（string security）、接口可视化（Swagger）。</p>
+<p>以上内容为《微服务那些事儿》读书笔记。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1]. 微服务那些事儿，纪晓峰著</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="https://www.changping.me/2018/09/22/bigdata-streaming-native-platform/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -740,7 +837,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">63</a></div>
+      <div><a href="/archives">64</a></div>
     </div>
     
     
