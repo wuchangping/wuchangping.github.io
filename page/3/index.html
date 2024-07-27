@@ -115,6 +115,235 @@
   
   <article class="article post card" itemscope itemtype="http://schema.org/Article">
     <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="https://www.changping.me/2020/12/27/distributed-product_the_engineering_and_project_management/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“为学，闻道，践行”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的笔记">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2020/12/27/distributed-product_the_engineering_and_project_management/" itemprop="url">分布式系统架构设计 – 第26式- 什么是工程化与如何做项目管理</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-12-27T20:55:00+08:00">2020-12-27 20:55:00</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/product/" itemprop="url" rel="index"><span itemprop="name">product</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>不同于科研可以专研的很深而无需转化成生产力，工程化是一套将项目转化成产品从而达成生产力目标的科学方法论。架构师是业务与技术、产品之前的桥梁，除了熟练掌握软件开发的本质、方法论、技能、工具还应该具备工程化能力与项目管理能力，即任务的分析，拆解，计划，执行，领导，管控与团队的组织与管理。</p>
+<h2 id="工程化"><a href="#工程化" class="headerlink" title="工程化"></a><font color="#FF8C00">工程化</font></h2><h3 id="工程化就是任务拆解"><a href="#工程化就是任务拆解" class="headerlink" title="工程化就是任务拆解"></a>工程化就是任务拆解</h3><p>任务拆解是个有拆有合的过程。一个大的工程任务往往是由很多的小个的任务组成的，如何将一个大任务拆解成合适的小任务，能将大任务拆解成什么样的小任务，能拆解到什么粒度，拆解是否准确，这是”拆“。怎样对任务进行量化与质化，怎么将任务落地到具体的执行人员上，这是“合”。任务拆解比较的考验工程人员的工程能力，任务拆解是否成功是工程进度与工程交付能否成功的关键要素之一。</p>
+<h3 id="工程化就是取舍"><a href="#工程化就是取舍" class="headerlink" title="工程化就是取舍"></a>工程化就是取舍</h3><p>工程化是取舍的艺术，工程受限于已有的条件，需要做出适当的取舍，才能解决实际问题。资源都是有限的，项目开工之前先搞清资源与人员能力，然后制定人员调配策略与合理的进度安排，需要计划让哪些人员去处理哪些问题，也需要制定合理的资源调度策略，从而才能稳操胜券。</p>
+<p>比如“田忌赛马”就是一个经典的人力与资源的调配故事，精明的项目管理人员在项目开工之前就能彻底的预判结果，告诉资源掌控者我缺啥需要啥，满足这些条件才有取胜可能，然后再采用合理的策略从而抵达目标获取胜利。不同的人员会制定不同的策略，这也是工程人员的能力差异所在。</p>
+<h3 id="工程化就是组织与沟通"><a href="#工程化就是组织与沟通" class="headerlink" title="工程化就是组织与沟通"></a>工程化就是组织与沟通</h3><p>一个工程往往需要几十、几百甚至几千、几万人协同工作为达成一个共同的目标而奋斗，因此，在工程中人员的组织、沟通协调也非常重要，合理的人放到合适的位置，才能发挥其能力从而高效的解决实际问题，同时工程也讲究文档化、标准化、流程化与规范化。</p>
+<h3 id="工程化就是进度安排"><a href="#工程化就是进度安排" class="headerlink" title="工程化就是进度安排"></a>工程化就是进度安排</h3><p>将任务进行拆解仅是工程化解决问题的一个步骤，任务拆解之后还要区别主要矛盾与次要矛盾，进行优先级排序与里程碑确定，需要从时间上进行合理的安排与调度，最终让每一个子任务之间做到有效的协同与交付。</p>
+<h3 id="项目管理是工程化的子集"><a href="#项目管理是工程化的子集" class="headerlink" title="项目管理是工程化的子集"></a>项目管理是工程化的子集</h3><p>工程化是以现有资源与技术为基础，通过加人员、技能、知识组合起来，短时间内快速解决实际的复杂问题的一种方法。软件工程是指将系统化、规范、可度量的方法应用于软件开发的过程以及软件的运行和维护，其包括两方面内容：<strong>软件开发和软件项目管理</strong>。因此，项目管理是工程化的子集。</p>
+<h2 id="项目管理"><a href="#项目管理" class="headerlink" title="项目管理"></a><font color="#FF8C00">项目管理</font></h2><h4 id="项目铁三角"><a href="#项目铁三角" class="headerlink" title="项目铁三角"></a>项目铁三角</h4><p>项目铁三角指的是项目管理的四个重要方面，即：</p>
+<ul>
+<li><p>范围：需要做什么；</p>
+</li>
+<li><p>时间：什么时间做完；</p>
+</li>
+<li><p>成本：投入多少资源；</p>
+</li>
+<li><p>质量：做到什么程度才算达标。</p>
+</li>
+</ul>
+<p>范围、成本、时间三者之间任何一个变动均会对其他两项产生影响，如下图所示：</p>
+<p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/distributed-product-project_management.png" alt="image-20201227171818955"></p>
+<p>范围扩大（需求增加），做的事情多了，时间进度就需要延长，并且成本也会增加。如果做的事情多了而时间与成本投入又不变那么必然影响到质量。如果不打算减少所做的事情，就必然需要多投入成本（比如时间，人力），否者质量与范围又无法保证。范围、时间、成本之间的制约关系是必然存在的，但是也要依据实际情况而采取合适的方法，有的项目时间节点是固定的、有的质量要求严格、有的有固定的成本约束等，因此，需要根据情况进行合理的调整。</p>
+<h4 id="项目三重境"><a href="#项目三重境" class="headerlink" title="项目三重境"></a>项目三重境</h4><p>第一重，满足客户质量要求，这是项目管理的最基本的需求，在范围、时间、成本之间获取平衡是为了达到客户的质量要求；</p>
+<p>第二重，满足业务的需求，项目管理人员需要懂业务，需要知道为什么需要做，什么是客户需要的，避免项目大方向的错误；</p>
+<p>第三重，满足组织成员的需求，项目是由人实施的，其注入了人的精神与意志，因此也需要了解组织成员的需求，准确并且满足成员的需求，才能更好的推进项目。</p>
+<h3 id="项目拆解"><a href="#项目拆解" class="headerlink" title="项目拆解"></a>项目拆解</h3><h4 id="道与法"><a href="#道与法" class="headerlink" title="道与法"></a>道与法</h4><p>架构师完成概要设计后就需要进行项目拆解，拆解的成功与否是项目能否按期交付的关键，在进行项目拆解的时候需要遵循以下的<strong>“一人二法三要素四角色”</strong>原则，</p>
+<ul>
+<li><p>一人： 项目是由人执行的，人是项目里最关键的要素，合适的任务要拆解到具体的合适的人员上；</p>
+</li>
+<li><p>二法：量化与质化，任务拆解需要能量化（类似KPI，比如先赚它一个小目标：一个亿）有具体的时间、具体的数值，不能量化的需要质化（如同OKR，比如客户对这个质量感到满意，这个缺陷的修复方案QA已验证接受等，这个策略已经被客户所接受）；</p>
+</li>
+<li><p>三要素：即范围、时间、成本，在有限的成本、范围、时间约束下达成质量目标；</p>
+</li>
+<li><p>四角色：即RACI角色: 谁负责（R = Responsible）: 谁来干这活，谁批准（A = Accountable）：谁说了算，咨询谁（C = Consulted）：专家团，顾问是谁， 通知谁 (I =Informed)：谁需要被通知到，谁需要知道这个进度与风险。</p>
+</li>
+</ul>
+<h4 id="术与器"><a href="#术与器" class="headerlink" title="术与器"></a>术与器</h4><p>如何进行拆解，能拆解成什么样的任务，这也比较考验项目管理人员的专业技能，这属于”术” 的范畴，同时也可以借助合适的工具（器）编排拆解的任务与进度。</p>
+<h3 id="项目计划"><a href="#项目计划" class="headerlink" title="项目计划"></a>项目计划</h3><p>1，项目计划的本质是项目执行人员的<strong>承诺</strong>，因此，不同于产品与项目制定人员比较看重的是项目的价值，执行人员通常会比较关注项目的资源投入、技术难度、技术实现、里程碑、奖罚等，因此对于计划都会比较的谨慎；</p>
+<p>2，计划本身没有太大作用的，但是没有计划却万万不行，如同“天气预报”，没几次预报会准确，但是好处是有了计划就有了可预测性；</p>
+<p>3，大的项目计划需要拆分成合理的里程碑，每个里程碑都能对应到一个最小可交付版本（MVP）用于进行市场验证（PMF）；</p>
+<p>4， 大方向与里程碑先保证正确，过程中进行小调整。</p>
+<p>有时候计划的交付时间点是固定的，其由商业交付时间点反推，那么就需要在 “范围，成本与质量承诺”这三点上进行合理的取舍。</p>
+<h3 id="人员与组织"><a href="#人员与组织" class="headerlink" title="人员与组织"></a>人员与组织</h3><p>项目是由人完成的，了解团队成员的需求，满足TA所要的，这样具有保持团队稳定以及项目价值输出的可行性。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文从宏观角度概述了工程化与项目管理的差异，只会项目计划那是最初级的项目管理，更高级的项目管理是懂方法论，懂任务拆解，懂项目计划，懂业务、也懂人与组织等。在宏观上了解了工程化与项目管理，还需要微观上进行实践，手把手的操作过、练过、蹲过坑、吃过苦头才能叫做“实践出真知”。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，某AI独角兽深度学习首席软件工程师，前EMC 大数据资深首席工程师，主要工作背景在深度学习、流式大数据、云计算、分布式中间件以及Linux内核。</p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1] <a href="https://www.zhihu.com/question/26699139" target="_blank" rel="noopener">https://www.zhihu.com/question/26699139</a></p>
+<p>[2] 《网易一千零一夜 - 互联网产品项目管理实战》 网易杭研项目管理部著</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/product/" rel="tag"><i class="fas fa-tags"></i>product</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
+      <link itemprop="mainEntityOfPage" href="https://www.changping.me/2020/10/25/distributed-product_the_customer_and_technology/">
+      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <meta itemprop="name" content="常平">
+        <meta itemprop="description" content="“为学，闻道，践行”">
+        <meta itemprop="image" content="/images/avatar.jpg">
+      </span>
+      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="常平的笔记">
+      </span>
+    </div>
+    <header class="post-header">
+      <h1 class="post-title" itemprop="name headline">
+        <a class="post-title-link post-title-link-external" href="/2020/10/25/distributed-product_the_customer_and_technology/" itemprop="url">思想体系 – 第25式- 让技术回归常识,先有客户再有技术</a>
+      </h1>
+      <div class="post-meta">
+        
+        <span class="post-date">
+          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-10-25T20:55:00+08:00">2020-10-25 20:55:00</time></span>
+        </span>
+        
+        
+        
+        <span class="post-meta-divider divider">|</span>
+        
+        <span class="post-categories">
+          
+          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/product/" itemprop="url" rel="index"><span itemprop="name">product</span></a></span>
+        </span>
+        
+        
+      </div>
+    </header>
+    <main class="post-main" itemprop="articleBody">
+      
+      <h2 id="先有客户再有技术"><a href="#先有客户再有技术" class="headerlink" title="先有客户再有技术"></a><font color="#FF8C00">先有客户再有技术</font></h2><p>技术不同于科学，科学是人类对自然的认知，它可以很前沿很理论也不用讲究工程价值，而技术更多指的是功能与工程得实现，更需要关注的是“利他”的常识。技术人员其比较关注的是技术架构、实现方式、技术价值以及开发成本，而比较容易忽略客户需求、使用场景以及产品价值与用户体验。忽略这些产品相关的内容而维技术论就容易犯错进而浪费有限的开发资源，在工程实现上维技术论常见的有四错：</p>
+<ul>
+<li>第一错：“我为用户想”，这是研发人员最容易犯的错，其已经有用户意识，但是却没有进一步与用户沟通，直接替用户做决定，也不清楚用户的使用场景，因此容易造成”所想“实际上并不是用户真正所想；</li>
+<li>第二错：追求有挑战的技术而非技术的实用价值，也非从合适的解决用户问题的角度出发，将技术上的自嗨当成客户需求，比如用户需要从A地到B地，简单一点给用户一辆自行车就可以解决的问题，而技术自嗨就容易非要先自行造个飞机，然后拼命的给用户推销这个好这个快，但是用户却不买单；</li>
+<li>第三错：维性价比论，总以为又便宜的又好的就是真的好，性价比是大杀器，但是很多情况下其实客户也讲ROI(投入产出比)，比如双11秒杀活动，用户可以不计成本的采用最新进最前沿的技术，只要能扛得住双11的流量就可以不计成本，因为再大的成本，跟双11带来的收益对比都是毛毛雨；</li>
+<li>第四错：闭门造车，不实事求是，不与客户做探讨，不做调查就把想象的或还处于概念上的东西当成客户需求。</li>
+</ul>
+<p>因此，架构人员不能维技术论，维技术论就不是一个合格的架构师，架构师还需要关注客户价值，在实现一个架构之前先确定这个是对客户有价值的，同时平衡好客户价值与技术前沿之间的取舍关系。</p>
+<h2 id="什么是客户，又什么是客户价值"><a href="#什么是客户，又什么是客户价值" class="headerlink" title="什么是客户，又什么是客户价值"></a><font color="#FF8C00">什么是客户，又什么是客户价值</font></h2><h3 id="什么是客户"><a href="#什么是客户" class="headerlink" title="什么是客户"></a>什么是客户</h3><p>用英文单词表示，客户与用户其实是比较容易区别的，客户是 customers, 用户 是users，而中文二者都有个“户”字就比较容易混淆。To C产品客户可以是用户，但是To B产品， 客户却不是就等于就是用户。狭义的客户 = 买单的，广义上的客户 = 客户的客户 + 客户 + 客户的用户 + 利益链上的所有，用户也不就是一个角色或者某人，对to B产品来说，用户的本质是“需求“的集合。</p>
+<h3 id="什么是客户价值"><a href="#什么是客户价值" class="headerlink" title="什么是客户价值"></a>什么是客户价值</h3><p>“任何先进的技术、产品和解决方案，只有转化为客户的商业成功才能产生价值“ [1]  ，客户价值就是对客户有用的东西，价值来源于价值的交换。技术的目的就是做对客户有用的东西，并且技术的进化方向是由市场所决定的。</p>
+<p>以客户为中心，就是给客户创造价值，替解决用户难点、痛点、挑战点、为客户提供高质量低成本的产品，同时响应要及时。病根是需，药是求，拿出 “求” 解决 “需”，药到病除就是为客户创造价值[1]。</p>
+<h2 id="如何做到以客户价值为中心？"><a href="#如何做到以客户价值为中心？" class="headerlink" title="如何做到以客户价值为中心？"></a><font color="#FF8C00">如何做到以客户价值为中心？</font></h2><p>认知上做到技术要先从客户价值开始，那么执行上应该如何拆分？使得认知具有可量化的执行性？这里从以下三个方面对“如何做到以客户价值为中心”这个问题进行拆解：</p>
+<ul>
+<li>价值探索 - 价值与交付双轮驱动思维模型，PMF-MVP思维模型</li>
+<li>价值确定 - 三三制需求分析思维模型</li>
+<li>价值输出 - 卡诺需求分级与分类思维模型</li>
+</ul>
+<h3 id="价值探索1-双轮驱动思维模型"><a href="#价值探索1-双轮驱动思维模型" class="headerlink" title="价值探索1 - 双轮驱动思维模型"></a>价值探索1 - 双轮驱动思维模型</h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/25/double-ring.png" alt="双轮驱动思维模型"></p>
+<p>价值探索的方法论之一是双轮驱动思维模型，其原则为：</p>
+<ul>
+<li>以客户价值为前轮，前轮把握方向，解决的是需求探索、价值确定、特性探讨以及价值精炼的过程，需求输出需要去伪存真、去粗纯精、过滤提炼；</li>
+<li>产品交付为后轮，后轮提供驱动力，解决的是开发、测试、运维以及获取客户反馈；</li>
+<li>先有客户价值再有产品交付，客户价值又可分为主动式客户价值与被动式客户价值，获取客户需求的方式也需要合理取舍；</li>
+<li>在双轮驱动模型里，二者谁都离不开谁，不是厚此薄彼的关系，而是二者互相协作从而推动产品往商业成功这个目标前进的关系；</li>
+</ul>
+<h3 id="价值探索2-PMF-MVP-开发模型"><a href="#价值探索2-PMF-MVP-开发模型" class="headerlink" title="价值探索2 - PMF-MVP 开发模型"></a>价值探索2 - PMF-MVP 开发模型</h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/25/pmf-mvp.png" alt="PMF-MVP"></p>
+<p>如上图所示，PMF（Product-Market Fit）是讲究产品与市场匹配，是产品需要与市场需求相匹配，而MVP （Minimal Viable Product）是 最小可用产品，MVP讲的是每个版本的迭代都是一个可用的产品而非功能的堆砌，PMF-MVP开发法，讲究快速给的输出可用的版本给到客户，再由客户进行使用获取客户的信息反馈，再进行版本迭代。</p>
+<p>价值探索的方法论之二是PMF-MVP开发法，其原则为：</p>
+<ul>
+<li>PMF-MVP 开发法可以帮助团队在早期快速确认客户的真实需求；从特性列表中确定产品（特性）的基本功能， 然后迅速开发MVP，再投放市场提前踩坑，收集用户反馈，然后再进行产品迭代，只有用户用起来，产品才有机会演化；</li>
+<li>做MVP的时候，不是验证产品好不好用，而是验证产品/特性是不是用户真的想要的，减少开发成本，“闭门造车”式的开发经常会遇到“再来一次”;</li>
+<li>跟目标用户产生互动和连接，每一步都收集用户的反馈，前期跟客户多交流，多沟通，“一元共创”与用户一起成长。</li>
+</ul>
+<p>在价值探索之后就需要进行价值确定。</p>
+<h3 id="价值确定-–-三三制需求分析思维模型"><a href="#价值确定-–-三三制需求分析思维模型" class="headerlink" title="价值确定 – 三三制需求分析思维模型"></a>价值确定 – 三三制需求分析思维模型</h3><p><strong>公式： 需求</strong> <strong>=</strong> <strong>需（痛点、难点、挑战点、恐惧点）</strong> <strong>+</strong> <strong>求 （产品、服务或解决方案）</strong>， 需即痛点、难点、挑战点，求即解决方案、产品或服务，求到需即完成，这就是有客户价值。依据三三制需求分析思维模型我们可以进行价值确定，三三制需求分析思维模型是一个价值确定思维模型，其如下表：</p>
+<table>
+<thead>
+<tr>
+<th><strong>类别</strong></th>
+<th><strong>功能</strong></th>
+<th><strong>质量</strong></th>
+<th><strong>约束</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>“大”**</strong>客户**</td>
+<td>业务目标：  商业成功，比如科技向善</td>
+<td>业务质量：    多、快、好、省</td>
+<td>业务约束：  时间、质量、成本，法律法规，信息安全，技术趋势，竞争对手，行业标准等</td>
+</tr>
+<tr>
+<td><strong>“大”**</strong>用户**</td>
+<td>业务需求</td>
+<td>运行时质量：  性能、可用性、可靠性，可伸缩性、可观测性、可运维性、易用性、兼容性、安全性等</td>
+<td>使用时约束：  遗留系统，业务环境，用户能力，用户群特征等</td>
+</tr>
+<tr>
+<td><strong>“大”**</strong>团队**</td>
+<td>功能需求：  基本功能P0  、增值功能P1、潜在功能P2 、可有可无功能P3  、有害无益功能P100</td>
+<td>编程时质量：  可扩展，可读性，可测试性，可维护性，可移植性</td>
+<td>编程时约束：  开发进度，资源预算、上级要求、开发团队能力、产品规划、运行环境</td>
+</tr>
+</tbody>
+</table>
+<p>三三制需求分析思维模型进行价值确定之后即价值输出。</p>
+<h3 id="价值输出-–-卡诺需求分类与分级思维模型"><a href="#价值输出-–-卡诺需求分类与分级思维模型" class="headerlink" title="价值输出 – 卡诺需求分类与分级思维模型"></a>价值输出 – 卡诺需求分类与分级思维模型</h3><p><img src="https://wuchangping.oss-cn-hangzhou.aliyuncs.com/product/25/kano-model.png" alt="KANO"></p>
+<p>这里采用KANO需求分类与分解思维模型进行价值输出，依据kano模型，需求可以分为：</p>
+<ul>
+<li>基本需求：必须有的最根本的需求，没这个根本就没法谈，会阻塞产品交付；</li>
+<li>增值需求：当提供此需求时用户满意度会提升；当不提供此需求时用户满意度会降低；</li>
+<li>竞争力需求：若不提供此需求，用户满意度不会降低；若提供此需求，用户满意度会有所的提升，属于亮点要素；</li>
+<li>可有可无需求：用户根本不在意的需求，对用户体验毫无影响；</li>
+<li>有害无益需求：提供后用户满意度反而下降；</li>
+</ul>
+<p>卡诺模型将需求进行了分级与分类，进一步的区分了需求的价值。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文首先确定了 “先有客户再有技术”的认知，再讲述了什么是客户，什么是客户价值，并且以思维模型的方式讲述了如何做到以客户价值为中心。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个思维模型对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
+<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，某AI独角兽深度学习首席软件工程师，前EMC 大数据资深首席工程师，主要工作背景在深度学习、流式大数据、云计算、分布式中间件以及Linux内核。</p>
+<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
+<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1] xx增长法</p>
+
+      
+    </main>
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+        <a class="post-tag button" href="/tags/product/" rel="tag"><i class="fas fa-tags"></i>product</a>
+        
+      </div>
+      
+    </footer>
+  </article>
+  
+  <article class="article post card" itemscope itemtype="http://schema.org/Article">
+    <div class="post-block">
       <link itemprop="mainEntityOfPage" href="https://www.changping.me/2020/09/26/distributed-product-how-to-write-a-architecture-document/">
       <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
         <meta itemprop="name" content="常平">
@@ -703,325 +932,9 @@
     </footer>
   </article>
   
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="https://www.changping.me/2020/02/24/distributed-theory-of-essence/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“为学，闻道，践行”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的笔记">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2020/02/24/distributed-theory-of-essence/" itemprop="url">分布式系统架构设计 – 第18式 - 以物理学思维破解分布式系统的本质</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-02-24T22:23:38+08:00">2020-02-24 22:23:38</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><font color="#FF8C00">前言</font></h2><p>本文的动机在于应用物理学思维模型破解分布式系统背后不变的本质，并以此解读分布式系统里的各种算法设计、功能设计以及非功能设计。在“分布式系统” 这个词语里，关键词可以分为“分布式”及“系统”，而<strong>“系统 = 要素 + 连接 + 目标”</strong>，在这个公式里，要素的变化不会影响系统的本质，而“连接或目标”的变化就会改变系统的本质，其中“分布式”是系统的连接方式，挖掘分布式系统背后的本质即是挖掘“分布式系统”的要素、连接以及目标的本质。</p>
-<p>物理学的价值观在于追求所有物理现象背后的共同的底层规律，并以此解读各种物理现象，并且其具有“可解释、可重复、可预测”的可度量性，这种共同的底层规律，被称之为元认知，即第一性原理：“任何变化的背后都有不变的本质”。将这种思维模型应用于挖掘分布式系统的本质，需要解决两个问题，即：“ 什么是分布式系统的第一性原理？以及如何度量分布式系统？”</p>
-<h2 id="分布式系统的价值与目的"><a href="#分布式系统的价值与目的" class="headerlink" title="分布式系统的价值与目的"></a><font color="#FF8C00">分布式系统的价值与目的</font></h2><p>分布式系统的出现是为了解决一个主要矛盾，即：“日益增长的数据计算、传输与存储的需求与当前单点计算机能力无法满足这个需求之间的矛盾”。分布式系统可以通过伸展集群规模解决这个矛盾，因此这就是分布式系统的价值，而可伸缩性(Scalability，避免与可扩展性extensibility混淆)也是分布式系统的根本目的。</p>
-<h2 id="分布式系统必知的基础理论与算法"><a href="#分布式系统必知的基础理论与算法" class="headerlink" title="分布式系统必知的基础理论与算法"></a><font color="#FF8C00">分布式系统必知的基础理论与算法</font></h2><p>分布式系统必须理解、必须会的基础理论算法有：CAP/PACELC、BASE、2PC、3PC、TCC、ACID、PAXOS、RAFT这9个：</p>
-<ul>
-<li>CAP: CAP理论认为以下三者不能同时满足：<ul>
-<li>一致性(Consistency): 所有的节点在同一时刻数据是完全一样的；</li>
-<li>可用性(Availability): 节点失效不会影响系统的IO；</li>
-<li>分区容忍性(Partition Tolerance): 系统能支持网络分区（网络连接故障），即使分区之间的消息丢失系统也正常工作。</li>
-</ul>
-</li>
-<li>PACELC: PACELC理论是CAP理论的扩展，如果有分区partition (P)，系统就必须在availability 和consistency (A and C)之间取得平衡; 否则else (E) 当系统运行在无分区情况下,系统需要在 latency (L) 和 consistency (C)之间取得平衡”；</li>
-<li>BASE: BASE是基本可用（Basically Available）、软状态（Soft state）和最终一致性（Eventually consistent）三个短语的缩写；</li>
-<li>2PC：two-phase commit protocol，两阶段提交；</li>
-<li>3PC: three-phase commit protocol ，三阶段提交，其在两阶段提交的基础上增加了CanCommit阶段，并引入了超时机制；</li>
-<li>TCC: Try-Confirm-Cancel，又称补偿事务，其核心思想是：”针对每个操作都要注册一个与其对应的确认和补偿（撤销操作）”；</li>
-<li>ACID: 原子性（Atomicity）、一致性（Consistency）、隔离性（Isolation）、持久性（Durablity）；</li>
-<li>PAXOS/RAFT ：PAXOS与RAFT算法都是最有效的解决分布式一致性问题的算法。</li>
-</ul>
-<p>这几条基础理论与算法需要自己深入学习理解，其是分布式系统的必备知识点。</p>
-<h2 id="分布式系统的功能与非功能"><a href="#分布式系统的功能与非功能" class="headerlink" title="分布式系统的功能与非功能"></a><font color="#FF8C00">分布式系统的功能与非功能</font></h2><h4 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h4><p>功能可按职责划分为服务功能与算法功能:</p>
-<ul>
-<li>分布式系统里的最主要的服务功能有：服务提供，服务注册，服务配置，服务调用、服务路由、服务治理设计，服务观测、服务安全这8项；</li>
-<li>分布式系统里的最主要的算法功能有：幂等性设计、事务算法设计、端到端的校验算法设计、路由算法设计、分区分配算法设计、集群视图变更算法设计、心跳算法设计、注册算法设计、复制一致性算法设计以及容量规划算法设计。</li>
-</ul>
-<h4 id="非功能"><a href="#非功能" class="headerlink" title="非功能"></a>非功能</h4><p>非功能可划分为质量与约束：</p>
-<ul>
-<li><p>质量是分布式系统在约束条件下的度量方式，其涵盖：合适的性能（Performant）、可用性(Availability)、可靠性(Reliability)、可伸缩性(Scalability)、韧性(resilience)、可观测性(Observability)、安全性（security）、易用性（usability）、可运维性（operability）、可测试性(testability)、可维护性(maintainability)、可扩展性(extensibility)、可读性(readability)等。</p>
-</li>
-<li><p>约束是分布式系统的资源限制：网络物理容量与计算机节点的物理容量，以及客户、用户、团队的边界约束。</p>
-</li>
-</ul>
-<p><strong>分布式系统交付的目的是功能的价值，但是产品的功夫却体现在非功能</strong>，分布式系统的质量是分布式系统的度量方式，分布式系统要可度量就需要具有“可解释、可复制、可预测”的质量保证。</p>
-<h2 id="分布式系统的第一性原理"><a href="#分布式系统的第一性原理" class="headerlink" title="分布式系统的第一性原理"></a><font color="#FF8C00">分布式系统的第一性原理</font></h2><p>依据李善友老师的定义： <font color="#00CED1"><strong>“第一性原理思维 = 逻辑奇点 + 公理化方法 ”</strong></font>，逻辑奇点即基石假设，公理化方法我认为是”定公理、推定理、再公式化应用”。因此欲找出分布式系统的第一性原理，就需要先挖掘出分布式系统的公理化定义及其逻辑奇点。</p>
-<p>首先把分布式系统概念化，Google 出来的对分布式系统的定义有：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">A distributed system is a system whose components are located on different networked<br>computers, which communicate and coordinate their actions by passing messages to one<br>another. The components interact with one another in order to achieve a common goal.<br></code></pre></td></tr></table></figure>
-<p>即：</p>
-<blockquote>
-<p>分布式系统是指其组件位于不同的网络计算机上的系统，这些组件通过相互传递消息来进行通信和协调其动作，且彼此相互交互以完成一个共同的任务目标。</p>
-</blockquote>
-<p>拆解这句话，从中可以看到分布式系统里的要素即为组件，连接即网络，目标是共同的任务，并且还可以看出4个要点：</p>
-<ul>
-<li><p>分布式系统的组件是位于不同的网络计算机上；</p>
-</li>
-<li><p>分布式系统的组件通过传递消息进行通信其动作；</p>
-</li>
-<li><p>分布式系统的组件通过传递消息进行协调其动作；</p>
-</li>
-<li><p>分布式系统的组件是通过相互交互以完成一个共同的任务目标；</p>
-</li>
-</ul>
-<p>其中最最重要的可以看作是分布式系统的基石假设的要点是：</p>
-<p>1，分布式系统的组件是位于不同的网络计算机上；</p>
-<p>2，这些组件通过相互传递消息来进行通信和协调其动作，且彼此相互交互以完成一个共同的任务目标。</p>
-<p>这两点即为分布式系统的逻辑奇点，破除了这两点那就不是分布式系统，比如去掉网络计算机的定义，那就是单机系统，去掉协调以完成共同的任务目标，那就只是一个计算机网络。这两点基石假设构成分布式系统的逻辑奇点。</p>
-<p>到此，可以得出分布式系统的公理化定义：</p>
-<blockquote>
-<p>分布式系统是指其组件位于不同的网络计算机上的系统，这些组件通过相互传递消息来进行通信和协调其动作，且彼此相互交互以完成一个共同的任务目标。</p>
-</blockquote>
-<p>以及分布式系统的逻辑起点：</p>
-<blockquote>
-<ul>
-<li><p>分布式系统是指其组件位于不同的网络计算机上的系统：即计算机网络；</p>
-</li>
-<li><p>这些组件通过相互传递消息来进行通信和协调其动作，且彼此相互交互以完成一个共同的任务目标：即协同：“谐调一致，和合共同，协调两个或者两个以上的不同资源或者个体，一致地完成某一共同目标”；</p>
-</li>
-</ul>
-</blockquote>
-<p>再进一步抽象，可以推断出“分布式系统就是通过计算机网络进行协同工作的系统”， 至此，可以推出分布式的公理化定义公式：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs undefined">分布式系统 = 计算机 + 网络 + 协同，其以质量为度量。<br></code></pre></td></tr></table></figure>
-<p>这个公式就是分布式的第一性原理公式，是分布式的本质理论定义，其中“计算机”是分布式系统的要素，“网络”是分布式系统的连接，“协同”是分布式系统的目标，从这公式里可以看出分布式系统的3个原生的难题：</p>
-<ul>
-<li><p>分布式系统是基于网络的系统，那么网络自身所具有的所有的优点与缺点它都有，那么如何提高服务的可靠性？如何保证服务的可用性？如何保证网络可运维？</p>
-</li>
-<li><p>分布式系统是基于消息传递的系统，消息传递是不可靠的，那么如何保证消息的正确性？如何保证消息传递的可靠性？如何传递消息到目的地？如何保证消息传递的负载均衡？</p>
-</li>
-<li><p>分布式系统是协同工作的系统，那么如何协调大量的计算机节点的完成一个共同的目标，如何解决协调的复杂性以及提高协调的可靠性、可用性？那么如何一起交互完成一个共同的目标任务？如何拆分目标？如何聚合目标，如何度量完成任务的质量与边界？</p>
-</li>
-</ul>
-<p>因此还需要依据分布式系统的公理化定义推导出定理化定义。</p>
-<h2 id="分布式系统的定理化推导"><a href="#分布式系统的定理化推导" class="headerlink" title="分布式系统的定理化推导"></a><font color="#FF8C00">分布式系统的定理化推导</font></h2><p>“公理是不证自明的，而定理是以若干的公理或其他定理为基础而推导的”。由公理推定理，从分布式的公理化公式<font color="#00CED1"><strong>“分布式系统 =  计算机  + 网络 + 协同”</strong></font>，可知分布式系统是组件位于“不同的计算机网络”上一起“协同”工作的系统，这句话得出分布式系统三要素：<font color="#00CED1">“计算机、网络，协同”</font>。其中计算机是系统要素，改变计算机为虚机或者容器，不会改变分布式系统的本质。网络是系统的连接，改变连接就会改变系统的本质，当连接一台计算机时，就是单机，当连接两台计算机时就是镜像，当连接 多于两台计算机时就是分布式。协同是系统的目标，当改变协同的目标也就改变了系统的功能，比如共同计算与共同存储、共同调度，其功能目标是不一样的。</p>
-<h3 id="计算机"><a href="#计算机" class="headerlink" title="计算机"></a>计算机</h3><p>分布式系统是基于不同的计算机上的系统，计算机也是分布式系统的要素之一，因此分布式系统也继承了计算机的原生缺点，</p>
-<ul>
-<li>计算机节点是会出故障的，主板、CPU、网卡、硬盘、内存、电源等都会出故障，比如老化、失效等；</li>
-<li>计算机节点内的操作系统是会突然奔溃不能提供服务的；</li>
-<li>计算机节点是会突然掉电的；</li>
-<li>计算机节点里的内存下电是不保数据的；</li>
-<li>计算机节点的资源是有限的：CPU是有算力上限的、内存是有大小限制的、网卡有吞吐量限制、硬盘有空间大小限制以及速率限制；</li>
-</ul>
-<p>这几个计算机的原生缺点意味着分布式系统需要能够知道计算机节点是失效的，以及在计算机节点失效的同时保证服务质量设计，那么就应当进行以下几点保证：</p>
-<ul>
-<li><p>可观测性（observability）设计：监控、告警、日志、追踪；</p>
-</li>
-<li><p>可靠性（Reliability）设计：冗余设计、分区分配设计、复制算法设计、幂等性设计、一致性算法设计；</p>
-</li>
-<li><p>容量（capacity）规划设计：计算机节点资源资源有限，就需要分布式系统进行进行容量规划；</p>
-</li>
-<li><p>服务治理（Service governance）设计：CPU算力有限、内存有限、网卡吞吐量有限、磁盘IO有限，因此需要进行服务治理之隔板设计以及限流、限并发设计。</p>
-</li>
-</ul>
-<h3 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h3><p>分布式系统是基于不同的网络上的系统，网络是分布式系统的连接方式之一，连接一台计算机的系统就是单机系统，连接两台计算机的系统就是镜像系统，连接三台及以上数目的计算机的系统就是分布式系统，因此分布式系统也继承了网络的原生缺点，即：</p>
-<ul>
-<li>网络是不可靠的；</li>
-<li>网络是会出故障的；</li>
-<li>网络是有时延的；</li>
-<li>网络是会抖动的；</li>
-<li>网络是不安全的；</li>
-<li>网络是会丢包的；</li>
-<li>网络是有带宽限制的；</li>
-<li>网络消息是会乱序的；</li>
-</ul>
-<p>由此，为了保证分布式系统的服务质量：性能、可用性、可靠性、安全性等，那么就需要进行服务质量保证设计，其可以划分为：</p>
-<ul>
-<li><p>网络是不可靠以及会出现断网之类的故障的，因此分布式系统需要进行服务治理容错设计；</p>
-</li>
-<li><p>网络乱序以及丢包，因此分布式系统需要幂等性算法设计、端到端的校验算法设计；</p>
-</li>
-<li><p>网络带宽有限，因此分布式系统需要网络容量设计以及服务治理限流设计；</p>
-</li>
-<li><p>网络不安全：因此分布式系统需要服务安全设计；</p>
-</li>
-<li><p>网络是有时延的，因此分布式系统需要进行性能设计：更好的硬件、跟短的IO路径；</p>
-</li>
-<li><p>网络是会抖动的，因此分布式系统需要进行服务治理容错之超时处理设计。</p>
-</li>
-</ul>
-<h2 id="协同"><a href="#协同" class="headerlink" title="协同"></a>协同</h2><blockquote>
-<p>协同是指：“谐调一致，和合共同，协调两个或者两个以上的不同资源或者个体，一致地完成某一共同目标“，这些组件通过相互传递消息来进行通信和协调其动作，且彼此相互交互以完成一个共同的任务目标</p>
-</blockquote>
-<p>协同又可以拆分为协调动作与共同完成任务，即：</p>
-<h4 id="协调动作"><a href="#协调动作" class="headerlink" title="协调动作"></a>协调动作</h4><p>分布式系统的组件通过传递消息进行通信及协调其动作，即：因此依据消息传递的特性以及缺点需要进行相应的协调动作设计：</p>
-<ul>
-<li>传递消息特性意味着需要进行RPC调用设计；</li>
-<li>网络里传递的消息是经常不一样的，因此需要序列化编解码设计；</li>
-<li>消息传递具有丢消息、丢处理的弊端，为了解决这个弊端就需要进行 ：幂等性设计、事务处理设计、日志设计；</li>
-<li>消息的传递是会超时的，因此就需要服务治理容错之超时处理设计；</li>
-<li>消息是基于网络传输的，而网络是可能随时出故障的，因此需要对消息进行可观测性设计即消息追踪设计；</li>
-<li>需要知道消息从哪里来，往哪里去就需要一个配置中心管理集群各个计算机的信息，比如IP，因此需要进行配置中心设计；</li>
-<li>光知道可以发往哪里还不够，还要知道发往的节点是活着的可服务的，需要知道计算机节点的服务状态，还需要保证消息路由的负载均衡，因此这就就需要一个协调的服务注册中心，进行服务组件的注册与心跳检测、消息路由以及按集群视图变更算法管理集群状态表，那么就需要注册中心设计、注册算法设计、负载均衡算法设计，心跳算法设计、集群视图变更算法设计以及集群状态表管理设计。</li>
-</ul>
-<h4 id="共同完成任务"><a href="#共同完成任务" class="headerlink" title="共同完成任务"></a>共同完成任务</h4><p>分布式系统的组件是通过相互交互以完成一个共同的任务目标，因此需要解决共同完成任务并且保证任务完成质量带来的难题：</p>
-<ul>
-<li><p>整个分布式系统需要能接收任务以及返回完成的任务，那么就需要有提供服务的能力，需要有服务调用接口设计，服务调用客户端以及可视化界面；</p>
-</li>
-<li><p>为了能让网络里的N台计算机相互交互完成一个共同的目标，就需要对任务进行拆分以及聚合设计；</p>
-</li>
-<li>任务拆分后要能知道发给哪个节点，那么就需要一个配置中心, 从配置中心获取目标节点信息；</li>
-<li>任务拆分后分发给节点同时要保证处理的性能，那么就需要进行可伸缩性设计，一台机器处理不过来就需要N台机器一起处理从而保证处理的性能质量，因此又衍生出需要路由算法设计或分区分配算法设计，这样拆分后的任务可以被分发到不同的独立的节点进行处理，并且，但一个节点不可用时，还可以分发到其他的可用的节点，从而提升了系统性能与可用性；</li>
-<li>任务又可以分为计算任务与存储任务，如果是存储任务，为了保证数据的可用性以及可靠性，就需要对分区进行冗余设计，即节点副本设计，如果需要节点副本设计又引入了选主算法设计、数据一致性复制算法设计与幂等性设计；</li>
-<li>为了解决选主与复制一致性问题，又出现了PAXOS,RAFT,2PC,3PC 等，这样的基础一致性协议算法。</li>
-</ul>
-<p>至此，依据分布式的公理化公式：<font color="#00CED1"><strong>“分布式系统 = 计算机 + 网络 + 协同”</strong></font>，推导出了分布式的定理化推论，解读了分布式系统里为什么需要进行这些功能与非功能设计的问题，接下来还需要讲述分布式系统的度量。</p>
-<h2 id="分布式系统的度量"><a href="#分布式系统的度量" class="headerlink" title="分布式系统的度量"></a><font color="#FF8C00">分布式系统的度量</font></h2><p>分布式系统是依据分布式公理定义的质量进行度量的，其涵盖以下几项内容：</p>
-<ul>
-<li><p>合适的性能（Performant），性能指标一般包括 TPS, QPS, Latency, IOPS， response time等，这里用”合适的性能“作为表达，指的是性能合适即可、够用即可，高性能当然好，但是高性能也意味着更高的成本，有些场景高性能反而是一种浪费行为，性能需求需要理解业务场景适可而止；</p>
-</li>
-<li><p>可用性(Availability)，可用性指的是系统长时间可对外提供服务的能力，通常采用小数点后的9的个数作为度量指标，按照这种约定“五个九”等于0.99999（或99.999％）的可用性，默认企业级达标的可用性为6个9。但是当前从时间维度来度量可用性已经没有太大的意义，因为设计得好的系统可以在系统出现故障得情况下也能保证对外提供得服务不中断，因此，当前更合适得可用性度量指标 是请求失败率；</p>
-</li>
-<li><p>可靠性(Reliability)，可靠性一般指系统在一定时间内、在一定条件下可以无故障地执行指定功能的能力或可能性， 也是采用小数点后的9的个数作为度量指标，通常5个9的可靠性就可以满足企业级达标；</p>
-</li>
-<li><p>可伸缩性(Scalability)，是指通过向系统添加资源来处理越来越多的工作并且维持高质量服务的能力，其受可用性以及可靠性的制约，集群规模越大出故障的概率越高从而降低可用性、可靠性，为了保证可用性以及可靠性达标，需要适配合理的可伸缩性指标；</p>
-</li>
-<li><p>韧性(resilience)，通常也叫容错性（fault-tolerant），也就是健壮和强壮的意思，指的是系统的对故障与异常的处理能力，比如在软件故障、硬件故障、认为故障这样的场景下，系统还能保持正常工作的能力；</p>
-</li>
-<li><p>可观测性(Observability)，是一种设计理念，包括告警、监控、日志与跟踪，可以实时地更深入地观测系统内部的工作状态；</p>
-</li>
-<li><p>安全性（security），指的是阻止非授权使用，阻止非法访问以及使用，保护合法用户的资产的能力；</p>
-</li>
-<li><p>易用性（usability），指的是软件的使用难易程度，对于产品的易用性来说， 易用性不仅仅 是软件使用角度的易用，还包括安装、部署、升级上的易用,升值还包括硬件层面的易用，比如产品的外观，形状等；</p>
-</li>
-<li><p>可运维性（operability），可运维性指的是运维人员对系统进行运维操作的难易程度，主要包含以下几个方面的难以程度： 系统的部署、升级、修改、监控以及告警等；</p>
-</li>
-<li>可测试性（ testability），指的是单元测试，集成测试，打桩测试等的难易；</li>
-<li>可维护性（Maintainability）， 指的是代码升级，部署，定位bug，添加功能的难易；</li>
-<li>可扩展性（ extensibility）， 指的是未来增加新的功能与模块的难易；</li>
-<li><p>可读性（ readability），指的是代码的易理解程度。</p>
-</li>
-<li><p>边界约束：集群规模、计算机的容量等物理资源的限制，以及客户、用户、团队的约束需求。</p>
-</li>
-</ul>
-<p>依据这几项质量度量指标，可以保证分布式的“可解释、可复制、可预测”。其中要保证质量的核心思想是<strong>“共享资源、消除资源竞用性以及平衡负载。”</strong>，共享资源需要注册中心，消除资源竞用性就需要服务治理，平衡负载需要好的路由算法。</p>
-<h2 id="分布式系统的反熵增与数据守恒"><a href="#分布式系统的反熵增与数据守恒" class="headerlink" title="分布式系统的反熵增与数据守恒"></a><font color="#FF8C00">分布式系统的反熵增与数据守恒</font></h2><h3 id="熵增"><a href="#熵增" class="headerlink" title="熵增"></a>熵增</h3><p>熵增定律是物理学的基本定律之一，其被定义为：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">1, 熵（Entropy）是用以度量一个系统“内在的混乱程度”，即系统中的无效能量；<br>2, 熵增定律：在一个孤立系统里，如果没有外力做功，其总混乱度（熵）会不断增大；<br>3，熵增过程是一个自发的由有序向无序发展的过程并且具有必然性，为了保证有序就必须逆熵增做功。<br></code></pre></td></tr></table></figure>
-<p>分布式系统也是一个孤立的系统，其中的网络与计算机节点（涵盖电源、主板、CPU、内存、网卡、硬盘等）等硬件会老化、会出故障，组件之间协同工作也会遇到负载过高、软件系统出现BUG等问题，这也是一个熵增的过程，并且因为熵增的必然性，分布式系统总是自发地或非自发地不断由有序走向无序，最终不可逆地走向失效不可用。为了保证分布式系统是有序可用的就必须逆熵增做功，即对其反熵增，分布式系统的反熵增过程与方法是：</p>
-<ul>
-<li>可运维设计：软硬件的部署与升级设计、可视化设计、可观测性（监控、告警、日志、追踪）设计；</li>
-<li>可服务设计：由团队解决故障以及提供服务的支持；</li>
-<li>服务治理设计：熔断、限流、降级、隔离、容错，触使分布式系统保持在有序状态；</li>
-<li>智能化设计：参数自我优化、故障自我判断、工作负载自我预测等；</li>
-<li>动态平衡设计：动态平衡是一种设计理念，有进有出；</li>
-</ul>
-<p>因此其中在分布式系统里将需要将可运维、可服务、可治理、可智能化、动态平衡的思想融合到架构设计与开发中。</p>
-<h3 id="数据守恒"><a href="#数据守恒" class="headerlink" title="数据守恒"></a>数据守恒</h3><p>能量守恒定律也是物理学的基本定律之一，其被定义为：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs undefined">1，能量既不会凭空产生，也不会凭空消失，它只会从一种形式转化为另一种形式，或者从一个物体转移到其它物体，<br>   而能量的总量保持不变；<br>2，孤立系统的总能量保持不变。<br></code></pre></td></tr></table></figure>
-<p>在分布式系统里<strong>“数据”</strong>即是分布式系统的能量，因此参照“能量守恒”定义，这里我给分布式系统一个<strong>“数据守恒”</strong>定义：</p>
-<figure class="hljs highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs undefined">孤立系统的总数据量保持不变。数据既不会凭空产生，也不会凭空消失，它只会从一种形式转化为另一种形式，<br>或者从一个物体转移到其它物体， 而数据的总量保持不变；<br></code></pre></td></tr></table></figure>
-<p>依据上节的定理推导，我们知道分布式系统里网络是不可靠的、消息传递是不可靠的、计算机节点是不可靠的、磁盘是不可靠的、内存是不可靠的、软件组件是不可靠的等等，这些过程都会丢数据，因此为了保证分布式系统里的<strong>“数据守恒”</strong>就需要对分布式系统进行数据可靠性设计：即：</p>
-<ul>
-<li>分区设计、冗余设计、幂等性设计、端到端的校验设计、日志设计、事务处理设计，缓存的MESI设计等。</li>
-</ul>
-<p>因此在分布式系统里将也需要将<strong>“数据守恒”</strong>的思想融合到架构设计与开发中。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文以物理学思维挖掘分布式系统的本质，推导出了分布式系统为什么需要这样的设计的缘由，并且文中阐述了分布式系统的基础理论、功能非功能、反熵增与数据守恒。日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，曾就职于Marvell、AMD，主要从事Linux内核以及分布式产品的交付、架构设计以及开发工作。</p>
-<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
-<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
-  <article class="article post card" itemscope itemtype="http://schema.org/Article">
-    <div class="post-block">
-      <link itemprop="mainEntityOfPage" href="https://www.changping.me/2020/02/20/distributed-product_opensource_and_product/">
-      <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <meta itemprop="name" content="常平">
-        <meta itemprop="description" content="“为学，闻道，践行”">
-        <meta itemprop="image" content="/images/avatar.jpg">
-      </span>
-      <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="常平的笔记">
-      </span>
-    </div>
-    <header class="post-header">
-      <h1 class="post-title" itemprop="name headline">
-        <a class="post-title-link post-title-link-external" href="/2020/02/20/distributed-product_opensource_and_product/" itemprop="url">分布式系统架构设计 – 第17式 - 为什么开源的项目不如商业产品</a>
-      </h1>
-      <div class="post-meta">
-        
-        <span class="post-date">
-          <i class="far fa-calendar-plus"></i><span><time title="post-date" itemprop="dateCreated datePublished" datetime="2020-02-20T21:23:38+08:00">2020-02-20 21:23:38</time></span>
-        </span>
-        
-        
-        
-        <span class="post-meta-divider divider">|</span>
-        
-        <span class="post-categories">
-          
-          <i class="far fa-folder-open"></i><span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/distributed/" itemprop="url" rel="index"><span itemprop="name">distributed</span></a></span>
-        </span>
-        
-        
-      </div>
-    </header>
-    <main class="post-main" itemprop="articleBody">
-      
-      <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a><font color="#FF8C00">动机</font></h2><p>架构设计人员需要有产品的商业意识，作为软件开发人员在工作过程中往往离不开开源项目，但是能回答好“为什么开源的项目不如商业产品？”这个问题的并不多，因此本文就为此做个解读。</p>
-<h2 id="为什么开源的项目不如商业产品"><a href="#为什么开源的项目不如商业产品" class="headerlink" title="为什么开源的项目不如商业产品"></a><font color="#FF8C00">为什么开源的项目不如商业产品</font></h2><p>开源的项目从产品化的角度来看可分为三个层次：</p>
-<h3 id="项目与社区锲合"><a href="#项目与社区锲合" class="headerlink" title="项目与社区锲合"></a><font color="#00CED1">项目与社区锲合</font></h3><p>项目与社区锲合，即开源项目在社区内的锲合程度，度量指标是点赞数、fork数、社区的技术文章阅读量，提升项目于社区的锲合度需要通过运营推广的方式，比如参加技术大会、发布技术文章以及发布完整的项目文档等；</p>
-<h3 id="产品与市场锲合"><a href="#产品与市场锲合" class="headerlink" title="产品与市场锲合"></a><font color="#00CED1">产品与市场锲合</font></h3><p>产品与市场锲合，即开源产品在市场的锲合程度，是否满足市场的真正需求，度量指标是下载量、使用量，通常来说开源项目能做到这一步就非常成功了，比如ceph，k8s，Tensorflow, Flink等；</p>
-<h3 id="价值与市场锲合"><a href="#价值与市场锲合" class="headerlink" title="价值与市场锲合"></a><font color="#00CED1">价值与市场锲合</font></h3><p>价值与市场锲合，即客户愿意买单的点，度量指标是收入。其一般指的是开源项目里的增值功能以及企业级特性，即项目自身的商业价值，例如：更好的性能、更好的可用性、可靠性、更加易用的部署与升级功能，更加易用的可视化功能、安全、可观测、质量的可度量性、额外的服务支持以及解决方案化。</p>
-<p>至此，我们可以看出商业模式的差异决定了开源的项目往往不如商业的产品，这是商业模式带来的差异。开源的项目若是完成了第一层次与第二层次就可以认为是非常成功的一个项目，如果把第3层次也完成了反而是个失败的开源项目，因为这不利于项目的商业化，开发团队赚不到钱没有存活下去的可能性。但是商业化的产品必须涵盖这三个层次，开源的项目还只能算是一个项目还不是产品，它只完成了第1、第2两个层次，因此商业化就要求我们需要把开源的项目产品化。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><font color="#FF8C00">小结</font></h2><p>本文解读了一个问题：为什么开源的项目不如商业产品？日拱一卒，功不唐捐，分享是最好的学习，与其跟随不如创新，希望这个知识点对大家有用。另作者能力与认知都有限，”我讲的，可能都是错的“，欢迎大家拍砖留念。</p>
-<h2 id="作者简介"><a href="#作者简介" class="headerlink" title="作者简介"></a><font color="#FF8C00">作者简介</font></h2><p>常平，中科大硕，DELL EMC 资深首席工程师，曾就职于Marvell、AMD，主要从事Linux内核以及分布式产品的交付、架构设计以及开发工作。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><font color="#FF8C00">参考资料</font></h2><p>[1] <a href="https://a16z.com/2019/10/04/commercializing-open-source/" target="_blank" rel="noopener">https://a16z.com/2019/10/04/commercializing-open-source/</a></p>
-<h2 id="版权申明"><a href="#版权申明" class="headerlink" title="版权申明"></a><font color="#FF8C00">版权申明</font></h2><p>本文的版权协议为 CC-BY-NC-ND license：<a href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh</a></p>
-<p>在遵循署名、非商业使用（以获利为准）以及禁止演绎的前提下可以自由阅读、分享、转发、复制、分发等。</p>
-
-      
-    </main>
-    <footer class="post-footer">
-      
-      <div class="post-tags">
-        
-        <a class="post-tag button" href="/tags/distributed/" rel="tag"><i class="fas fa-tags"></i>distributed</a>
-        
-      </div>
-      
-    </footer>
-  </article>
-  
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/4/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fas fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/4/"><i class="fas fa-angle-right" aria-label="下一页"></i></a>
   </nav>
   
   
@@ -1044,7 +957,7 @@
     
     <div class="archives-count">
       <div class="site-count-title">全部</div>
-      <div><a href="/archives">64</a></div>
+      <div><a href="/archives">66</a></div>
     </div>
     
     
